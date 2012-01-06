@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.hp.hpl.jena</groupId>
+  <artifactId>afs</artifactId>
+  <packaging>jar</packaging>
+  <name>AFS</name>
+  <version>0.0.0-SNAPSHOT</version>
+
+  <description>AFS workspace</description>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0 License</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+
+  <properties>
+    <this.root>${project.artifactId}-${project.version}</this.root>
+    <ver.jena>2.7.0-incubating</ver.jena>
+    <ver.arq>2.9.0-incubating</ver.arq>
+    <ver.iri>0.9.0-incubating</ver.iri>
+    <ver.tdb>0.9.0-incubating-SNAPSHOT</ver.tdb>
+
+    <ver.junit>[4.9,)</ver.junit>
+    <ver.slf4j>[1.6.4,)</ver.slf4j>
+    <ver.log4j>[1.2.16,)</ver.log4j>
+
+  </properties>
+
+  <dependencies>
+  
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-tdb</artifactId>
+      <version>${ver.tdb}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${ver.arq}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${ver.arq}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <version>${ver.jena}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <type>test-jar</type>
+      <version>${ver.jena}</version>
+      <scope>test</scope>
+    </dependency>    
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-iri</artifactId>
+      <version>${ver.iri}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${ver.junit}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${ver.slf4j}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${ver.slf4j}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>${ver.log4j}</version>
+      <!--<optional>true</optional>-->
+      <exclusions>
+        <exclusion>
+          <groupId>javax.jms</groupId>
+          <artifactId>jms</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jdmk</groupId>
+          <artifactId>jmxtools</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jmx</groupId>
+          <artifactId>jmxri</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.mail</groupId>
+          <artifactId>mail</artifactId>
+        </exclusion>
+      </exclusions> 
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+          <debug>true</debug>
+          <debuglevel>source,lines,vars</debuglevel>
+          <optimize>true</optimize>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/TS_*.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <configuration>
+          <overWriteReleases>false</overWriteReleases>
+          <overWriteIfNewer>true</overWriteIfNewer>
+        </configuration>
+      </plugin>
+
+       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <configuration>
+          <buildOutputDirectory>${project.build.directory}/classes-eclipse</buildOutputDirectory>
+          <downloadSources>true</downloadSources>
+          <downloadJavadocs>false</downloadJavadocs>
+        </configuration>
+      </plugin>
+    </plugins>
+
+  </build>
+
+</project>
