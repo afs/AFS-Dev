@@ -19,7 +19,6 @@
 package structure.radix;
 
 import org.junit.Test ;
-import org.openjena.atlas.AtlasException ;
 import org.openjena.atlas.junit.BaseTest ;
 
 public class TestRadix extends BaseTest
@@ -30,7 +29,7 @@ public class TestRadix extends BaseTest
     
     static byte[] key2 = { 2 , 4 , 6 , 10  } ;
     // Insert - shorter key
-    static byte[] key3 = { 2 } ;
+    static byte[] key3 = { 2 , 4 } ;
     
     // Insert - existing leaf
     static byte[] key4 = { 2 , 4 , 6,  8 , 10 } ;
@@ -38,6 +37,7 @@ public class TestRadix extends BaseTest
     // Insert - partial prefix match.
     static byte[] key5 = { 2 , 4 , 3 , 1 } ;
     
+    // Insert - new root
     static byte[] key6 = { 0 , 1 , 2 , 3 , 4  } ;
     
     @Test public void radix_01()
@@ -71,37 +71,28 @@ public class TestRadix extends BaseTest
     
     @Test public void radix_10()
     { 
-        RadixTree t = new RadixTree() ;
-//        t.insert(key1) ;
-//        t.check() ;
-//        t.insert(key2) ;
-//        t.check() ;
-//        t.insert(key3) ;
-//        t.check() ;
-//        t.insert(key4) ;
-//        t.check() ;
-//        t.insert(key5) ;
-//        t.check() ;
-//        t.insert(key6) ;
-//        t.check() ;
-        
-        try {
-            byte[][] keys = { key1, key2, key3, key4, key5, key6 } ;
-            int i = 0 ;
-            for ( byte[]k : keys )
-            {
-                //System.out.println(RLib.str(k)) ;
-                i++ ;
-                t.insert(k) ;
-                t.check() ;
-            }
-            test(keys.length, t) ;
-        } catch (AtlasException ex) {
-            t.print() ;
-            throw ex ;
-        }
+        test(new byte[][] { key1, key2, key3, key4, key5, key6 }) ;
     }
         
+
+    private void test(byte[][] keys)
+    {
+        RadixTree t = new RadixTree() ;
+        for ( byte[]k : keys )
+        {
+            t.insert(k) ;
+            t.check() ;
+            assertTrue(t.contains(k)) ; 
+        }
+        assertFalse(t.isEmpty()) ;
+        for ( byte[]k : keys )
+        {
+            t.delete(k) ;
+            t.check() ;
+            assertFalse(t.contains(k)) ; 
+        }
+        assertTrue(t.isEmpty()) ;
+    }
 
     private static void insert(RadixTree t, byte[] key)
     {

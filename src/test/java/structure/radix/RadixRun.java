@@ -68,7 +68,7 @@ public class RadixRun
             for ( int i = 0 ; i < nRuns ; i++ )
             {
                 RadixTree trie = new RadixTree() ;
-                List<byte[]> x = gen(nKeys, maxLen) ;
+                List<byte[]> x = gen(nKeys, maxLen, (byte)20) ;
                 List<byte[]> x2 = randomize(x) ;
                 
                 if ( i%ticksPerLine == 0 )
@@ -124,29 +124,6 @@ public class RadixRun
         return x2 ;
     }
 
-
-    // Generate nKeys entries upto to nLen long
-    static List<byte[]> gen(int nKeys, int maxLen)
-    {
-        List<byte[]> entries = new ArrayList<byte[]>() ;
-        
-        for ( int i = 0 ; i < nKeys ; i++)
-        {
-            
-            while(true)
-            {
-                byte[] b = gen1(maxLen) ;
-                if ( ! contains(b, entries) )
-                {
-                    entries.add(b) ;
-                    break ;
-                }
-            }
-        }
-        
-        return entries ;
-    }
-    
     static boolean contains(byte[] b, List<byte[]> entries)
     {
         for ( byte[] e : entries )
@@ -157,16 +134,7 @@ public class RadixRun
         return false ;
     }
     
-    static int RANGE = 10 ;
-    static byte[] gen1(int nLen)
-    {
-        int len = RandomLib.qrandom.nextInt(nLen) ;
-        byte[] b = new byte[len] ;
-        for ( int i = 0 ; i < len ; i++ )
-            b[i] = (byte)(RandomLib.qrandom.nextInt(RANGE)&0xFF) ;
-        return b ;
-    }
-        
+
 //    public static void exec(RadixTree trie, int[] ... e)
 //    {
 //        List<byte[]> entries = new ArrayList<byte[]>() ;
@@ -349,4 +317,34 @@ public class RadixRun
         trie.check() ;
     }
 
+    // Generate nKeys entries upto to nLen long
+    static List<byte[]> gen(int nKeys, int maxLen, byte maxVal)
+    {
+        List<byte[]> entries = new ArrayList<byte[]>() ;
+        
+        for ( int i = 0 ; i < nKeys ; i++)
+        {
+            
+            while(true)
+            {
+                byte[] b = gen1(maxLen, maxVal) ;
+                if ( ! contains(b, entries) )
+                {
+                    entries.add(b) ;
+                    break ;
+                }
+            }
+        }
+        
+        return entries ;
+    }
+    
+    static byte[] gen1(int nLen, byte maxVal )
+    {
+        int len = RandomLib.qrandom.nextInt(nLen) ;
+        byte[] b = new byte[len] ;
+        for ( int i = 0 ; i < len ; i++ )
+            b[i] = (byte)(RandomLib.qrandom.nextInt(maxVal)&0xFF) ;
+        return b ;
+    }
 }

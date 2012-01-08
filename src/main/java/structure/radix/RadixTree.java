@@ -56,6 +56,8 @@ public final class RadixTree
     /** Find the starting point - call the action */
     private static RadixNode applicator(RadixNode root, byte[] key, Action action)
     {
+        
+        
         // A convoluted way to "return" with three results by calling on to a handler.
         // Assumes root is not null.
         RadixNode nodePrev = null ; // Last node.
@@ -91,6 +93,16 @@ public final class RadixTree
         return null ;
     }        
         
+    public boolean contains(byte[] key)
+    {
+        RadixNode node = search(key) ;
+        if ( node == null )
+            return false ;
+        if ( node.lenFinish == key.length && node.isLeaf() )
+            return true ;
+        return false ;
+    }
+    
     public RadixNode find(byte[] key)
     {
         if ( root == null )
@@ -401,6 +413,16 @@ public final class RadixTree
         } ;
         root.visit(v) ;
         return (Integer)v.result() ;
+    }
+    
+    public boolean isEmpty()
+    {
+        if ( root == null )
+            return true ;
+        if ( root.isLeaf() )
+            return false ;
+        // Denormalized tree
+        return root.nodes.size() == 0 ;
     }
     
     public Iterator<ByteBuffer> iterator() { return iterator(null, null) ; }
