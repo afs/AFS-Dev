@@ -24,15 +24,15 @@ import static lib.CSVParser.TokenType.NL ;
 import static lib.CSVParser.TokenType.QSTRING ;
 import static lib.CSVParser.TokenType.STRING ;
 
-import java.io.FileInputStream ;
-import java.io.IOException ;
 import java.io.InputStream ;
 import java.util.ArrayList ;
 import java.util.List ;
 
+import org.openjena.atlas.io.IO ;
 import org.openjena.atlas.io.PeekReader ;
 import org.openjena.atlas.iterator.IteratorSlotted ;
 import org.openjena.atlas.iterator.PeekIterator ;
+import org.openjena.atlas.lib.Lib ;
 import org.openjena.atlas.lib.Sink ;
 import org.openjena.atlas.lib.StrUtils ;
 // Scala?
@@ -41,18 +41,8 @@ public class CSVParser
     // Toy.
     // TODO Tokenizer.
     
-    public static void main(String ... argv) throws IOException
+    public static void main(String ... argv)
     {
-        InputStream _in = new FileInputStream("X.csv") ;
-        
-        TokenIterator iter = new TokenIterator(_in) ;
-//        while( iter.hasNext() )
-//        {
-//            Token t = iter.next() ;
-//            System.out.println(t) ;
-//        }
-//        
-        CSVParser parser = new CSVParser(iter) ;
         Sink<List<String>> sink = new Sink<List<String>>(){
 
             @Override
@@ -69,10 +59,19 @@ public class CSVParser
             public void flush()
             {}} ;
         
-        parser.parse(sink) ;
+        parse("X.csv", sink) ;
         
     }
 
+    
+    public static void parse(String filename, Sink<List<String>> sink)
+    {
+        InputStream _in = IO.openFile(filename) ;
+        TokenIterator iter = new TokenIterator(_in) ;
+        CSVParser parser = new CSVParser(iter) ;
+        parser.parse(sink) ;
+    }
+    
     // ----
     
     private TokenIterator iter ;
@@ -87,6 +86,18 @@ public class CSVParser
         final String image ;
         final long line ;
         final long col ;
+        
+        public boolean same(Token obj)
+        {
+            if (this == obj) return true ;
+            if (obj == null) return false ;
+            if (type != obj.type) return false ;
+            if ( type == COMMA || type == NL || type == EOF )
+                return true ;
+            
+            if (image == null && obj.image != null) return false ;
+            return Lib.equal(this.image, obj.image) ;
+        }
 
         public Token(long line, long col, TokenType type, String image)
         {
@@ -117,7 +128,6 @@ public class CSVParser
         // Optional checking on line length
         
         // Header?
-     
         PeekIterator<Token> pIter = new PeekIterator<>(iter) ;
 
         List<String> line = null ;
@@ -126,6 +136,8 @@ public class CSVParser
         {
             // Get rid of switches.  break problems.
             Token t = pIter.next() ;
+            if ( line == null )
+                line = new ArrayList<>(100) ;
             switch(t.type)
             {
                 case EOF: 
@@ -139,9 +151,6 @@ public class CSVParser
                     continue loop ;
             }
 
-            if ( line == null )
-                line = new ArrayList<>(100) ;
-            
             // Immediate COMMA is an empty term.
             switch (t.type )
             {
@@ -156,6 +165,12 @@ public class CSVParser
                     exception("Syntax error: expected a string or comma.", t) ;
             }
             // Expect COMMA or NL
+            if  (!pIter.hasNext() )
+            {
+                // Short line
+                sink.send(line) ;
+                return ;
+            }
             Token t2 = pIter.peek() ;
             switch(t2.type)
             {
@@ -220,10 +235,7 @@ public class CSVParser
                 in.readChar() ;
                 ch = in.peekChar() ;
                 if ( ch != '\n' )
-                {
-                    in.readChar() ;
                     return new Token(in.getLineNum(), in.getColNum(), NL, "\r") ;
-                }
                 // '\n' = drop through.
             }
                 
