@@ -237,7 +237,8 @@ public final class RadixTree
                 RadixNode n = RadixNode.allocBlank(node) ;
                 n.prefix = prefixNew ;
                 n.lenStart = node.lenFinish ;
-                n.lenFinish = node.lenFinish ;
+                n.lenFinish = key.length ;
+                n.setAsValue(true) ;
                 node.setAsValue(true) ;
                 int idx = node.locate(prefixNew) ;
                 if ( node.get(idx) != null )

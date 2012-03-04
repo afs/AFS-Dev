@@ -368,7 +368,7 @@ public final class RadixNode //extends PrintableBase implements Printable
             error(this, "Finish length error") ;
         
         if ( lenFinish - lenStart != prefix.length )
-            error(this, "Prefix lenth error %d,%d", lenFinish - lenStart, prefix.length) ;
+            error(this, "Prefix length error %d,%d", lenFinish - lenStart, prefix.length) ;
 
         // Find self in parent.
         if ( parent != null )

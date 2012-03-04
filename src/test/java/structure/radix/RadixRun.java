@@ -55,6 +55,10 @@ public class RadixRun
     public static void main(String ...argv)
     { 
         Log.enable("structure.radix") ;
+        // TODO
+        // check tests.
+        // turn on insert then delete for all tests.
+        
 //        byte[] k1 = { 2 , 4 , 6 , 8  } ;
 //        byte[] k2 = { 2 , 4 , 6 , 10  } ;
 //        // @Test 3: Insert existing
@@ -70,7 +74,8 @@ public class RadixRun
 //        t.contains(key2) ;
 //        System.exit(0) ;
         //test(new byte[][] { key1, key2, key3, key4, key5, key6 }) ;
-        test(key1, key2, key3 ) ;
+
+        test(key1, key2, key3, key4, key5, key6) ;
         
         // Test A diverging key, shorter than existing
         // Test B diverging key, longer  than existing
@@ -80,60 +85,6 @@ public class RadixRun
     }
     
     static boolean print = true ;
-
-    
-    //@Test
-    public void radixtree_1x()
-    {
-        byte[] k1 = { 2 , 4 , 6 , 8  } ;
-        byte[] k2 = { 2 , 4 , 6 , 10  } ;
-        RadixTree t = tree(k1) ;
-        Assert.assertTrue(t.contains(k1)) ;
-        Assert.assertFalse(t.contains(k2)) ;
-    }
-    
-    //@Test
-    public void radixtree_2x()
-    {
-        byte[] k1 = { 2 , 4 , 6 , 8  } ;
-        byte[] k2 = { 2 , 4 , 6 , 10  } ;
-        byte[] k3 = { 2 , 4 , 6 , 9  } ;
-        RadixTree t = tree(k1, k2) ;
-        Assert.assertTrue(t.contains(k1)) ;
-        Assert.assertTrue(t.contains(k2)) ;
-        Assert.assertFalse(t.contains(k3)) ;
-    }
-
-    //@Test
-    public void radixtree_3x()
-    {
-        // @Test 2
-        byte[] k1 = { 1 , 2 , 3 } ;
-        byte[] k2 = { 1 , 2 } ;
-        byte[] k3 = { 1 } ;
-        tree(k1, k2, k3) ;
-        tree(k1, k3, k2) ;
-        tree(k2, k1, k3) ;
-        tree(k2, k3, k1) ;
-        tree(k3, k1, k2) ;
-        tree(k3, k2, k1) ;
-    }
-
-    //@Test
-    public void radixtree_4x()
-    {
-        // @Test 2
-        byte[] k1 = { 1 , 2 , 3 } ;
-        byte[] k2 = { 1 , 2 , 5 } ;
-        byte[] k3 = { 1 , 2 , 6 } ;
-        tree(k1, k2, k3) ;
-        tree(k1, k3, k2) ;
-        tree(k2, k1, k3) ;
-        tree(k2, k3, k1) ;
-        tree(k3, k1, k2) ;
-        tree(k3, k2, k1) ;
-    }
-    
     
     static private RadixTree tree(byte[] ... keys)
     {

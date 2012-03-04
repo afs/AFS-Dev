@@ -18,6 +18,7 @@
 
 package structure.radix;
 
+import org.junit.Assert ;
 import org.junit.Test ;
 import org.openjena.atlas.junit.BaseTest ;
 
@@ -39,6 +40,8 @@ public class TestRadix extends BaseTest
     
     // Insert - new root
     static byte[] key6 = { 0 , 1 , 2 , 3 , 4  } ;
+    
+    // XXX Old tests - rework.
     
     @Test public void radix_01()
     { 
@@ -75,7 +78,7 @@ public class TestRadix extends BaseTest
     }
         
 
-    private void test(byte[][] keys)
+    private void test(byte[]... keys)
     {
         RadixTree t = new RadixTree() ;
         for ( byte[]k : keys )
@@ -93,7 +96,75 @@ public class TestRadix extends BaseTest
         }
         assertTrue(t.isEmpty()) ;
     }
+    
+    static boolean print = false ;
+    
+    @Test
+    public void radixtree_ins_1()
+    {
+        byte[] k1 = { 2 , 4 , 6 , 8  } ;
+        byte[] k2 = { 2 , 4 , 6 , 10  } ;
+        RadixTree t = tree(k1) ;
+        Assert.assertTrue(t.contains(k1)) ;
+        Assert.assertFalse(t.contains(k2)) ;
+    }
+    
+    @Test
+    public void radixtree_ins_2()
+    {
+        byte[] k1 = { 2 , 4 , 6 , 8  } ;
+        byte[] k2 = { 2 , 4 , 6 , 10  } ;
+        byte[] k3 = { 2 , 4 , 6 , 9  } ;
+        RadixTree t = tree(k1, k2) ;
+        Assert.assertTrue(t.contains(k1)) ;
+        Assert.assertTrue(t.contains(k2)) ;
+        Assert.assertFalse(t.contains(k3)) ;
+    }
 
+    @Test
+    public void radixtree_ins_3()
+    {
+        // @Test 2
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 } ;
+        byte[] k3 = { 1 } ;
+        tree(k1, k2, k3) ;
+        tree(k1, k3, k2) ;
+        tree(k2, k1, k3) ;
+        tree(k2, k3, k1) ;
+        tree(k3, k1, k2) ;
+        tree(k3, k2, k1) ;
+    }
+
+    @Test
+    public void radixtree_ins_4()
+    {
+        // @Test 2
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 , 5 } ;
+        byte[] k3 = { 1 , 2 , 6 } ;
+        tree(k1, k2, k3) ;
+        tree(k1, k3, k2) ;
+        tree(k2, k1, k3) ;
+        tree(k2, k3, k1) ;
+        tree(k3, k1, k2) ;
+        tree(k3, k2, k1) ;
+    }
+    
+    static private RadixTree tree(byte[] ... keys)
+    {
+        RadixTree t = new RadixTree() ;
+        for ( byte[]k : keys )
+        {
+            if (print) System.out.println("Build: "+RLib.str(k)) ;
+            t.insert(k) ;
+            if (print) t.print() ;
+            t.check() ;
+            if (print) System.out.println() ;
+        }
+        return t ;
+    }
+    
     private static void insert(RadixTree t, byte[] key)
     {
         t.insert(key) ;
@@ -101,6 +172,16 @@ public class TestRadix extends BaseTest
         RadixNode n = t.find(key) ;
         assertNotNull(n) ;
         assertEquals(key.length, n.lenFinish) ;
+    }
+    
+    static void delete(RadixTree trie, byte[] key)
+    {
+        boolean b2 = ( trie.find(key) != null ) ;
+        boolean b = trie.delete(key) ;
+        System.out.flush() ;
+        if ( b != b2 )
+            System.err.println("Inconsistent (delete)") ;
+        trie.check() ;
     }
     
     private static void test(int size, RadixTree t)
