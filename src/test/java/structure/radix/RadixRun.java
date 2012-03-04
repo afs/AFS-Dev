@@ -58,6 +58,7 @@ public class RadixRun
         // TODO
         // check tests.
         // turn on insert then delete for all tests.
+        // Use test code.
         
 //        byte[] k1 = { 2 , 4 , 6 , 8  } ;
 //        byte[] k2 = { 2 , 4 , 6 , 10  } ;
@@ -86,6 +87,7 @@ public class RadixRun
     
     static boolean print = true ;
     
+    // TestRadix.static
     static private RadixTree tree(byte[] ... keys)
     {
         RadixTree t = new RadixTree() ;
@@ -100,6 +102,7 @@ public class RadixRun
         return t ;
     }
     
+    // TestRadix.static
     static private void test(byte[]... keys)
     {
         RadixTree t = new RadixTree() ;
@@ -126,6 +129,7 @@ public class RadixRun
         Assert.assertTrue(t.isEmpty()) ;
     }
     
+    // Enable!
     public static void main1(String ...argv) 
     {
         Log.setLog4j() ;
