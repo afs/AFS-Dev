@@ -64,11 +64,11 @@ class RadixIterator implements Iterator<ByteBuffer>
                         break ;
                     // Longer or same length key.
                     int j = node.locate(start, node.lenFinish) ;
-                    if ( j < 0 || j == node.nodes.size() )
+                    if ( j < 0 ) //|| j == node.nodes.size() )
                         // No match across subnodes - this node is the point of longest match.
                         break ;
                     // There is a next node down to try.
-                    node = node.nodes.get(j) ;
+                    node = node.get(j) ;
                 }
             }
             else
@@ -91,7 +91,7 @@ class RadixIterator implements Iterator<ByteBuffer>
             {
                 // Copy as we go.
                 slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
-                node = node.nodes.get(0) ;
+                node = node.get(0) ;
             }
             // Copy leaf details.
             slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
@@ -159,22 +159,26 @@ class RadixIterator implements Iterator<ByteBuffer>
             if ( parent == null )
                 return null ;
             // Find self.
-            int N = parent.nodes.size() ;
-            int idx = 0 ; 
-            for ( ; idx < N ; idx++ )
-            {
-                if ( parent.nodes.get(idx) == node2)
-                    break ;
-            }
-            if ( idx >= N )
-            {
-                System.out.println("NOT FOUND") ;
-                System.out.println("   "+parent) ;
-                System.out.println("   "+node2) ;
-            }
+            int idx = node2.prefix[0] ;
+            
+//            // Find self.
+//            int N = parent.nodes.size() ;
+//            int idx = 0 ; 
+//            for ( ; idx < N ; idx++ )
+//            {
+//                if ( parent.nodes.get(idx) == node2)
+//                    break ;
+//            }
+            
+//            if ( idx >= N )
+//            {
+//                System.out.println("NOT FOUND") ;
+//                System.out.println("   "+parent) ;
+//                System.out.println("   "+node2) ;
+//            }
             idx++ ;
-            if ( idx != N )
-                return parent.nodes.get(idx) ;
+            if ( idx != (0xFF+1) )//parent.maxNumChldren() )
+                return parent.get(idx) ;
             // tail recursion - remove.
             return gotoUpAndAcross(parent) ;
         }

@@ -18,17 +18,17 @@
 
 package structure.radix;
 
-import java.util.HashSet;
-import java.util.List ;
-import java.util.Set;
+import java.util.Arrays ;
+import java.util.HashSet ;
+import java.util.Set ;
 
 import org.openjena.atlas.io.IndentedWriter ;
 import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.iterator.Transform ;
 import org.openjena.atlas.lib.Bytes ;
-import org.openjena.atlas.logging.Log;
+import org.openjena.atlas.logging.Log ;
 
-
+import com.hp.hpl.jena.util.iterator.ArrayIterator ;
 
 public final class RadixNode //extends PrintableBase implements Printable 
 {
@@ -54,15 +54,158 @@ public final class RadixNode //extends PrintableBase implements Printable
     int lenStart ;
     
     // The nodes below this one, corresponding to each possible next byte
-    List<RadixNode> nodes ;         // When real, use an array[]; null for leaf.
+    final static int FanOutSize = 255 ;
+    //int maxNumChildren()    { return FanOutSize+1 ; }
     
-    static RadixNode alloc(RadixNode parent) { return new RadixNode(parent) ; }
+    private RadixNode[] nodes = null ;      // null -> leaf (and here is not null)
+    private boolean     here =  false ;     // Does this node also record a value?
+    
+    boolean isValue()                   { return here ; }
+    void    setAsValue(boolean state)   { here = state ; }
+
+    private void setAsParent(RadixNode n)
+    {
+        if ( n != null )
+        {
+            n.parent = this ;
+            n.parentId = this.id ;
+        }
+    }
+
+    // Get/set a slot
+    RadixNode get(int idx)
+    {
+        return nodes[idx] ;
+    }
+
+    void set(int idx, RadixNode n)
+    {
+        nodes[idx] = n ;
+        setAsParent(n) ;
+    }
+
+    void takeSubNodes(RadixNode n)
+    {
+        this.here = n.here ;
+        if ( n.nodes != null )
+        {
+            for ( int idx = 0 ; idx < n.nodes.length ; idx++ )
+            {
+                nodes[idx] = n.nodes[idx] ;
+                if ( nodes[idx] != null )
+                {
+                    nodes[idx].parent = this ;
+                    nodes[idx].parentId = this.id ;
+                }
+            }
+        }
+    }
+    
+    boolean zeroSubNodes()
+    {
+        if ( nodes == null )
+            return true ;
+        for ( int idx = 0 ; idx < nodes.length ; idx++ )
+        {
+            if ( nodes[idx] != null )
+                return false ;
+        }
+        return true ;
+    }
+
+    int countSubNodes()
+    {
+        if ( nodes == null )
+            return 0 ;
+        int count = 0 ; 
+        for ( int idx = 0 ; idx < nodes.length ; idx++ )
+        {
+            if ( nodes[idx] != null )
+                count++ ;
+        }
+        return count ;
+    }
+    
+    
+    boolean noSubNodes()
+    {
+        if ( nodes == null )
+            return true ;
+        
+        for ( int idx = 0 ; idx < nodes.length ; idx++ )
+        {
+            if ( nodes[idx] != null )
+                return false ;
+        }
+        return true ;
+    }
+    
+    RadixNode oneSubNode()
+    {
+        if ( nodes == null )
+            return null ;
+        RadixNode n = null ;
+        
+        for ( int idx = 0 ; idx < nodes.length ; idx++ )
+        {
+            if ( nodes[idx] != null )
+            {
+                if ( n != null )
+                    // See two.
+                    return null ;
+                // Remember what we saw.
+                n = nodes[idx] ;
+            }
+        }
+        // Return null or the single non-null slot
+        return n ;
+    }
+
+    // XXX Version that always changes the node -- checking.
+    RadixNode convertToEmptyBranch()
+    {
+        if ( nodes == null )
+            nodes = new RadixNode[FanOutSize] ;
+        Arrays.fill(nodes, null) ;
+        return this ;
+    }
+    
+    // XXX Version that always changes the node -- checking.
+    RadixNode convertToLeaf()
+    {
+        if ( nodes == null )
+            return this ;
+        nodes = null ;
+        return this ;
+    }
+
+    //List<RadixNode> nodes ;         // When real, use an array[]; null for leaf.
+    
+    /*
+     * Memory layout:
+     *    Ptr to a block is an 8 byte long.
+     *    
+     *    Each RadixNode is a BufferBuffer slice.
+     *    
+     *    id (long)
+     *    byte[] prefix
+     *    int lenStart
+     *    int lenFinish
+     *       and lefFinish-lenStart is the length of the bytes 
+     *    subnodes[0..255]  Dispatch by next byte
+     *    subnodes[0..15]  Dispatch by next nibble.
+     *      
+     */
+    
+    
+    static RadixNode allocBlank(RadixNode parent) { return new RadixNode(parent) ; }
     static void dealloc(RadixNode node) { }    
-    
+
     private RadixNode(RadixNode parent)
     { 
         this.parent = parent ;
         this.parentId = (parent==null)? -1 : parent.id ;
+        setAsValue(false) ;
     }
 
     // Space cost:
@@ -104,8 +247,13 @@ public final class RadixNode //extends PrintableBase implements Printable
             return String.format("Leaf[%d/%d]: Length=(%d,%d) :: prefix = %s", id, parentId, lenStart, lenFinish, prefixStr) ; 
         
         StringBuilder b = new StringBuilder() ;
+        if ( isValue() )
+            b.append(" [Value]") ;
+        
         for ( RadixNode n : nodes )
         {
+            if ( n == null )
+                continue ;
             b.append(" ") ;
             b.append(n.id+"") ;
         }
@@ -134,78 +282,57 @@ public final class RadixNode //extends PrintableBase implements Printable
         } ;
         this.visit(v) ;
     }
-
-    // Re-consider for persistence - this looks into the subnode.
-    // Should pull up first byte (nibble?) for dispatch purposes.
     
-    /** Return the index of the node with this byte as the start of prefix
-     *  or -(i+1) for insertion point if not found.
-     */
-    /*package*/ int locate(byte[] bytes, int start)
+    /** return the index of the bytes, within this node subnodes. -1 if bytes too short. */
+    int locate(byte[] bytes)
     {
-        // XXX Should we use locate(byte b) only?
-//        if ( RadixTree.logging  && RadixTree.log.isDebugEnabled() )
-//        {
-//            RadixTree.log.debug("locate: <"+Bytes.asHex(bytes, start, bytes.length)) ;
-//        }
-            
-        if ( nodes == null )
+        return locate(bytes, 0) ;
+    }
+    
+    /** return the index of the bytes, within this node subnodes. -1 if bytes too short. */
+    int locate(byte[] bytes, int idx)
+    {
+        
+        if ( bytes.length <= idx )
             return -1 ;
-        // Nothing to test -- so is there a subnode of prefix ""?
-        if ( bytes.length == start )
-        {
-            if ( nodes.get(0).prefix.length == 0 )
-                return 0 ;
-            else
-                return -(0+1) ;
-        }
         
-        byte b = bytes[start] ;
-        return locate(b) ;
+        return 0xFF & bytes[idx]  ;
     }
-        
-    /*package*/int locate(byte b)
-    {
-        for ( int i = 0 ; i < nodes.size() ; i++ )
-        {
-//            if ( RadixTree.logging  && RadixTree.log.isDebugEnabled() )
-//                RadixTree.log.debug("locate: >"+Bytes.asHex(nodes.get(i).prefix)) ;
-            // Look first byte only.
-            // Prefixes must differ at first byte
-            if ( nodes.get(i).prefix.length == 0 )
-                // No bytes is lowest, so no match. 
-                continue ;
-                //return -(i+1) ;   // Would have thought this was right.
-            
-            int x = Bytes.compareByte(b, nodes.get(i).prefix[0]) ;
-            //int x = compare(bytes, start, nodes.get(i).prefix) ;
-            if ( x > 0 ) 
-                continue ;
-            if ( x < 0 )
-                // Overshoot.
-                return -(i+1) ;
-            //if ( keyByte == b ) 
-            return i ;
-        }
-        return -(nodes.size()+1) ;
-    }
-    
-    private int compare(byte[] bytes, int start, byte[] nextPrefix)
-    {
-        int n = Math.min(bytes.length-start, nextPrefix.length) ;
-        
-        for ( int i = 0 ; i < n ; i++ )
-        {
-            byte b1 = bytes[i+start] ;
-            byte b2 = nextPrefix[i] ;
-            if ( b1 == b2 )
-                continue ;
-            // Treat as unsigned values in the bytes. 
-            return (b1&0xFF) - (b2&0xFF) ;  
-        }
 
-        return (bytes.length-start) - nextPrefix.length ;
-    }
+//    // Re-consider for persistence - this looks into the subnode.
+//    // Should pull up first byte (nibble?) for dispatch purposes.
+//    
+//    /** Return the index of the node with this byte[] as the start of prefix
+//     *  or -(i+1) for insertion point if not found.
+//     */
+//    /*package*/ int locate(byte[] bytes, int start)
+//    {
+//        // XXX Should we use locate(byte b) only?
+////        if ( RadixTree.logging  && RadixTree.log.isDebugEnabled() )
+////        {
+////            RadixTree.log.debug("locate: <"+Bytes.asHex(bytes, start, bytes.length)) ;
+////        }
+//
+//        if ( get() != null )
+//        {
+//            if ( bytes.length == start )
+//        }
+//        
+//        if ( nodes == null )
+//            return -1 ;
+//        // Nothing to test -- so is there a subnode of prefix ""?
+//        if ( bytes.length == start )
+//        {
+//            if ( get() != null )
+//                
+//        }
+//        
+//        int idx = bytes[start] & 0xFF ;
+//        if ( get(idx) == null )
+//            return -(idx+1) ;
+//        else
+//            return idx ;
+//    }
 
     public void check()
     { 
@@ -216,9 +343,10 @@ public final class RadixNode //extends PrintableBase implements Printable
     {
         if ( RadixTree.logging && RadixTree.log.isDebugEnabled() )
         {
-            RadixTree.log.debug("Check: "+this.id) ;
+            RadixTree.log.debug("Check: node "+this.id) ;
             System.out.flush() ;
         }
+        
         // It's a tree and so we seen nodes only once. 
         if ( seen.contains(this) )
         {
@@ -226,7 +354,7 @@ public final class RadixNode //extends PrintableBase implements Printable
             return ;
         }
         seen.add(this.id) ;
-        
+
         if (parentId != -1 && !seen.contains(parentId) )
             error(this, "Parent not seen") ;
 
@@ -249,20 +377,26 @@ public final class RadixNode //extends PrintableBase implements Printable
                 error(this, "parent.id != parentId (%d != %d)", parent.id, parentId ) ;
             
             int idx = 0 ;
-            int N = parent.nodes.size() ;
+            int N = parent.nodes.length ;
             for ( ; idx < N ; idx++ )
             {
-                if ( parent.nodes.get(idx) == this)
+                // XXX Should be able to find exactly.
+                if ( parent.nodes[idx] == null ) continue ;
+                if ( parent.nodes[idx] == this)
                     break ;
             }
 
             if (idx >= N )
-                error(this, "Not a child of the parent %s : %s", Iter.map(parent.nodes, idOfNode), parent) ;
+                error(this, "Not a child of the parent %s : %s", Iter.map(new ArrayIterator<RadixNode>(parent.nodes), idOfNode), parent) ;
         }
 
-        if ( nodes == null )
+        if ( isLeaf() )
+        {
+            if ( ! isValue() )
+                error(this, "leaf but not a value") ;
             return ;
-
+        }
+        
         // Legal?
         // Yes - during push-dwn we can end pusing down one node.
         // Should really avoid this.
@@ -274,6 +408,7 @@ public final class RadixNode //extends PrintableBase implements Printable
         int last = -2 ;
         for ( RadixNode n : nodes )
         {
+            if ( n == null ) continue ;
             int b = -1 ;
             if ( n.prefix.length > 0 )
                 b = (n.prefix[0]&0xFF) ;
@@ -285,7 +420,8 @@ public final class RadixNode //extends PrintableBase implements Printable
         
         int nextStartLen = length+prefix.length ;
         for ( RadixNode n : nodes )
-            n._check(nextStartLen, seen) ;
+            if ( n != null )
+                n._check(nextStartLen, seen) ;
     }
     
     static Transform<RadixNode, Integer> idOfNode = new Transform<RadixNode, Integer>(){
@@ -318,7 +454,8 @@ public final class RadixNode //extends PrintableBase implements Printable
         if ( nodes != null )
         {
             for ( RadixNode n : nodes )
-                n._visit(visitor, seen) ;
+                if ( n != null )
+                    n._visit(visitor, seen) ;
         }
         visitor.after(this) ;
     }

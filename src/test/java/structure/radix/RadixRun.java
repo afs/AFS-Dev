@@ -25,6 +25,7 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
+import org.junit.Assert ;
 import org.junit.runner.JUnitCore ;
 import org.junit.runner.Result ;
 import org.openjena.atlas.AtlasException ;
@@ -36,7 +37,145 @@ import org.openjena.atlas.logging.Log ;
 
 public class RadixRun
 {
-    public static void main(String ...argv) 
+   static byte[] key1 = { 2 , 4 , 6 , 8  } ;
+    
+    static byte[] key2 = { 2 , 4 , 6 , 10  } ;
+    // Insert - shorter key
+    static byte[] key3 = { 2 , 4 } ;
+    
+    // Insert - existing leaf
+    static byte[] key4 = { 2 , 4 , 6,  8 , 10 } ;
+
+    // Insert - partial prefix match.
+    static byte[] key5 = { 2 , 4 , 3 , 1 } ;
+    
+    // Insert - new root
+    static byte[] key6 = { 0 , 1 , 2 , 3 , 4  } ;
+    
+    public static void main(String ...argv)
+    { 
+        Log.enable("structure.radix") ;
+//        byte[] k1 = { 2 , 4 , 6 , 8  } ;
+//        byte[] k2 = { 2 , 4 , 6 , 10  } ;
+//        // @Test 3: Insert existing
+//        tree(k1, k2, k1, k2) ;
+//        System.exit(0) ;
+        
+//        RadixTree t = new RadixTree() ;
+//        t.print() ;
+//        t.insert(key1) ;
+//        t.print() ;
+//        System.out.println("Key: "+RLib.str(key1)+" = "+t.contains(key1)) ;
+//        System.out.println("Key: "+RLib.str(key2)+" = "+t.contains(key2)) ;
+//        t.contains(key2) ;
+//        System.exit(0) ;
+        //test(new byte[][] { key1, key2, key3, key4, key5, key6 }) ;
+        test(key1, key2, key3 ) ;
+        
+        // Test A diverging key, shorter than existing
+        // Test B diverging key, longer  than existing
+        // Test C: add shortening keys 321 32 1
+        // Test D: add lengthening keys 1 12 123 (test exists already?)
+        
+    }
+    
+    static boolean print = true ;
+
+    
+    //@Test
+    public void radixtree_1x()
+    {
+        byte[] k1 = { 2 , 4 , 6 , 8  } ;
+        byte[] k2 = { 2 , 4 , 6 , 10  } ;
+        RadixTree t = tree(k1) ;
+        Assert.assertTrue(t.contains(k1)) ;
+        Assert.assertFalse(t.contains(k2)) ;
+    }
+    
+    //@Test
+    public void radixtree_2x()
+    {
+        byte[] k1 = { 2 , 4 , 6 , 8  } ;
+        byte[] k2 = { 2 , 4 , 6 , 10  } ;
+        byte[] k3 = { 2 , 4 , 6 , 9  } ;
+        RadixTree t = tree(k1, k2) ;
+        Assert.assertTrue(t.contains(k1)) ;
+        Assert.assertTrue(t.contains(k2)) ;
+        Assert.assertFalse(t.contains(k3)) ;
+    }
+
+    //@Test
+    public void radixtree_3x()
+    {
+        // @Test 2
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 } ;
+        byte[] k3 = { 1 } ;
+        tree(k1, k2, k3) ;
+        tree(k1, k3, k2) ;
+        tree(k2, k1, k3) ;
+        tree(k2, k3, k1) ;
+        tree(k3, k1, k2) ;
+        tree(k3, k2, k1) ;
+    }
+
+    //@Test
+    public void radixtree_4x()
+    {
+        // @Test 2
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 , 5 } ;
+        byte[] k3 = { 1 , 2 , 6 } ;
+        tree(k1, k2, k3) ;
+        tree(k1, k3, k2) ;
+        tree(k2, k1, k3) ;
+        tree(k2, k3, k1) ;
+        tree(k3, k1, k2) ;
+        tree(k3, k2, k1) ;
+    }
+    
+    
+    static private RadixTree tree(byte[] ... keys)
+    {
+        RadixTree t = new RadixTree() ;
+        for ( byte[]k : keys )
+        {
+            if (print) System.out.println("Build: "+RLib.str(k)) ;
+            t.insert(k) ;
+            if (print) t.print() ;
+            t.check() ;
+            if (print) System.out.println() ;
+        }
+        return t ;
+    }
+    
+    static private void test(byte[]... keys)
+    {
+        RadixTree t = new RadixTree() ;
+        for ( byte[]k : keys )
+        {
+            if (print) System.out.println("Ins: "+RLib.str(k)) ;
+            t.insert(k) ;
+            if (print) t.print() ;
+            t.check() ;
+            if (print) t.print() ;
+            Assert.assertTrue("Key not found after insert: "+RLib.str(k), t.contains(k)) ; 
+            if (print) System.out.println() ;
+        }
+        Assert.assertFalse(t.isEmpty()) ;
+        for ( byte[]k : keys )
+        {
+            if (print) System.out.println("Del: "+RLib.str(k)) ;
+            t.delete(k) ;
+            t.check() ;
+            if (print) t.print() ;
+            Assert.assertFalse("Key found after delete: "+RLib.str(k), t.contains(k)) ; 
+            if (print) System.out.println() ;
+        }
+        Assert.assertTrue(t.isEmpty()) ;
+    }
+    
+    public static void main1(String ...argv) 
     {
         Log.setLog4j() ;
         Log.enable(RadixTree.class) ;
