@@ -78,25 +78,6 @@ public class TestRadix extends BaseTest
     }
         
 
-    private void test(byte[]... keys)
-    {
-        RadixTree t = new RadixTree() ;
-        for ( byte[]k : keys )
-        {
-            t.insert(k) ;
-            t.check() ;
-            assertTrue(t.contains(k)) ; 
-        }
-        assertFalse(t.isEmpty()) ;
-        for ( byte[]k : keys )
-        {
-            t.delete(k) ;
-            t.check() ;
-            assertFalse(t.contains(k)) ; 
-        }
-        assertTrue(t.isEmpty()) ;
-    }
-    
     static boolean print = false ;
     
     @Test
@@ -151,6 +132,47 @@ public class TestRadix extends BaseTest
         tree(k3, k2, k1) ;
     }
     
+    //TODO Eventually use these tests, not the "ins" only ones.
+
+    @Test
+    public void radixtree_ins_del_3()
+    {
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 } ;
+        byte[] k3 = { 1 } ;
+        test(k1, k2, k3) ;
+        test(k1, k3, k2) ;
+        test(k2, k1, k3) ;
+        test(k2, k3, k1) ;
+        test(k3, k1, k2) ;
+        test(k3, k2, k1) ;
+    }
+
+    @Test
+    public void radixtree_ins_del_4()
+    {
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 , 5 } ;
+        byte[] k3 = { 1 , 2 , 6 } ;
+        test(k1, k2, k3) ;
+        test(k1, k3, k2) ;
+        test(k2, k1, k3) ;
+        test(k2, k3, k1) ;
+        test(k3, k1, k2) ;
+        test(k3, k2, k1) ;
+    }
+
+    @Test
+    public void radixtree_ins_del_5()
+    {
+        test(key1, key2, key3) ;
+        test(key1, key3, key2) ;
+        test(key2, key1, key3) ;
+        test(key2, key3, key1) ;
+        test(key3, key1, key2) ;
+        test(key3, key2, key1) ;
+    }
+
     static private RadixTree tree(byte[] ... keys)
     {
         RadixTree t = new RadixTree() ;
@@ -165,6 +187,25 @@ public class TestRadix extends BaseTest
         return t ;
     }
     
+    private void test(byte[]... keys)
+    {
+        RadixTree t = new RadixTree() ;
+        for ( byte[]k : keys )
+        {
+            t.insert(k) ;
+            t.check() ;
+            assertTrue(t.contains(k)) ; 
+        }
+        assertFalse(t.isEmpty()) ;
+        for ( byte[]k : keys )
+        {
+            t.delete(k) ;
+            t.check() ;
+            assertFalse(t.contains(k)) ; 
+        }
+        assertTrue(t.isEmpty()) ;
+    }
+
     private static void insert(RadixTree t, byte[] key)
     {
         t.insert(key) ;

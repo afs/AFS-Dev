@@ -60,24 +60,26 @@ public class RadixRun
         // turn on insert then delete for all tests.
         // Use test code.
         
-//        byte[] k1 = { 2 , 4 , 6 , 8  } ;
-//        byte[] k2 = { 2 , 4 , 6 , 10  } ;
-//        // @Test 3: Insert existing
-//        tree(k1, k2, k1, k2) ;
-//        System.exit(0) ;
+        //test(key1, key2, key3, key4, key5, key6) ;
         
-//        RadixTree t = new RadixTree() ;
-//        t.print() ;
-//        t.insert(key1) ;
-//        t.print() ;
-//        System.out.println("Key: "+RLib.str(key1)+" = "+t.contains(key1)) ;
-//        System.out.println("Key: "+RLib.str(key2)+" = "+t.contains(key2)) ;
-//        t.contains(key2) ;
-//        System.exit(0) ;
-        //test(new byte[][] { key1, key2, key3, key4, key5, key6 }) ;
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 } ;
+        byte[] k3 = { 1 } ;
+//        System.out.println("Test 1") ;
+//        test(k1, k2, k3) ;
+//        System.out.println("Test 2") ;
+//        test(k1, k3, k2) ;
 
-        test(key1, key2, key3, key4, key5, key6) ;
-        
+//        System.out.println("Test 3") ;
+//        test(k2, k1, k3) ;
+
+//        System.out.println("Test 4") ;
+//        test(k2, k3, k1) ;
+//        System.out.println("Test 5") ;
+//        test(k3, k1, k2) ;
+        System.out.println("Test 6") ;
+        test(k3, k2, k1) ;
+
         // Test A diverging key, shorter than existing
         // Test B diverging key, longer  than existing
         // Test C: add shortening keys 321 32 1
