@@ -37,7 +37,9 @@ import org.openjena.atlas.logging.Log ;
 
 public class RadixRun
 {
-   static byte[] key1 = { 2 , 4 , 6 , 8  } ;
+    static byte[] key0 = { } ;
+    
+    static byte[] key1 = { 2 , 4 , 6 , 8  } ;
     
     static byte[] key2 = { 2 , 4 , 6 , 10  } ;
     // Insert - shorter key
@@ -54,29 +56,59 @@ public class RadixRun
     
     public static void main(String ...argv)
     { 
-        Log.enable("structure.radix") ;
+        cycleTesting() ;
+        //runJUnit() ;
+        
         // TODO
         // check tests.
         // turn on insert then delete for all tests.
         // Use test code.
         
-        //test(key1, key2, key3, key4, key5, key6) ;
+//        print = true ;
+//        //Log.enable("structure.radix") ;
+//        
+//        RadixTree tree = tree(key1, key2, key3, key4) ;
+//        //Log.enable("structure.radix") ;
+//        tree(tree, key5, key6) ;
+//        
+//        System.out.println() ;
+//        tree.print() ;
+//        System.out.println() ;
+//
+//        
+//        Iterator<ByteBuffer> iter = tree.iterator() ; 
+//        for ( ; iter.hasNext() ; )
+//        {
+//            ByteBuffer bb = iter.next() ;
+//            System.out.println(RLib.str(bb)) ;
+//        }
+//        
+//        tree.print() ;
+//        System.exit(0) ;
+//        
+//        System.out.println() ;
         
+        test(key0, key1, key2, key3, key4, key5, key6) ;
+        System.exit(0) ;
+        
+        Log.enable("structure.radix") ;
+
         byte[] k1 = { 1 , 2 , 3 } ;
         byte[] k2 = { 1 , 2 } ;
         byte[] k3 = { 1 } ;
-//        System.out.println("Test 1") ;
-//        test(k1, k2, k3) ;
-//        System.out.println("Test 2") ;
-//        test(k1, k3, k2) ;
+        
+        System.out.println("Test 1") ;
+        test(k1, k2, k3) ;
+        System.out.println("Test 2") ;
+        test(k1, k3, k2) ;
 
-//        System.out.println("Test 3") ;
-//        test(k2, k1, k3) ;
+        System.out.println("Test 3") ;
+        test(k2, k1, k3) ;
 
-//        System.out.println("Test 4") ;
-//        test(k2, k3, k1) ;
-//        System.out.println("Test 5") ;
-//        test(k3, k1, k2) ;
+        System.out.println("Test 4") ;
+        test(k2, k3, k1) ;
+        System.out.println("Test 5") ;
+        test(k3, k1, k2) ;
         System.out.println("Test 6") ;
         test(k3, k2, k1) ;
 
@@ -89,10 +121,13 @@ public class RadixRun
     
     static boolean print = true ;
     
-    // TestRadix.static
     static private RadixTree tree(byte[] ... keys)
     {
-        RadixTree t = new RadixTree() ;
+        return tree(new RadixTree(), keys) ;
+    }
+    
+    static private RadixTree tree(RadixTree t, byte[] ... keys)
+    {
         for ( byte[]k : keys )
         {
             if (print) System.out.println("Build: "+RLib.str(k)) ;
@@ -103,8 +138,17 @@ public class RadixRun
         }
         return t ;
     }
-    
-    // TestRadix.static
+
+    static private void runJUnit()
+    {
+        JUnitCore runner = new org.junit.runner.JUnitCore() ;
+        runner.addListener(new TextListener2(System.out)) ;
+        //TestRadix.beforeClass() ;
+        Result result = runner.run(TestRadix.class) ;
+        //TestRadix.afterClass() ;
+        System.exit(0) ;
+    }
+
     static private void test(byte[]... keys)
     {
         RadixTree t = new RadixTree() ;
@@ -119,6 +163,7 @@ public class RadixRun
             if (print) System.out.println() ;
         }
         Assert.assertFalse(t.isEmpty()) ;
+
         for ( byte[]k : keys )
         {
             if (print) System.out.println("Del: "+RLib.str(k)) ;
@@ -132,64 +177,59 @@ public class RadixRun
     }
     
     // Enable!
-    public static void main1(String ...argv) 
+    public static void cycleTesting() 
     {
         Log.setLog4j() ;
         Log.enable(RadixTree.class) ;
         //RadixTree.logging = false ;
         
-        if ( false )
-        {
-            JUnitCore runner = new org.junit.runner.JUnitCore() ;
-            runner.addListener(new TextListener2(System.out)) ;
-            //TestRadix.beforeClass() ;
-            Result result = runner.run(TestRadix.class) ;
-            //TestRadix.afterClass() ;
-            System.exit(0) ;
-        }
+        RadixTree.logging = false ;
 
-        if ( true )
+        int nRuns = 1000000 ;
+        int maxLen = 7 ;
+        int nKeys = 20 ;
+        int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
+        int dotsPerLine = 100 ;
+
+        final int ticksPerLine = dotsToCycle*dotsPerLine ;
+
+        System.out.printf("Runs: %d, maxLen=%d, nKeys=%d\n", nRuns, maxLen, nKeys ) ;
+        for ( int i = 0 ; i < nRuns ; i++ )
         {
-            RadixTree.logging = false ;
-            
-            int nRuns = 1000000 ;
-            int maxLen = 7 ;
-            int nKeys = 20 ;
-            int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
-            int dotsPerLine = 100 ;
-            
-            final int ticksPerLine = dotsToCycle*dotsPerLine ;
-            
-            System.out.printf("Runs: %d, maxLen=%d, nKeys=%d\n", nRuns, maxLen, nKeys ) ;
-            for ( int i = 0 ; i < nRuns ; i++ )
-            {
-                RadixTree trie = new RadixTree() ;
-                List<byte[]> x = gen(nKeys, maxLen, (byte)20) ;
-                List<byte[]> x2 = randomize(x) ;
-                
-                if ( i%ticksPerLine == 0 )
-                    System.out.printf("%6d: ",i) ;
-                if ( i%dotsToCycle == (dotsToCycle-1) )
-                    System.out.print(".") ;
-                if ( i%ticksPerLine == (ticksPerLine-1) )
-                    System.out.println() ;
-                
-                try { 
-                    execInsert(trie, x, false) ;
-                    execDelete(trie, x2, false) ;
-                } catch (AtlasException ex)
-                {
-                    print(x) ;
-                    print(x2) ;
-                    return ;
-                }
-            }
-            if ( nRuns%ticksPerLine != 0 )
+            RadixTree trie = new RadixTree() ;
+            List<byte[]> x = gen(nKeys, maxLen, (byte)20) ;
+            List<byte[]> x2 = randomize(x) ;
+
+            if ( i%ticksPerLine == 0 )
+                System.out.printf("%6d: ",i) ;
+            if ( i%dotsToCycle == (dotsToCycle-1) )
+                System.out.print(".") ;
+            if ( i%ticksPerLine == (ticksPerLine-1) )
                 System.out.println() ;
-            System.out.println("Done") ;
-            System.exit(0) ;
+
+            System.out.flush() ;
+            
+            try { 
+                execInsert(trie, x, false) ;
+                trie.print() ;
+                System.out.flush() ;
+                execDelete(trie, x2, false) ;
+            } catch (AtlasException ex)
+            {
+                print(x) ;
+                print(x2) ;
+                return ;
+            }
         }
-        
+        if ( nRuns%ticksPerLine != 0 )
+            System.out.println() ;
+        System.out.println("Done") ;
+        System.exit(0) ;
+    }
+    
+    public static void debugCase()
+    {
+        Log.enable("structure.radix") ;
         RadixTree.logging = true ;
         RadixTree trie = new RadixTree() ;
         
