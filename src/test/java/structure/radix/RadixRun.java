@@ -18,6 +18,7 @@
 
 package structure.radix;
 import static structure.radix.RLib.str ;
+import static structure.radix.TestRadix.* ;
 
 import java.nio.ByteBuffer ;
 import java.util.ArrayList ;
@@ -26,6 +27,7 @@ import java.util.Iterator ;
 import java.util.List ;
 
 import org.junit.Assert ;
+import org.junit.Test ;
 import org.junit.runner.JUnitCore ;
 import org.junit.runner.Result ;
 import org.openjena.atlas.AtlasException ;
@@ -37,6 +39,9 @@ import org.openjena.atlas.logging.Log ;
 
 public class RadixRun
 {
+    // isleaf => isValue 
+    // Store (k,v) by having a V slot in leaf or hasValue position 
+    
     static byte[] key0 = { } ;
     
     static byte[] key1 = { 2 , 4 , 6 , 8  } ;
@@ -54,72 +59,66 @@ public class RadixRun
     // Insert - new root
     static byte[] key6 = { 0 , 1 , 2 , 3 , 4  } ;
     
+    static boolean print = false ;
+
     public static void main(String ...argv)
     { 
-        cycleTesting() ;
+        cycleTesting() ; System.exit(0) ;
         //runJUnit() ;
+        
+        byte[] k1 = { 1 , 3 , 4 } ;
+        byte[] k2 = { 1 , 3 , 5 } ;
+        byte[] k3 = { 1 , 2 , 6 } ;
+            
+        test(k1, k2) ;
+        RadixTree t = tree(k1,k2) ;
+        t.print() ;
+        Log.enable("structure.radix") ;
+        t.insert(k3) ;
+        t.print() ;
+        
+        t.check() ;
+        //test(k1, k2, k3) ;
+        System.exit(0) ;
+        
+        
+        testPermute(k1,k2,k3) ;
         
         // TODO
         // check tests.
         // turn on insert then delete for all tests.
         // Use test code.
         
-//        print = true ;
-//        //Log.enable("structure.radix") ;
-//        
-//        RadixTree tree = tree(key1, key2, key3, key4) ;
-//        //Log.enable("structure.radix") ;
-//        tree(tree, key5, key6) ;
-//        
-//        System.out.println() ;
-//        tree.print() ;
-//        System.out.println() ;
-//
-//        
-//        Iterator<ByteBuffer> iter = tree.iterator() ; 
-//        for ( ; iter.hasNext() ; )
-//        {
-//            ByteBuffer bb = iter.next() ;
-//            System.out.println(RLib.str(bb)) ;
-//        }
-//        
-//        tree.print() ;
-//        System.exit(0) ;
-//        
-//        System.out.println() ;
+        print = true ;
+        //Log.enable("structure.radix") ;
         
-        test(key0, key1, key2, key3, key4, key5, key6) ;
+        RadixTree tree = tree(key0, key1, key2, key3, key4, key5) ;
+        //Log.enable("structure.radix") ;
+        
+        System.out.println() ;
+        tree.printLeaves() ;
+        System.out.println() ;
+
+        System.out.println("0: "+tree.contains(key0)) ;
+        System.out.println("1: "+tree.contains(key1)) ;
+        System.out.println("2: "+tree.contains(key2)) ;
+        System.out.println("3: "+tree.contains(key3)) ;
+        System.out.println("4: "+tree.contains(key4)) ;
+        System.out.println("5: "+tree.contains(key5)) ;
+        System.out.println("6: "+tree.contains(key6)) ;
+        
+        
+        
+        Iterator<ByteBuffer> iter = tree.iterator() ; 
+        for ( ; iter.hasNext() ; )
+        {
+            ByteBuffer bb = iter.next() ;
+            System.out.println("["+RLib.str(bb)+"]") ;
+        }
         System.exit(0) ;
         
-        Log.enable("structure.radix") ;
-
-        byte[] k1 = { 1 , 2 , 3 } ;
-        byte[] k2 = { 1 , 2 } ;
-        byte[] k3 = { 1 } ;
-        
-        System.out.println("Test 1") ;
-        test(k1, k2, k3) ;
-        System.out.println("Test 2") ;
-        test(k1, k3, k2) ;
-
-        System.out.println("Test 3") ;
-        test(k2, k1, k3) ;
-
-        System.out.println("Test 4") ;
-        test(k2, k3, k1) ;
-        System.out.println("Test 5") ;
-        test(k3, k1, k2) ;
-        System.out.println("Test 6") ;
-        test(k3, k2, k1) ;
-
-        // Test A diverging key, shorter than existing
-        // Test B diverging key, longer  than existing
-        // Test C: add shortening keys 321 32 1
-        // Test D: add lengthening keys 1 12 123 (test exists already?)
-        
+        System.out.println() ;
     }
-    
-    static boolean print = true ;
     
     static private RadixTree tree(byte[] ... keys)
     {
@@ -149,37 +148,6 @@ public class RadixRun
         System.exit(0) ;
     }
 
-    static private void test(byte[]... keys)
-    {
-        RadixTree t = new RadixTree() ;
-        for ( byte[]k : keys )
-        {
-            if (print) System.out.println("Ins: "+RLib.str(k)) ;
-            t.insert(k) ;
-            if (print) t.print() ;
-            t.check() ;
-            if (print) t.print() ;
-            Assert.assertTrue("Key not found after insert: "+RLib.str(k), t.contains(k)) ; 
-            if (print) System.out.println() ;
-        }
-        Assert.assertFalse(t.isEmpty()) ;
-
-        System.out.println() ;
-        t.print() ;
-        System.out.println() ;
-
-        for ( byte[]k : keys )
-        {
-            if (print) System.out.println("Del: "+RLib.str(k)) ;
-            t.delete(k) ;
-            t.check() ;
-            if (print) t.print() ;
-            Assert.assertFalse("Key found after delete: "+RLib.str(k), t.contains(k)) ; 
-            if (print) System.out.println() ;
-        }
-        Assert.assertTrue(t.isEmpty()) ;
-    }
-    
     // Enable!
     public static void cycleTesting() 
     {
@@ -194,9 +162,9 @@ public class RadixRun
         int maxLen = 7 ;
         int nKeys = 20 ;
         
-        nRuns = 10 ;
+        nRuns = 100 ;
         maxLen = 7 ;
-        nKeys = 5 ;
+        nKeys = 10 ;
         
 
         final int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
@@ -221,8 +189,7 @@ public class RadixRun
             
             try { 
                 execInsert(trie, x, false) ;
-                trie.print() ;
-                System.out.flush() ;
+                //System.out.flush() ;
                 execDelete(trie, x2, false) ;
             } catch (AtlasException ex)
             {
@@ -395,18 +362,22 @@ public class RadixRun
 
     static void check(RadixTree trie, List<byte[]> keys)
     {
+//        System.out.println() ;
+//        trie.print() ;
+//        System.out.flush() ;
+        
         for ( byte[] k : keys )
         {
             if ( trie.find(k) == null )
-                System.err.println("Did not find: "+str(k)) ;
+                System.err.println("Did not find: ["+str(k)+"]") ;
         }
         
         long N1 = trie.size() ;
         long N2 = Iter.count(trie.iterator()) ; 
         if ( N1 != N2 )
-            System.err.printf("size[%d] != count[%d]",N1, N2) ;
+            System.err.printf("size[%d] != count[%d]\n",N1, N2) ;
         if ( N1 != keys.size() )
-            System.err.printf("size[%d] != length[%d]",N1, keys.size()) ;
+            System.err.printf("size[%d] != length[%d]\n",N1, keys.size()) ;
         
         // check ordered.
         ByteBuffer prev = null ;
@@ -424,18 +395,10 @@ public class RadixRun
         
     }
     
-    static void find(RadixTree trie, byte[] key)
-    {
-//        System.out.println("Find --'"+Bytes.asHex(key)+"'") ;
-        RadixNode node = trie.find(key) ;
-//        System.out.println("Find >> "+node) ;
-//        System.out.println() ;
-    }
-
     static void insert(RadixTree trie, byte[] key)
     {
 //        System.out.println("Insert--'"+str(key)+"'") ;
-        boolean b2 = ( trie.find(key) == null ) ;
+        boolean b2 = ! trie.contains(key) ;
         boolean b = trie.insert(key) ;
 //        System.out.print(" >> "+b+" ["+b2+"]") ;
 //        System.out.print(": ") ;
@@ -451,15 +414,20 @@ public class RadixRun
     static void delete(RadixTree trie, byte[] key)
     {
 //        System.out.println("Delete--'"+str(key)+"'") ;
-        boolean b2 = ( trie.find(key) != null ) ;
+//        trie.print() ;
+        boolean b2 = trie.contains(key) ;
         boolean b = trie.delete(key) ;
 //        System.out.print(" >> "+b+" ["+b2+"]") ;
 //        System.out.print(": ") ;
 //        trie.printLeaves() ;
 //        trie.print(); 
-        System.out.flush() ;
+        
         if ( b != b2 )
-            System.err.println("Inconsistent (delete)") ;
+        {
+//            trie.print() ;
+//            System.out.flush() ;
+            System.err.println("Inconsistent (delete): "+RLib.str(key)) ;
+        }
         trie.check() ;
     }
 

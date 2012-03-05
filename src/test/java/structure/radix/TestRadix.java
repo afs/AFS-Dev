@@ -18,7 +18,9 @@
 
 package structure.radix;
 
-import org.junit.Assert ;
+import java.nio.ByteBuffer ;
+import java.util.Iterator ;
+
 import org.junit.Test ;
 import org.openjena.atlas.junit.BaseTest ;
 
@@ -41,40 +43,93 @@ public class TestRadix extends BaseTest
     // Insert - new root
     static byte[] key6 = { 0 , 1 , 2 , 3 , 4  } ;
     
-    // XXX Old tests - rework.
+    // TODO contains tests
+    // TODO Min tests, max tests, iterator tests.
+    // TODO isEmpty
     
     @Test public void radix_01()
     { 
         RadixTree t = new RadixTree() ;
-        test(0, t) ;
+        test() ;
+        count(t, 0) ;
+        assertTrue(t.isEmpty()) ;
     }
 
     @Test public void radix_02()
     { 
-        RadixTree t = new RadixTree() ;
-        t.insert(new byte[]{1,2,3,4}) ;
-        test(1, t) ;
+        byte[] k = {1,2,3,4} ;
+        test(k) ;
     }
-
+   
     @Test public void radix_03()
-    { 
-        RadixTree t = new RadixTree() ;
-        t.insert(new byte[]{1,2,3,4}) ;
-        t.insert(new byte[]{0,1,2,3}) ;
-        test(2, t) ;
+    {
+        byte[] k1 = {1,2,3,4} ;
+        byte[] k2 = {0,1,2,3} ;
+        test(k1, k2) ;
     }
 
     @Test public void radix_04()
-    { 
-        RadixTree t = new RadixTree() ;
-        t.insert(new byte[]{0,1,2,3}) ;
-        t.insert(new byte[]{1,2,3,4}) ;
-        test(2, t) ;
+    {
+        // Reverse order
+        byte[] k1 = {0,1,2,3} ;
+        byte[] k2 = {1,2,3,4} ; 
+        test(k1, k2) ;
     }
     
+    @Test
+    public void radix_05()
+    {
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 } ;
+        byte[] k3 = { 1 } ;
+        testPermute(k1,k2,k3) ;
+    }
+
+    @Test
+    public void radix_06()
+    {
+        byte[] k1 = { 1 , 2 , 3 } ;
+        byte[] k2 = { 1 , 2 , 5 } ;
+        byte[] k3 = { 1 , 2 , 6 } ;
+        testPermute(k1,k2,k3) ;
+    }
+
+    @Test
+    public void radix_07()
+    {
+        byte[] k1 = { 1 , 3 , 4 } ;
+        byte[] k2 = { 1 , 3 , 5 } ;
+        byte[] k3 = { 1 , 2 , 6 } ;
+        testPermute(k1,k2,k3) ;
+    }
+    
+    @Test
+    public void radix_08()
+    {
+        byte[] k1 = { 3 , 4 } ;
+        byte[] k2 = { 3 , 5 } ;
+        byte[] k3 = { 2 , 6 } ;
+        testPermute(k1, k2, k3) ;
+    }
+    
+    @Test
+    public void radix_09()
+    {
+        byte[] k1 = { } ;
+        byte[] k2 = { 1 } ;
+        byte[] k3 = { 2, 3 } ;
+        testPermute(k1,k2,k3) ;
+    }
+
+    @Test
+    public void radixtree_ins_del_5()
+    {
+        testPermute(key1, key2, key3) ;
+    }
+
     @Test public void radix_10()
     { 
-        test(new byte[][] { key1, key2, key3, key4, key5, key6 }) ;
+        test(key1, key2, key3, key4, key5, key6) ;
     }
         
 
@@ -86,8 +141,8 @@ public class TestRadix extends BaseTest
         byte[] k1 = { 2 , 4 , 6 , 8  } ;
         byte[] k2 = { 2 , 4 , 6 , 10  } ;
         RadixTree t = tree(k1) ;
-        Assert.assertTrue(t.contains(k1)) ;
-        Assert.assertFalse(t.contains(k2)) ;
+        assertTrue(t.contains(k1)) ;
+        assertFalse(t.contains(k2)) ;
     }
     
     @Test
@@ -97,9 +152,9 @@ public class TestRadix extends BaseTest
         byte[] k2 = { 2 , 4 , 6 , 10  } ;
         byte[] k3 = { 2 , 4 , 6 , 9  } ;
         RadixTree t = tree(k1, k2) ;
-        Assert.assertTrue(t.contains(k1)) ;
-        Assert.assertTrue(t.contains(k2)) ;
-        Assert.assertFalse(t.contains(k3)) ;
+        assertTrue(t.contains(k1)) ;
+        assertTrue(t.contains(k2)) ;
+        assertFalse(t.contains(k3)) ;
     }
 
     @Test
@@ -132,50 +187,25 @@ public class TestRadix extends BaseTest
         tree(k3, k2, k1) ;
     }
     
-    //TODO Eventually use these tests, not the "ins" only ones.
-
     @Test
-    public void radixtree_ins_del_3()
+    public void radixtree_min_1()
     {
-        byte[] k1 = { 1 , 2 , 3 } ;
-        byte[] k2 = { 1 , 2 } ;
-        byte[] k3 = { 1 } ;
-        test(k1, k2, k3) ;
-        test(k1, k3, k2) ;
-        test(k2, k1, k3) ;
-        test(k2, k3, k1) ;
-        test(k3, k1, k2) ;
-        test(k3, k2, k1) ;
+        RadixTree t = tree(key1, key2, key3) ;
+        Iterator<ByteBuffer> iter = t.iterator() ;
+        for ( ; iter.hasNext() ; )
+        {
+            ByteBuffer bb = iter.next() ;
+            //key3, key1, key2
+        }
     }
 
-    @Test
-    public void radixtree_ins_del_4()
+    static RadixTree tree(byte[] ... keys)
     {
-        byte[] k1 = { 1 , 2 , 3 } ;
-        byte[] k2 = { 1 , 2 , 5 } ;
-        byte[] k3 = { 1 , 2 , 6 } ;
-        test(k1, k2, k3) ;
-        test(k1, k3, k2) ;
-        test(k2, k1, k3) ;
-        test(k2, k3, k1) ;
-        test(k3, k1, k2) ;
-        test(k3, k2, k1) ;
+        return tree(new RadixTree(), keys) ;
     }
 
-    @Test
-    public void radixtree_ins_del_5()
+    static RadixTree tree(RadixTree t, byte[] ... keys)
     {
-        test(key1, key2, key3) ;
-        test(key1, key3, key2) ;
-        test(key2, key1, key3) ;
-        test(key2, key3, key1) ;
-        test(key3, key1, key2) ;
-        test(key3, key2, key1) ;
-    }
-
-    static private RadixTree tree(byte[] ... keys)
-    {
-        RadixTree t = new RadixTree() ;
         for ( byte[]k : keys )
         {
             if (print) System.out.println("Build: "+RLib.str(k)) ;
@@ -187,7 +217,8 @@ public class TestRadix extends BaseTest
         return t ;
     }
     
-    private void test(byte[]... keys)
+    /** Add the keys, delete the keys. */
+    static void test(byte[]... keys)
     {
         RadixTree t = new RadixTree() ;
         for ( byte[]k : keys )
@@ -196,7 +227,10 @@ public class TestRadix extends BaseTest
             t.check() ;
             assertTrue(t.contains(k)) ; 
         }
-        assertFalse(t.isEmpty()) ;
+        count(t, keys.length) ;
+        check(t, keys) ;
+        if ( keys.length > 0 )
+            assertFalse(t.isEmpty()) ;
         for ( byte[]k : keys )
         {
             t.delete(k) ;
@@ -206,6 +240,12 @@ public class TestRadix extends BaseTest
         assertTrue(t.isEmpty()) ;
     }
 
+    static void check(RadixTree t, byte[] ... keys)
+    {
+        for ( byte[]k : keys )
+            assertTrue("Not found: Key: "+RLib.str(k), t.contains(k)) ;
+    }
+    
     private static void insert(RadixTree t, byte[] key)
     {
         t.insert(key) ;
@@ -215,7 +255,7 @@ public class TestRadix extends BaseTest
         assertEquals(key.length, n.lenFinish) ;
     }
     
-    static void delete(RadixTree trie, byte[] key)
+    private static void delete(RadixTree trie, byte[] key)
     {
         boolean b2 = ( trie.find(key) != null ) ;
         boolean b = trie.delete(key) ;
@@ -224,10 +264,20 @@ public class TestRadix extends BaseTest
             System.err.println("Inconsistent (delete)") ;
         trie.check() ;
     }
-    
-    private static void test(int size, RadixTree t)
+
+    static void count(RadixTree t, int size)
     {
         t.check();
         assertEquals(size, t.size()) ;
+    }
+
+    static void testPermute(byte[] k1, byte[] k2, byte[] k3)
+    {
+        test(k1, k2, k3) ;
+        test(k1, k3, k2) ;
+        test(k2, k1, k3) ;
+        test(k2, k3, k1) ;
+        test(k3, k1, k2) ;
+        test(k3, k2, k1) ;
     }
 }

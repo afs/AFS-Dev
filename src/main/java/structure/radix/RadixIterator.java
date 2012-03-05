@@ -74,7 +74,7 @@ class RadixIterator implements Iterator<ByteBuffer>
             else
                 prefix = ByteBuffer.allocate(10) ;    //Reallocating?
             // Now move until leaf.
-            node = downToMinLeaf(node, prefix) ;
+            node = downToMinNode(node, prefix) ;
             slot = prefix ;
 
             // But we need to track the key for copying reasons.
@@ -85,13 +85,16 @@ class RadixIterator implements Iterator<ByteBuffer>
             }
         }
         
-        static RadixNode downToMinLeaf(RadixNode node, ByteBuffer slot)
+        static RadixNode downToMinNode(RadixNode node, ByteBuffer slot)
         {
-            while(!node.isLeaf())
+            while(!node.isValue())
             {
                 // Copy as we go.
                 slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
-                node = node.get(0) ;
+                int idx = node.nextIndex(0) ;
+                if ( idx < 0 )
+                    break ;
+                node = node.get(idx) ;
             }
             // Copy leaf details.
             slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
@@ -129,22 +132,27 @@ class RadixIterator implements Iterator<ByteBuffer>
             if ( node == null )
                 // Ended
                 return false ;
-            // Go up one or more.
-            RadixNode node2 = gotoUpAndAcross(node) ;
+            
+            RadixNode node2 ;
+            if ( node.isLeaf() )
+            {
+                // Go up one or more.
+                node2 = gotoUpAndAcross(node) ;
+            }
+            else
+            {
+                int idx = node.nextIndex(0) ;
+                node2 = ( idx < 0 ) ? null : node.get(idx) ;
+            }
             if ( node2 == null )
             {
                 node = null ;
                 return false ;
             }
-//            // clear.
-//            // CHECK - better way?
-//            for ( int j = node2.lenStart ; j < prefix.limit() ; j++ )
-//                prefix.put(j, (byte)0xFF) ;
-            // Strip back
             prefix.position(node2.lenStart) ;
             
             // Now go down the next one
-            node2 = downToMinLeaf(node2, prefix) ;
+            node2 = downToMinNode(node2, prefix) ;
             slot = prefix ;
             node = node2 ;
             return true ;
@@ -159,7 +167,7 @@ class RadixIterator implements Iterator<ByteBuffer>
             if ( parent == null )
                 return null ;
             // Find self.
-            int idx = node2.prefix[0] ;
+            int idx = parent.locate(node2.prefix) ;
             
 //            // Find self.
 //            int N = parent.nodes.size() ;
@@ -176,8 +184,8 @@ class RadixIterator implements Iterator<ByteBuffer>
 //                System.out.println("   "+parent) ;
 //                System.out.println("   "+node2) ;
 //            }
-            idx++ ;
-            if ( idx != (0xFF+1) )//parent.maxNumChldren() )
+            idx = parent.nextIndex(idx+1) ;
+            if ( idx >= 0 )
                 return parent.get(idx) ;
             // tail recursion - remove.
             return gotoUpAndAcross(parent) ;

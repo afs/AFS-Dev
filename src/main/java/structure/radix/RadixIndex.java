@@ -44,10 +44,9 @@ public class RadixIndex implements RangeIndex
     @Override
     public Record find(Record record)
     {
-        RadixNode radixNode = radix.find(record.getKey()) ;
-        if ( radixNode == null )
-            return null ;
-        return record ; 
+        if ( radix.contains(record.getKey()) )
+            return record ;
+        return null ;
     }
 
     @Override

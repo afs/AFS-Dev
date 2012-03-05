@@ -84,6 +84,16 @@ public final class RadixNode //extends PrintableBase implements Printable
         setAsParent(n) ;
     }
 
+    int nextIndex(int start)
+    {
+        for ( int idx = start ; idx < nodes.length ; idx++ )
+        {
+            if ( nodes[idx] != null )
+                return idx ;
+        }
+        return -1 ;
+    }
+    
     void takeSubNodes(RadixNode n)
     {
         this.here = n.here ;
@@ -173,6 +183,7 @@ public final class RadixNode //extends PrintableBase implements Printable
     // XXX Version that always changes the node -- checking.
     RadixNode convertToLeaf()
     {
+        setAsValue(true) ;
         if ( nodes == null )
             return this ;
         nodes = null ;
@@ -432,6 +443,7 @@ public final class RadixNode //extends PrintableBase implements Printable
             return item.id ;
         }} ; 
 
+    /** is this node a leaf?  isleaf => isValue */
     public boolean isLeaf()
     {
         return nodes == null ;
