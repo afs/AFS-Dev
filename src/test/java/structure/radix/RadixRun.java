@@ -185,12 +185,18 @@ public class RadixRun
         
         RadixTree.logging = false ;
 
+
         int nRuns = 1000000 ;
         int maxLen = 7 ;
         int nKeys = 20 ;
-        int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
-        int dotsPerLine = 100 ;
+        
+        nRuns = 10 ;
+        maxLen = 7 ;
+        nKeys = 5 ;
+        
 
+        final int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
+        final int dotsPerLine = 100 ;
         final int ticksPerLine = dotsToCycle*dotsPerLine ;
 
         System.out.printf("Runs: %d, maxLen=%d, nKeys=%d\n", nRuns, maxLen, nKeys ) ;
