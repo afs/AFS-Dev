@@ -416,7 +416,7 @@ public final class RadixTree
                     // Didn't match after all.
                     return null ;
             }
-            
+
             // Now we need to sort out the tree after a change.
             // We need to work on the parent if it was a leaf, or node, if it was a branch.
             
@@ -424,6 +424,7 @@ public final class RadixTree
             
             fixupNode = fixup(fixupNode) ;
             return fixupNode ;
+
         }
     } ;
     

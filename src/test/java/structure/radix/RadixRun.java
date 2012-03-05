@@ -164,6 +164,10 @@ public class RadixRun
         }
         Assert.assertFalse(t.isEmpty()) ;
 
+        System.out.println() ;
+        t.print() ;
+        System.out.println() ;
+
         for ( byte[]k : keys )
         {
             if (print) System.out.println("Del: "+RLib.str(k)) ;
