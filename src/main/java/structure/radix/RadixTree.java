@@ -187,22 +187,6 @@ public final class RadixTree
              * B5/  Key longer than prefix.    (N == prefix.length)
              *
              * There is common processing.
-             * 
-                
-
-
-
-
-
-             *   
-             * 
-             * Not a leaf node (tested above):
-             *   0/ key same as prefix and it's a leaf => already there
-             *   1/ key longer than prefix : N == node.prefix.length
-             *   2/ key same as prefix : N == node.prefix.length but not already in tree.
-             *   3/ key shorter than prefix :  0 <= N < node.prefix.length
-             *   4/ key diverges from prefix :  N < 0
-             *      
              */
 
             // Key already present - we ended at a leaf.
@@ -370,113 +354,151 @@ public final class RadixTree
     private static Action deleteAction = new Action()
     {
         @Override
-        public RadixNode exec(byte[] key, RadixNode leaf, int N, RadixNode node)
+        public RadixNode exec(byte[] key, RadixNode node, int N, RadixNode prevNode)
         {
+            if (logging && log.isDebugEnabled() )
+            {
+                log.debug("delete: "+RLib.str(key)) ;
+                log.debug("delete: search => "+prevNode) ;
+                log.debug("delete N = "+N) ;
+            }
+            
+            /* Cases
+             * 1/ Node = leaf, does not exist
+             * 2/ Node = branch, not value
+             * 
+             * Then we have to work to sort out the tree.
+             * A/ If leaf delete, remove from parent.
+             * B/ If branch/value delete switch off flag.
+             * Then  
+             * C/ Simplify parent or branch
+             *    If not a value and has one subnode, collapse
+             */
+            
+            // Cases 1 and 2 : must be full length
+            
             // Key not already present - not a full match (short, diverges) 
-            if ( N != leaf.prefix.length || leaf.lenFinish != key.length )
+            if ( N != node.prefix.length || node.lenFinish != key.length )
             {
                 if (logging && log.isDebugEnabled() )
                     log.debug("delete: Not present") ;
                 return null ;
             }
-               
-            if (logging && log.isDebugEnabled() )
+
+            if ( node.isLeaf() ) 
             {
-                log.debug("delete: "+Bytes.asHex(key)) ;
-                log.debug("  "+leaf) ;
-                log.debug("  "+node) ;
-            }
-            
-            if ( ! leaf.isLeaf() ) 
-            {
-                if ( leaf.isValue() )
+                // Leaf - delete node.
+                if ( prevNode != null )
                 {
-                    // Easy!
-                    leaf.setAsValue(false) ;
-                    return leaf ;
+                    node.setAsValue(false) ;
+                    // not leaf root.
+                    int idx = prevNode.locate(node.prefix) ;
+                    RadixNode x = prevNode.get(idx) ;
+                    if ( x.id != node.id )
+                        error("Leaf in parent isn't the leaf!") ;
+                    prevNode.set(idx, null) ;
+                    RadixNode.dealloc(node) ;
+                }
+                else
+                {
+                    // Root.
+                    node.setAsValue(false) ;
+                    return node ;
                 }
             }
-            // Leaf delete
-            // XXX Does parent need fixing?
-            if ( node == null )
+            else
             {
-                // Root - deleting the last key.
-                leaf.setAsValue(false) ;
-                return leaf ;
+                // Branch.  Delete is a value branch.
+                if ( node.isValue() && node.isValue() )
+                    node.setAsValue(false) ;
+                else
+                    // Didn't match after all.
+                    return null ;
             }
             
-            // Then work on the parent.
-            int i = node.locate(key, leaf.lenStart) ;
-            if ( i < 0 )
-                error("Can't find child in parent") ;
-
-            {
-                RadixNode x = node.get(i) ; // node.nodes.remove(i) ;
-                node.set(i, null) ;
-                if ( checking && x != leaf )
-                    error("Removing the wrong node") ;
-                RadixNode.dealloc(x) ;
-            }
-            // Leaf removed.  Can as collapse the node?
-            // XXX Chnage to a single pass - inline code?
+            // Now we need to sort out the tree after a change.
+            // We need to work on the parent if it was a leaf, or node, if it was a branch.
             
-            int x = node.countSubNodes() ;
-            if ( x > 1 )
-                // We have subnodes.
-                return node ;
+            RadixNode fixupNode = (node.isLeaf() ? prevNode : node ) ;
             
-            if ( x == 0 )
-            {
-                // No subnodes.
-                // If we are a value, we are a leaf!
-                if ( node.isValue() )
-                    return node.convertToLeaf() ;
-                // Not a value, no subnodes -> oops.
-                // Th node should have been collapses earlier.
-                log.warn("Delete: found not a leaf, not a value node") ;
-                return node;
-            }
-            
-            //if ( x == 1 )
-            RadixNode sub1 = node.oneSubNode() ;
-            if ( sub1 == null )
-            {
-                log.warn("Delete: One sub node but can't find it.") ;
-                return node ;
-            }
-
-            // Single subnode in node.  Pull up.
-            if ( logging && log.isDebugEnabled() )
-            {
-                log.debug("Collapse node") ;
-                log.debug("  node: "+node) ;
-                log.debug("  sub : "+sub1) ;
-            }   
-
-            if ( node.isValue() )
-                System.err.println("PROBLEM: node has a here value") ;
-            // ??? XXX
-            node.setAsValue(sub1.isValue()) ;
-
-            int len = node.prefix.length + sub1.prefix.length ;
-            node.takeSubNodes(sub1) ;
-            node.lenFinish = sub1.lenFinish ;
-
-            // New prefix.
-            byte [] a = new byte[len] ;
-            System.arraycopy(node.prefix, 0, a, 0, node.prefix.length) ;
-            System.arraycopy(sub1.prefix,    0, a, node.prefix.length, sub1.prefix.length) ;
-            if ( logging && log.isDebugEnabled() )
-                log.debug("New prefix: "+Bytes.asHex(a)) ;
-
-            node.prefix = a ;
-            if ( logging && log.isDebugEnabled() )
-                log.debug("  --> : "+node) ;
-            if ( sub1.isLeaf() )
-                node = node.convertToLeaf() ;    
-            
-            RadixNode.dealloc(sub1) ;
-            return node ; 
+            fixup(fixupNode) ;
+            return fixupNode ;
+//            
+//            
+//            // ----
+//            
+//            // Then work on the parent.
+//            int i = prevNode.locate(key, node.lenStart) ;
+//            if ( i < 0 )
+//                error("Can't find child in parent") ;
+//
+//            {
+//                RadixNode x = prevNode.get(i) ; // node.nodes.remove(i) ;
+//                prevNode.set(i, null) ;
+//                if ( checking && x != node )
+//                    error("Removing the wrong node") ;
+//                RadixNode.dealloc(x) ;
+//            }
+//            // Leaf removed.  Can as collapse the node?
+//            // XXX Chnage to a single pass - inline code?
+//            
+//            int x = prevNode.countSubNodes() ;
+//            if ( x > 1 )
+//                // We have subnodes.
+//                return prevNode ;
+//            
+//            if ( x == 0 )
+//            {
+//                // No subnodes.
+//                // If we are a value, we are a leaf!
+//                if ( prevNode.isValue() )
+//                    return prevNode.convertToLeaf() ;
+//                // Not a value, no subnodes -> oops.
+//                // Th node should have been collapses earlier.
+//                log.warn("Delete: found not a leaf, not a value node") ;
+//                return prevNode;
+//            }
+//            
+//            //if ( x == 1 )
+//            RadixNode sub1 = prevNode.oneSubNode() ;
+//            if ( sub1 == null )
+//            {
+//                log.warn("Delete: One sub node but can't find it.") ;
+//                return prevNode ;
+//            }
+//
+//            // Single subnode in node.  Pull up.
+//            if ( logging && log.isDebugEnabled() )
+//            {
+//                log.debug("Collapse node") ;
+//                log.debug("  node: "+prevNode) ;
+//                log.debug("  sub : "+sub1) ;
+//            }   
+//
+//            if ( prevNode.isValue() )
+//                System.err.println("PROBLEM: node has a here value") ;
+//            // ??? XXX
+//            prevNode.setAsValue(sub1.isValue()) ;
+//
+//            int len = prevNode.prefix.length + sub1.prefix.length ;
+//            prevNode.takeSubNodes(sub1) ;
+//            prevNode.lenFinish = sub1.lenFinish ;
+//
+//            // New prefix.
+//            byte [] a = new byte[len] ;
+//            System.arraycopy(prevNode.prefix, 0, a, 0, prevNode.prefix.length) ;
+//            System.arraycopy(sub1.prefix,    0, a, prevNode.prefix.length, sub1.prefix.length) ;
+//            if ( logging && log.isDebugEnabled() )
+//                log.debug("New prefix: "+Bytes.asHex(a)) ;
+//
+//            prevNode.prefix = a ;
+//            if ( logging && log.isDebugEnabled() )
+//                log.debug("  --> : "+prevNode) ;
+//            if ( sub1.isLeaf() )
+//                prevNode = prevNode.convertToLeaf() ;    
+//            
+//            RadixNode.dealloc(sub1) ;
+//            return prevNode ; 
         }
     } ;
     
@@ -492,6 +514,62 @@ public final class RadixTree
         return n != null ;
     }
     
+    /** After delete, need to remove redundant nodes. */
+    protected static RadixNode fixup(RadixNode node)
+    {
+        // Must be a branch.
+        if ( node.isLeaf() )
+            error("Attempt to fixup a leaf") ;
+        if ( node.isValue() )
+            return null ;
+        // Find exaclt one subnode.
+        RadixNode sub = node.oneSubNode() ;
+        if ( sub == null )
+            return null ;
+        // Single subnode to node.
+        // Merge it in and delete it.
+        // It may be a leaf.
+        if ( logging && log.isDebugEnabled() )
+        {
+            log.debug("Collapse node") ;
+            log.debug("  node: "+node) ;
+            log.debug("  sub : "+sub) ;
+        }
+        
+        // We're a value if the subnode was a value.
+        node.setAsValue(sub.isValue()) ;
+
+        // Combined prefix.
+        int len1 = node.prefix.length + sub.prefix.length ;  
+        int len =  sub.lenFinish - node.lenStart ;
+        if ( len1 != len )
+            error("Inconsistency in length calculations") ;
+        // Merged prefix.
+        byte [] p = new byte[len] ;
+        System.arraycopy(node.prefix, 0, p, 0, node.prefix.length) ;
+        System.arraycopy(sub.prefix,  0, p, node.prefix.length, sub.prefix.length) ;  
+        if ( logging && log.isDebugEnabled() )
+            log.debug("New prefix: "+RLib.str(p)) ;
+        
+        // Clear, pull up subnodes.
+        node = node.convertToEmptyBranch() ;
+        node.takeSubNodes(sub) ;
+        
+        // Prefix
+        node.prefix = p ;
+        // node.lenStart ;
+        node.lenFinish = sub.lenFinish ;
+
+        if ( logging && log.isDebugEnabled() )
+            log.debug("  --> : "+node) ;
+
+        if ( sub.isLeaf() )
+          node = node.convertToLeaf() ;    
+      
+        RadixNode.dealloc(sub) ;
+        return node; 
+    }
+
     public void print()
     {
         if ( root == null )
