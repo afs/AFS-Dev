@@ -94,6 +94,17 @@ public final class RadixNode //extends PrintableBase implements Printable
         return -1 ;
     }
     
+    int lastIndex()
+    {
+        for ( int idx = nodes.length-1 ; idx>=0 ; idx-- )
+        {
+            if ( nodes[idx] != null )
+                return idx ;
+        }
+        return -1 ;
+        
+    }
+    
     void takeSubNodes(RadixNode n)
     {
         this.here = n.here ;

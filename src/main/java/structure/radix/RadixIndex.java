@@ -67,17 +67,20 @@ public class RadixIndex implements RangeIndex
         return radix.delete(record.getKey()) ;
     }
 
-    Transform<ByteBuffer, Record> t = new Transform<ByteBuffer, Record>() {
+    Transform<ByteBuffer, Record> byteBufferToRecord = new Transform<ByteBuffer, Record>() {
         @Override
         public Record convert(ByteBuffer item)
         {
-            return recordFactory.create(item.array()) ;
+            byte[] b = new byte[item.limit()] ;
+            // Shame about the copy.
+            System.arraycopy(item.array(), 0, b, 0, item.limit()) ;
+            return recordFactory.create(b) ;
         }} ;
     
     @Override
     public Iterator<Record> iterator()
     {
-        return Iter.map(radix.iterator(), t) ;
+        return Iter.map(radix.iterator(), byteBufferToRecord) ;
     }
 
     @Override
@@ -93,16 +96,20 @@ public class RadixIndex implements RangeIndex
     @Override
     public boolean isEmpty()
     {
-        return false ;
+        return radix.isEmpty() ;
     }
 
     @Override
     public void clear()
-    {}
+    {
+        radix.clear() ;
+    }
 
     @Override
     public void check()
-    {}
+    {
+        radix.check() ;
+    }
 
     @Override
     public long size()
@@ -117,22 +124,25 @@ public class RadixIndex implements RangeIndex
     @Override
     public Iterator<Record> iterator(Record recordMin, Record recordMax)
     {
-        return Iter.map(radix.iterator(recordMin.getKey(), recordMax.getKey()), t) ;
+        return Iter.map(radix.iterator(recordMin.getKey(), recordMax.getKey()), byteBufferToRecord) ;
     }
 
     @Override
     public Record minKey()
     {
-        // Better???
-        Iterator<ByteBuffer> iter = radix.iterator() ;
-        if ( !iter.hasNext() ) return null ;
-        return t.convert(radix.iterator().next()) ;
+        // Provide the byte buffer to the min() function.
+        // Avoid copy.
+        ByteBuffer bb = radix.min() ;
+        return byteBufferToRecord.convert(bb) ;
     }
 
     @Override
     public Record maxKey()
     {
-        return null ;
+        // Provide the byte buffer to the max() function.
+        // Avoid copy.
+        ByteBuffer bb = radix.max() ;
+        return byteBufferToRecord.convert(bb) ;
     }
     
 }

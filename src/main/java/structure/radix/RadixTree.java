@@ -528,6 +528,49 @@ public final class RadixTree
         IndentedWriter.stdout.flush();
     }
 
+    public void clear()
+    {
+        if ( root == null )
+            return ;
+        clear(root) ;
+    }
+    
+    private void clear(RadixNode node)
+    {
+        if ( !node.isLeaf() )
+        {
+            int idx = 0 ;
+            while( ( idx = node.nextIndex(idx)) >= 0 )
+            {
+                RadixNode n = node.get(idx) ;
+                clear(node) ;
+            }
+        }        
+        RadixNode.dealloc(node) ;
+        return ;
+    }
+
+    // See iterator start code.
+    public ByteBuffer min()
+    {
+        if ( root == null )
+            return null ;
+        ByteBuffer bb = ByteBuffer.allocate(50) ;
+        bb = RadixIterator.min(root, bb) ;
+        bb.flip() ;
+        return bb ;
+    }
+    
+    public ByteBuffer max()
+    {
+        if ( root == null )
+            return null ;
+        ByteBuffer bb = ByteBuffer.allocate(50) ;
+        bb = RadixIterator.max(root, bb) ;
+        bb.flip() ;
+        return bb ;
+    }
+
     public long size()
     {
         if ( root == null )

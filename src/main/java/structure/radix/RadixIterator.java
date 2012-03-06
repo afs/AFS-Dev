@@ -76,7 +76,6 @@ class RadixIterator implements Iterator<ByteBuffer>
             // Now move until leaf.
             node = downToMinNode(node, prefix) ;
             slot = prefix ;
-
             // But we need to track the key for copying reasons.
             if ( false && RadixTree.logging && RadixTree.log.isDebugEnabled() )
             {
@@ -85,7 +84,24 @@ class RadixIterator implements Iterator<ByteBuffer>
             }
         }
         
-        static RadixNode downToMinNode(RadixNode node, ByteBuffer slot)
+        static ByteBuffer min(RadixNode node, ByteBuffer slot)
+        {
+            while(!node.isValue())
+            {
+                // Copy as we go.
+                slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
+                int idx = node.nextIndex(0) ;
+                if ( idx < 0 )
+                    break ;
+                node = node.get(idx) ;
+            }
+            // Copy leaf details.
+            slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
+            return slot ;
+        }
+        
+        // TODO assumes bytebuffer large enough.
+        private static RadixNode downToMinNode(RadixNode node, ByteBuffer slot)
         {
             while(!node.isValue())
             {
@@ -101,6 +117,22 @@ class RadixIterator implements Iterator<ByteBuffer>
             return node ;
         }
         
+        static ByteBuffer max(RadixNode node, ByteBuffer slot)
+        {
+            while(!node.isLeaf())
+            {
+                // Copy as we go.
+                slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
+                int idx = node.lastIndex() ;
+                if ( idx < 0 )
+                    break ;
+                node = node.get(idx) ;
+            }
+            // Copy leaf details.
+            slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
+            return slot ;
+        }
+
         /** Copy bytes from the array ([], start, length) to the end of a ByteBuffer */
         static ByteBuffer appendBytes(byte[] array, int start, int length, ByteBuffer bb) 
         {
