@@ -18,7 +18,6 @@
 
 package structure.radix;
 import static structure.radix.RLib.str ;
-import static structure.radix.TestRadix.* ;
 
 import java.nio.ByteBuffer ;
 import java.util.ArrayList ;
@@ -26,8 +25,6 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.junit.Assert ;
-import org.junit.Test ;
 import org.junit.runner.JUnitCore ;
 import org.junit.runner.Result ;
 import org.openjena.atlas.AtlasException ;
@@ -66,49 +63,45 @@ public class RadixRun
         cycleTesting() ; System.exit(0) ;
         //runJUnit() ;
         
-        byte[] k1 = { 1 , 3 , 4 } ;
-        byte[] k2 = { 1 , 3 , 5 } ;
-        byte[] k3 = { 1 , 2 , 6 } ;
+        if ( false )
+        {
+            byte[] k1 = { 1 , 2 , 3 } ;
+            byte[] k2 = { 1 , 2 } ;
+            byte[] k3 = { 1 } ;
+
+            RadixTree t = tree(k1,k2,k3) ;
+            t.print() ;
+            t.check() ;
+
+            Log.enable("structure.radix") ;
             
-        test(k1, k2) ;
-        RadixTree t = tree(k1,k2) ;
-        t.print() ;
-        Log.enable("structure.radix") ;
-        t.insert(k3) ;
-        t.print() ;
-        
-        t.check() ;
-        //test(k1, k2, k3) ;
-        System.exit(0) ;
-        
-        
-        testPermute(k1,k2,k3) ;
-        
-        // TODO
-        // check tests.
-        // turn on insert then delete for all tests.
-        // Use test code.
-        
-        print = true ;
-        //Log.enable("structure.radix") ;
+            t.delete(k1) ;
+
+            t.print() ;
+            t.check() ;
+            
+            t.delete(k2) ;
+
+            t.check() ;
+            t.print() ;
+            
+            t.delete(k3) ;
+            t.print() ;
+            t.check() ;
+            System.exit(0) ;
+        }
+        if ( false )
+        {   
+            byte[][] data1 = { {0x01}, {0x09}, {0x02}, {}, {0x04,0x12}, {0x04,0x0E}, {0x01,0x11,0x11,0x00,0x05,0x05}, {0x0A,0x07,0x01,0x02,0x00,0x06}, {0x0F}, {0x0F,0x0B,0x05,0x00,0x0B} } ;
+            byte[][] data2 = { {}, {0x01,0x11,0x11,0x00,0x05,0x05}, {0x04,0x12}, {0x0F,0x0B,0x05,0x00,0x0B}, {0x02}, {0x0A,0x07,0x01,0x02,0x00,0x06}, {0x01}, {0x09}, {0x04,0x0E}, {0x0F} } ;
+
+            RadixTree tree = tree() ;
+            execInsert(tree, Arrays.asList(data1), false) ;
+            execDelete(tree, Arrays.asList(data2), true) ;
+            System.exit(0) ;
+        }
         
         RadixTree tree = tree(key0, key1, key2, key3, key4, key5) ;
-        //Log.enable("structure.radix") ;
-        
-        System.out.println() ;
-        tree.printLeaves() ;
-        System.out.println() ;
-
-        System.out.println("0: "+tree.contains(key0)) ;
-        System.out.println("1: "+tree.contains(key1)) ;
-        System.out.println("2: "+tree.contains(key2)) ;
-        System.out.println("3: "+tree.contains(key3)) ;
-        System.out.println("4: "+tree.contains(key4)) ;
-        System.out.println("5: "+tree.contains(key5)) ;
-        System.out.println("6: "+tree.contains(key6)) ;
-        
-        
-        
         Iterator<ByteBuffer> iter = tree.iterator() ; 
         for ( ; iter.hasNext() ; )
         {
@@ -158,49 +151,47 @@ public class RadixRun
         RadixTree.logging = false ;
 
 
-        int nRuns = 1000000 ;
+        int nRuns = 100000 ;
         int maxLen = 7 ;
         int nKeys = 20 ;
         
-        nRuns = 100 ;
-        maxLen = 7 ;
-        nKeys = 10 ;
-        
-
         final int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
         final int dotsPerLine = 100 ;
         final int ticksPerLine = dotsToCycle*dotsPerLine ;
 
-        System.out.printf("Runs: %d, maxLen=%d, nKeys=%d\n", nRuns, maxLen, nKeys ) ;
+        System.out.printf("Runs: %,d, maxLen=%d, nKeys=%d\n", nRuns, maxLen, nKeys ) ;
         for ( int i = 0 ; i < nRuns ; i++ )
         {
             RadixTree trie = new RadixTree() ;
-            List<byte[]> x = gen(nKeys, maxLen, (byte)20) ;
-            List<byte[]> x2 = randomize(x) ;
+            List<byte[]> x1 = gen(nKeys, maxLen, (byte)20) ;
+            List<byte[]> x2 = randomize(x1) ;
 
             if ( i%ticksPerLine == 0 )
-                System.out.printf("%6d: ",i) ;
+                System.out.printf("%,8d: ",i) ;
             if ( i%dotsToCycle == (dotsToCycle-1) )
                 System.out.print(".") ;
             if ( i%ticksPerLine == (ticksPerLine-1) )
                 System.out.println() ;
 
+            //System.out.println() ;
+            //print(x1) ;
+            //print(x2) ;
             System.out.flush() ;
             
             try { 
-                execInsert(trie, x, false) ;
+                execInsert(trie, x1, false) ;
                 //System.out.flush() ;
                 execDelete(trie, x2, false) ;
             } catch (AtlasException ex)
             {
-                print(x) ;
+                print(x1) ;
                 print(x2) ;
                 return ;
             }
         }
         if ( nRuns%ticksPerLine != 0 )
             System.out.println() ;
-        System.out.println("Done") ;
+        System.out.printf("Done (%,d)\n", nRuns) ;
         System.exit(0) ;
     }
     
@@ -267,8 +258,8 @@ public class RadixRun
         try {
             for ( byte[] arr : entries )
             {
-//                if ( debugMode )
-//                    System.out.println("Insert: "+str(arr)) ;
+                if ( debugMode )
+                    System.out.println("Insert: "+str(arr)) ;
                 insert(trie, arr) ;
                 if ( debugMode )
                 {
@@ -292,8 +283,8 @@ public class RadixRun
         try {
             for ( byte[] arr : entries )
             {
-//                if ( debugMode )
-//                    System.out.println("Delete: "+str(arr)) ;
+                if ( debugMode )
+                    System.out.println("Delete: "+str(arr)) ;
                 delete(trie, arr) ;
                 if ( debugMode )
                 {

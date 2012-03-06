@@ -156,8 +156,9 @@ public final class RadixTree
             if (logging && log.isDebugEnabled() )
             {
                 log.debug("insert: "+RLib.str(key)) ;
-                log.debug("insert: search => "+node) ;
-                log.debug("insert N = "+N) ;
+                log.debug("insert: here => "+node) ;
+                log.debug("insert: prev => "+ ((nodePrev==null)?"null":nodePrev.toString()) ) ;
+                log.debug("insert: N = "+N) ;
             }
             /* Cases:
              * Leaf.
@@ -352,8 +353,9 @@ public final class RadixTree
             if (logging && log.isDebugEnabled() )
             {
                 log.debug("delete: "+RLib.str(key)) ;
-                log.debug("delete: search => "+prevNode) ;
-                log.debug("delete N = "+N) ;
+                log.debug("delete: here => "+node) ;
+                log.debug("delete: prev => "+ ((prevNode==null)?"null":prevNode.toString()) ) ;
+                log.debug("delete: N = "+N) ;
             }
             
             /* Cases
@@ -390,6 +392,8 @@ public final class RadixTree
                         error("Leaf in parent isn't the leaf!") ;
                     prevNode.set(idx, null) ;
                     RadixNode.dealloc(node) ;
+                    node = null ;
+                    // Drop though to fixup.
                 }
                 else
                 {
@@ -403,6 +407,7 @@ public final class RadixTree
                 // Branch.  Delete is a value branch.
                 if ( node.isValue() && node.isValue() )
                     node.setAsValue(false) ;
+                    // Drop though to fixup.
                 else
                     // Didn't match after all.
                     return null ;
@@ -411,7 +416,7 @@ public final class RadixTree
             // Now we need to sort out the tree after a change.
             // We need to work on the parent if it was a leaf, or node, if it was a branch.
             
-            RadixNode fixupNode = (node.isLeaf() ? prevNode : node ) ;
+            RadixNode fixupNode = (node==null ? prevNode : node ) ;
             
             RadixNode fixupNode2 = fixup(fixupNode) ;
             if ( fixupNode2 != null )
@@ -426,19 +431,15 @@ public final class RadixTree
     {
         if ( root == null )
             return false ;
-        boolean b = root.isLeaf() ;
         RadixNode n = applicator(root, key, deleteAction) ;
         
         // Fixup root.
-        // if the root chnaged and the root is now a leaf or a no-subnodes branch, free it
-        if ( n != null && n.parentId == -1 && (n.isLeaf() || (n.countSubNodes() == 0 && ! n.isValue() ) ) )
+        // If the root changed and now has no-subnodes and no value, free it.
+        if ( n != null && n.isRoot() && (n.countSubNodes() == 0 && ! n.isValue() ) )
         {
             RadixNode.dealloc(n) ;
             root = null ;
         }
-        
-//        if ( b && n != null )
-//            root = null ;
         return n != null ;
     }
     
@@ -448,12 +449,30 @@ public final class RadixTree
         // Must be a branch.
         if ( node.isLeaf() )
             error("Attempt to fixup a leaf") ;
+
+        // count = 0 => can we become a leaf?
+        // count = 1 => c an we merge with subnode? 
+        
+        int c = node.countSubNodes() ;
+        if ( c == 0 )
+        {
+            if ( node.isValue() )
+                node = node.convertToLeaf() ;
+            // else; should not happen  - a non-value branch which had one leaf subnode 
+            else
+                error("Branch has no subnodes but didn't have a value") ;
+            return node ;
+        }
+
+        if ( c != 1 )
+            return null ;
+        
         if ( node.isValue() )
             return null ;
-        // Find exacly one subnode.
+        // Find exactly one subnode.
         RadixNode sub = node.oneSubNode() ;
         if ( sub == null )
-            return null ;
+            error("Branch has one subnodes but can't find it") ;
         // Single subnode to node.
         // Merge it in and delete it.
         // It may be a leaf.

@@ -35,7 +35,7 @@ public final class RadixNode //extends PrintableBase implements Printable
     // Debugging? Needed for traversal?
     // Not needed for deployment version (we only go down the tree).
     // Iteration?
-    /*package*/ int parentId ;
+    /*package*/ private int parentId ;
     /*package*/ RadixNode parent ;
 
     /*
@@ -408,6 +408,20 @@ public final class RadixNode //extends PrintableBase implements Printable
             return ;
         }
         
+        int c = this.countSubNodes() ;
+        
+        
+        if ( c == 0 )
+        {
+            if ( this.isValue() )
+                error(this, "Branch should be a leaf.") ;
+            else
+                error(this, "Branch with no subnodes and no value") ;
+        }
+            
+        if ( c == 1 && ! this.isValue() )
+            error(this, "One subnode but this is not a value") ;
+        
         // Legal?
         // Yes - during push-dwn we can end pusing down one node.
         // Should really avoid this.
@@ -415,7 +429,6 @@ public final class RadixNode //extends PrintableBase implements Printable
 //        if ( nodes.size() < 2 )
 //            error(this, "Internal node has length of "+nodes.size()) ;
         // Check subnodes are sorted and start with a different byte
-        Set<Integer> bytes = new HashSet<Integer>() ;
         int last = -2 ;
         for ( RadixNode n : nodes )
         {
@@ -427,6 +440,7 @@ public final class RadixNode //extends PrintableBase implements Printable
                 error(this, "Prefix start not strictly increasing") ;
             if ( n.parentId != id )
                 error(this, "Child %d points to %d, not parent %d", n.id, n.parentId, id) ;
+            last = b ;
         }
         
         int nextStartLen = length+prefix.length ;
@@ -447,6 +461,12 @@ public final class RadixNode //extends PrintableBase implements Printable
     public boolean isLeaf()
     {
         return nodes == null ;
+    }
+
+    /** is this node the root? */
+    public boolean isRoot()
+    {
+        return parentId < 0 ;
     }
 
     public <T> void visit(RadixNodeVisitor<T> visitor)
