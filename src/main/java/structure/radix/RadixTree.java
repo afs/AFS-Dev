@@ -550,22 +550,25 @@ public final class RadixTree
         return ;
     }
 
-    // See iterator start code.
-    public ByteBuffer min()
+    public ByteBuffer min() { return min(null) ; }
+    
+    public ByteBuffer min(byte[] b)
     {
         if ( root == null )
             return null ;
-        ByteBuffer bb = ByteBuffer.allocate(50) ;
+        ByteBuffer bb = (b == null ) ? ByteBuffer.allocate(50) : ByteBuffer.wrap(b) ;
         bb = RadixIterator.min(root, bb) ;
         bb.flip() ;
         return bb ;
     }
     
-    public ByteBuffer max()
+    public ByteBuffer max() { return max(null) ; }
+
+    public ByteBuffer max(byte[] b)
     {
         if ( root == null )
             return null ;
-        ByteBuffer bb = ByteBuffer.allocate(50) ;
+        ByteBuffer bb = (b == null ) ? ByteBuffer.allocate(50) : ByteBuffer.wrap(b) ;
         bb = RadixIterator.max(root, bb) ;
         bb.flip() ;
         return bb ;

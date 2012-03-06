@@ -132,8 +132,9 @@ public class RadixIndex implements RangeIndex
     {
         // Provide the byte buffer to the min() function.
         // Avoid copy.
-        ByteBuffer bb = radix.min() ;
-        return byteBufferToRecord.convert(bb) ;
+        Record r = recordFactory.create() ;
+        radix.min(r.getKey()) ;
+        return r ;
     }
 
     @Override
@@ -141,8 +142,9 @@ public class RadixIndex implements RangeIndex
     {
         // Provide the byte buffer to the max() function.
         // Avoid copy.
-        ByteBuffer bb = radix.max() ;
-        return byteBufferToRecord.convert(bb) ;
+        Record r = recordFactory.create() ;
+        radix.max(r.getKey()) ;
+        return r ;
     }
     
 }

@@ -25,125 +25,16 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.junit.runner.JUnitCore ;
-import org.junit.runner.Result ;
 import org.openjena.atlas.AtlasException ;
 import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.junit.TextListener2 ;
 import org.openjena.atlas.lib.Bytes ;
 import org.openjena.atlas.lib.RandomLib ;
 import org.openjena.atlas.logging.Log ;
 
 public class RadixRun
 {
-    // isleaf => isValue 
-    // Store (k,v) by having a V slot in leaf or hasValue position 
-    
-    static byte[] key0 = { } ;
-    
-    static byte[] key1 = { 2 , 4 , 6 , 8  } ;
-    
-    static byte[] key2 = { 2 , 4 , 6 , 10  } ;
-    // Insert - shorter key
-    static byte[] key3 = { 2 , 4 } ;
-    
-    // Insert - existing leaf
-    static byte[] key4 = { 2 , 4 , 6,  8 , 10 } ;
-
-    // Insert - partial prefix match.
-    static byte[] key5 = { 2 , 4 , 3 , 1 } ;
-    
-    // Insert - new root
-    static byte[] key6 = { 0 , 1 , 2 , 3 , 4  } ;
-    
-    static boolean print = false ;
-
     public static void main(String ...argv)
     { 
-        cycleTesting() ; System.exit(0) ;
-        //runJUnit() ;
-        
-        if ( false )
-        {
-            byte[] k1 = { 1 , 2 , 3 } ;
-            byte[] k2 = { 1 , 2 } ;
-            byte[] k3 = { 1 } ;
-
-            RadixTree t = tree(k1,k2,k3) ;
-            t.print() ;
-            t.check() ;
-
-            Log.enable("structure.radix") ;
-            
-            t.delete(k1) ;
-
-            t.print() ;
-            t.check() ;
-            
-            t.delete(k2) ;
-
-            t.check() ;
-            t.print() ;
-            
-            t.delete(k3) ;
-            t.print() ;
-            t.check() ;
-            System.exit(0) ;
-        }
-        if ( false )
-        {   
-            byte[][] data1 = { {0x01}, {0x09}, {0x02}, {}, {0x04,0x12}, {0x04,0x0E}, {0x01,0x11,0x11,0x00,0x05,0x05}, {0x0A,0x07,0x01,0x02,0x00,0x06}, {0x0F}, {0x0F,0x0B,0x05,0x00,0x0B} } ;
-            byte[][] data2 = { {}, {0x01,0x11,0x11,0x00,0x05,0x05}, {0x04,0x12}, {0x0F,0x0B,0x05,0x00,0x0B}, {0x02}, {0x0A,0x07,0x01,0x02,0x00,0x06}, {0x01}, {0x09}, {0x04,0x0E}, {0x0F} } ;
-
-            RadixTree tree = tree() ;
-            execInsert(tree, Arrays.asList(data1), false) ;
-            execDelete(tree, Arrays.asList(data2), true) ;
-            System.exit(0) ;
-        }
-        
-        RadixTree tree = tree(key0, key1, key2, key3, key4, key5) ;
-        Iterator<ByteBuffer> iter = tree.iterator() ; 
-        for ( ; iter.hasNext() ; )
-        {
-            ByteBuffer bb = iter.next() ;
-            System.out.println("["+RLib.str(bb)+"]") ;
-        }
-        System.exit(0) ;
-        
-        System.out.println() ;
-    }
-    
-    static private RadixTree tree(byte[] ... keys)
-    {
-        return tree(new RadixTree(), keys) ;
-    }
-    
-    static private RadixTree tree(RadixTree t, byte[] ... keys)
-    {
-        for ( byte[]k : keys )
-        {
-            if (print) System.out.println("Build: "+RLib.str(k)) ;
-            t.insert(k) ;
-            if (print) t.print() ;
-            t.check() ;
-            if (print) System.out.println() ;
-        }
-        return t ;
-    }
-
-    static private void runJUnit()
-    {
-        JUnitCore runner = new org.junit.runner.JUnitCore() ;
-        runner.addListener(new TextListener2(System.out)) ;
-        //TestRadix.beforeClass() ;
-        Result result = runner.run(TestRadix.class) ;
-        //TestRadix.afterClass() ;
-        System.exit(0) ;
-    }
-
-    // Enable!
-    public static void cycleTesting() 
-    {
         Log.setLog4j() ;
         Log.enable(RadixTree.class) ;
         //RadixTree.logging = false ;
@@ -195,27 +86,6 @@ public class RadixRun
         System.exit(0) ;
     }
     
-    public static void debugCase()
-    {
-        Log.enable("structure.radix") ;
-        RadixTree.logging = true ;
-        RadixTree trie = new RadixTree() ;
-        
-        byte[][] data1$ = { {0x05,0x00,0x06}, {0x05,0x02}, {}, {0x09,0x01,0x01,0x01}, {0x08,0x07} } ;
-        byte[][] data2$ = { {0x09,0x01,0x01,0x01}, {0x05,0x00,0x06}, {0x05,0x02}, {}, {0x08,0x07} } ;
-            
-        List<byte[]> x1 = Arrays.asList(data1$) ;
-        List<byte[]> x2 = Arrays.asList(data1$) ;
-        print(x1) ;
-        print(x2) ;
-        execInsert(trie, x1, true) ;
-        execDelete(trie, x2, true) ;
-        System.out.println("Done") ;
-        System.exit(0) ;
-    }
-    
-    
-    
     private static List<byte[]> randomize(List<byte[]> x)
     {
         x = new ArrayList<byte[]>(x) ;
@@ -228,39 +98,14 @@ public class RadixRun
         return x2 ;
     }
 
-    static boolean contains(byte[] b, List<byte[]> entries)
-    {
-        for ( byte[] e : entries )
-        {
-            if ( Arrays.equals(e, b) )
-                return true ;
-        }
-        return false ;
-    }
-    
-
-//    public static void exec(RadixTree trie, int[] ... e)
-//    {
-//        List<byte[]> entries = new ArrayList<byte[]>() ;
-//        for ( int j = 0 ; j < e.length ; j++ )
-//        {
-//            byte[] b = new byte[e[j].length] ;
-//            for ( int i = 0 ; i < e[j].length ; i++ )
-//                b[i] = (byte)(e[j][i]) ;
-//            entries.add(b) ;
-//        }
-//        exec(trie, entries, false) ;
-//    }
-        
-        
-    private static void execInsert(RadixTree trie, List<byte[]> entries, boolean debugMode)
+    static void execInsert(RadixTree trie, List<byte[]> entries, boolean debugMode)
     {
         try {
             for ( byte[] arr : entries )
             {
                 if ( debugMode )
                     System.out.println("Insert: "+str(arr)) ;
-                insert(trie, arr) ;
+                insertAndCheck(trie, arr) ;
                 if ( debugMode )
                 {
                     trie.print() ;
@@ -278,14 +123,14 @@ public class RadixRun
         check(trie, entries) ;
     }
    
-    private static void execDelete(RadixTree trie, List<byte[]> entries, boolean debugMode)
+    static void execDelete(RadixTree trie, List<byte[]> entries, boolean debugMode)
     {
         try {
             for ( byte[] arr : entries )
             {
                 if ( debugMode )
                     System.out.println("Delete: "+str(arr)) ;
-                delete(trie, arr) ;
+                deleteAndCheck(trie, arr) ;
                 if ( debugMode )
                 {
                     trie.print() ;
@@ -335,28 +180,8 @@ public class RadixRun
         System.out.println(sb.toString()) ;
     }
     
-    private static String strall(List<byte[]> entries)
-    {
-        boolean first = true ;
-        StringBuilder sb = new StringBuilder() ;
-        for ( byte[] e : entries )
-        {
-            if ( ! first ) 
-                sb.append(" ") ;
-            first = false ;
-            sb.append("[") ;
-            sb.append(str(e)) ;
-            sb.append("]") ;
-        }
-        return sb.toString() ;
-    }
-
     static void check(RadixTree trie, List<byte[]> keys)
     {
-//        System.out.println() ;
-//        trie.print() ;
-//        System.out.flush() ;
-        
         for ( byte[] k : keys )
         {
             if ( trie.find(k) == null )
@@ -382,45 +207,43 @@ public class RadixRun
             }
             prev = here ;
         }
-
-        
     }
     
-    static void insert(RadixTree trie, byte[] key)
+    static void insertAndCheck(RadixTree trie, byte[] key)
     {
-//        System.out.println("Insert--'"+str(key)+"'") ;
         boolean b2 = ! trie.contains(key) ;
         boolean b = trie.insert(key) ;
-//        System.out.print(" >> "+b+" ["+b2+"]") ;
-//        System.out.print(": ") ;
-//        trie.print() ;
-//        trie.printLeaves() ;
-        //trie.print(); 
-        System.out.flush() ;
         if ( b != b2 )
+        {
+            System.out.flush() ;
             System.err.println("Inconsistent (insert)") ;
+        }
         trie.check() ;
     }
     
-    static void delete(RadixTree trie, byte[] key)
+    static void deleteAndCheck(RadixTree trie, byte[] key)
     {
-//        System.out.println("Delete--'"+str(key)+"'") ;
-//        trie.print() ;
         boolean b2 = trie.contains(key) ;
         boolean b = trie.delete(key) ;
-//        System.out.print(" >> "+b+" ["+b2+"]") ;
-//        System.out.print(": ") ;
-//        trie.printLeaves() ;
-//        trie.print(); 
-        
         if ( b != b2 )
         {
-//            trie.print() ;
-//            System.out.flush() ;
+            System.out.flush() ;
             System.err.println("Inconsistent (delete): "+RLib.str(key)) ;
         }
         trie.check() ;
     }
+    
+    static boolean contains(byte[] b, List<byte[]> entries)
+    {
+        for ( byte[] e : entries )
+        {
+            if ( Arrays.equals(e, b) )
+                return true ;
+        }
+        return false ;
+    }
+
+
 
     // Generate nKeys entries upto to nLen long
     static List<byte[]> gen(int nKeys, int maxLen, byte maxVal)

@@ -447,7 +447,7 @@ public final class RadixNode //extends PrintableBase implements Printable
             int b = -1 ;
             if ( n.prefix.length > 0 )
                 b = (n.prefix[0]&0xFF) ;
-            if ( last >= b )
+            if ( b >= 0 && last >= b )
                 error(this, "Prefix start not strictly increasing") ;
             if ( n.parentId != id )
                 error(this, "Child %d points to %d, not parent %d", n.id, n.parentId, id) ;
