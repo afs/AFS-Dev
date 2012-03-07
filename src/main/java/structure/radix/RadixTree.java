@@ -388,8 +388,6 @@ public final class RadixTree
                     // not leaf root.
                     int idx = prevNode.locate(node.prefix) ;
                     RadixNode x = prevNode.get(idx) ;
-                    if ( x.id != node.id )
-                        error("Leaf in parent isn't the leaf!") ;
                     prevNode.set(idx, null) ;
                     RadixNode.dealloc(node) ;
                     node = null ;

@@ -194,7 +194,7 @@ class RadixIterator implements Iterator<ByteBuffer>
         {
             //System.out.println("gotoUpAndAcross: "+node2) ;
             
-            RadixNode parent = node2.parent ;
+            RadixNode parent = node2.getParent() ;
             //System.out.println("gotoUpAndAcross:     "+parent) ;
             if ( parent == null )
                 return null ;

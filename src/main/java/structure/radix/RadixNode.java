@@ -32,18 +32,28 @@ import com.hp.hpl.jena.util.iterator.ArrayIterator ;
 
 public final class RadixNode //extends PrintableBase implements Printable 
 {
-    // Debugging? Needed for traversal?
-    // Not needed for deployment version (we only go down the tree).
-    // Iteration?
-    /*package*/ private int parentId ;
-    /*package*/ RadixNode parent ;
+    
+    //TODO Clean and refasctor to allow for different implementations
+    // In-memory
+    //    Old style list of subnodes.
+    //    Here style 256-fan out
+    // Memory blocks
+    //    Different sizes (prefixes, fan-out arrays) 
+    
+    private int parentId ;
+    private RadixNode parent ;
+    /*package*/ final RadixNode getParent()   { return parent ; }
+    
+    // Dirty flag.
+    // boolean nodeChanged = true ;
 
     /*
      * http://en.wikipedia.org/wiki/Radix_tree
      */
 
-    static int counter = 0 ; 
-    int id = (counter++); // Debugging
+    private static int counter = 0 ; 
+    private final int id = (counter++);
+    /*package*/ int getId() { return id ; }
     
     // Prefix to this node from node above.
     
@@ -54,11 +64,17 @@ public final class RadixNode //extends PrintableBase implements Printable
     int lenStart ;
     
     // The nodes below this one, corresponding to each possible next byte
-    final static int FanOutSize = 255 ;
+    private final static int FanOutSize = 255 ;
     //int maxNumChildren()    { return FanOutSize+1 ; }
     
     private RadixNode[] nodes = null ;      // null -> leaf (and here is not null)
+    
+    
+    // TODO Remove "here" and support (key,value)
     private boolean     here =  false ;     // Does this node also record a value?
+//    private byte[]  value = null ;
+//    /*package*/ void setValue(byte[] b) { value = b ; }
+//    public byte[]  getValue()           { return value ; }
     
     boolean isValue()                   { return here ; }
     void    setAsValue(boolean state)   { here = state ; }
@@ -114,10 +130,7 @@ public final class RadixNode //extends PrintableBase implements Printable
             {
                 nodes[idx] = n.nodes[idx] ;
                 if ( nodes[idx] != null )
-                {
-                    nodes[idx].parent = this ;
-                    nodes[idx].parentId = this.id ;
-                }
+                    nodes[idx].setAsParent(this) ;
             }
         }
     }

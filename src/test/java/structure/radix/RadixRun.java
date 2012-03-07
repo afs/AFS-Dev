@@ -31,6 +31,7 @@ import org.openjena.atlas.lib.Bytes ;
 import org.openjena.atlas.lib.RandomLib ;
 import org.openjena.atlas.logging.Log ;
 
+/** Randomly generate keys to add and delete (shuffled) using a RaidxTree - check for consistency. Repeat */ 
 public class RadixRun
 {
     public static void main(String ...argv)
@@ -43,14 +44,14 @@ public class RadixRun
 
 
         int nRuns = 100000 ;
-        int maxLen = 7 ;
-        int nKeys = 20 ;
+        int maxLen = 10 ;
+        int nKeys = 200 ;
         
         final int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
         final int dotsPerLine = 100 ;
         final int ticksPerLine = dotsToCycle*dotsPerLine ;
 
-        System.out.printf("Runs: %,d, maxLen=%d, nKeys=%d\n", nRuns, maxLen, nKeys ) ;
+        System.out.printf("Runs: %,d maxLen=%d nKeys=%d\n", nRuns, maxLen, nKeys ) ;
         for ( int i = 0 ; i < nRuns ; i++ )
         {
             RadixTree trie = new RadixTree() ;
