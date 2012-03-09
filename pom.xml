@@ -25,8 +25,8 @@
     <this.root>${project.artifactId}-${project.version}</this.root>
     <ver.jena>2.7.0-incubating</ver.jena>
     <ver.arq>2.9.0-incubating</ver.arq>
-    <ver.iri>0.9.0-incubating</ver.iri>
-    <ver.tdb>0.9.0-incubating-SNAPSHOT</ver.tdb>
+    <ver.iri>0.9.1-incubating-SNAPSHOT</ver.iri>
+    <ver.tdb>0.9.1-incubating-SNAPSHOT</ver.tdb>
 
     <ver.junit>[4.9,)</ver.junit>
     <ver.slf4j>[1.6.4,)</ver.slf4j>
@@ -133,8 +133,8 @@
           <debug>true</debug>
           <debuglevel>source,lines,vars</debuglevel>
           <optimize>true</optimize>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
 
