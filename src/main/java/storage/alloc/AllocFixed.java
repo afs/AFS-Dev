@@ -25,7 +25,6 @@ import storage.StorageException ;
 
 public class AllocFixed implements Alloc
 {
-    Object lock = new Object() ;
     ByteBuffer space ;
     final int blkSize ;
     int freeChain ;
@@ -49,33 +48,34 @@ public class AllocFixed implements Alloc
         // Create a real freechain?
     }
 
+    // Alternative:
+    // Keep a local Map<ByteBuffer, Long> 
+    // and return ByetBuffers.
+    
     @Override
     public MemBlock alloc(int size)
     {
-        synchronized(lock)
+        if ( freeChain == -1 )
         {
-            if ( freeChain == -1 )
-            {
-                if (space.limit() == space.capacity() )
-                    throw new StorageException("Out of allocation memory") ;
-                // Release a block. 
-                int x = space.limit() ;
-                space.limit(x+blkSize) ;
-                space.position(x) ;
-                ByteBuffer bb = space.slice() ;
-                MemBlock mBlk = new MemBlock(freeChain, blkSize, bb) ;
-                return mBlk ;
-            }
-
-            int next = space.getInt(freeChain) ;
-            // Remember where we are in the overall buffer.
-            space.position(freeChain) ;
-            space.limit(freeChain+blkSize) ;
+            if (space.limit() == space.capacity() )
+                throw new StorageException("Out of allocation memory") ;
+            // Release a block. 
+            int x = space.limit() ;
+            space.limit(x+blkSize) ;
+            space.position(x) ;
             ByteBuffer bb = space.slice() ;
             MemBlock mBlk = new MemBlock(freeChain, blkSize, bb) ;
-            freeChain = next ;
-            return mBlk ; // Do not use first 4 bytes.
+            return mBlk ;
         }
+
+        int next = space.getInt(freeChain) ;
+        // Remember where we are in the overall buffer.
+        space.position(freeChain) ;
+        space.limit(freeChain+blkSize) ;
+        ByteBuffer bb = space.slice() ;
+        MemBlock mBlk = new MemBlock(freeChain, blkSize, bb) ;
+        freeChain = next ;
+        return mBlk ; // Do not use first 4 bytes.
     }
 
     @Override
@@ -86,6 +86,5 @@ public class AllocFixed implements Alloc
         freeChain = mBlk.location ;
         space.putInt(freeChain, freeChain0) ;
     }
-
 }
 

@@ -26,7 +26,7 @@
     <ver.jena>2.7.0-incubating</ver.jena>
     <ver.arq>2.9.0-incubating</ver.arq>
     <ver.iri>0.9.0-incubating</ver.iri>
-    <ver.tdb>0.9.0-incubating-SNAPSHOT</ver.tdb>
+    <ver.tdb>0.9.0-incubating</ver.tdb>
 
     <ver.junit>[4.9,)</ver.junit>
     <ver.slf4j>[1.6.4,)</ver.slf4j>
