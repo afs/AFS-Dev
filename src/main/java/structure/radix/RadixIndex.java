@@ -37,8 +37,6 @@ public class RadixIndex implements RangeIndex
     public RadixIndex(RecordFactory recordFactory)
     {
         this.recordFactory = recordFactory ;
-        if ( recordFactory.hasValue() )
-            throw new UnsupportedOperationException("Records with values") ; 
     }
     
     @Override
@@ -58,7 +56,7 @@ public class RadixIndex implements RangeIndex
     @Override
     public boolean add(Record record)
     {
-        return radix.insert(record.getKey()) ;
+        return radix.insert(record.getKey(), record.getValue()) ;
     }
 
     @Override

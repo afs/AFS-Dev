@@ -18,10 +18,45 @@
 
 package dev;
 
+import structure.radix.RadixIndex ;
+
+import com.hp.hpl.jena.tdb.base.file.FileSet ;
+import com.hp.hpl.jena.tdb.base.record.RecordFactory ;
+import com.hp.hpl.jena.tdb.index.Index ;
+import com.hp.hpl.jena.tdb.index.RangeIndex ;
+import com.hp.hpl.jena.tdb.setup.* ;
+
 public class RunAFS
 {
     public static void main(String ...argv)
     {
+        BlockMgrBuilder blockMgrBuilder = null ;
+        NodeTableBuilder nodeTableBuilder = null ;
+        
+        new DatasetBuilderStd(blockMgrBuilder, nodeTableBuilder) ;
+        
     }
+    
+    static class RangeIndexBuilderR implements RangeIndexBuilder
+    {
+
+        @Override
+        public RangeIndex buildRangeIndex(FileSet fileSet, RecordFactory recordfactory)
+        {
+            return new RadixIndex(recordfactory) ;
+        }
+        
+    }
+
+    static class IndexBuilderR implements IndexBuilder
+    {
+
+        @Override
+        public Index buildIndex(FileSet fileSet, RecordFactory recordfactory)
+        {
+            return new RadixIndex(recordfactory) ;
+        }
+    }
+
 }
 

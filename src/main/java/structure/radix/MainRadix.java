@@ -21,9 +21,6 @@ import java.nio.ByteBuffer ;
 import java.util.Arrays ;
 import java.util.Iterator ;
 
-import org.junit.runner.JUnitCore ;
-import org.junit.runner.Result ;
-import org.openjena.atlas.junit.TextListener2 ;
 import org.openjena.atlas.logging.Log ;
 
 public class MainRadix
@@ -48,13 +45,17 @@ public class MainRadix
     // Insert - new root
     static byte[] key6 = { 0 , 1 , 2 , 3 , 4  } ;
     
-    static boolean print = false ;
+    static boolean print = true ;
 
     public static void main(String ...argv)
     { 
+        Log.setLog4j() ;
+        RadixTree.logging = true ;
+        RadixTree.checking = true ;
+        Log.enable("structure.radix") ;
         //runJUnit() ;
         
-        if ( false )
+        if ( true )
         {
             byte[] k1 = { 1 , 2 , 3 } ;
             byte[] k2 = { 1 , 2 } ;
@@ -111,10 +112,12 @@ public class MainRadix
     
     static private RadixTree tree(RadixTree t, byte[] ... keys)
     {
-        for ( byte[]k : keys )
+        for ( int i = 0 ; i < keys.length ; i++ )
         {
+            byte[] k = keys[i] ;
+            byte[] v = TestRadix.valFromKey(k) ;
             if (print) System.out.println("Build: "+RLib.str(k)) ;
-            t.insert(k) ;
+            t.insert(k,v) ;
             if (print) t.print() ;
             t.check() ;
             if (print) System.out.println() ;
@@ -122,13 +125,13 @@ public class MainRadix
         return t ;
     }
 
-    static private void runJUnit()
-    {
-        JUnitCore runner = new org.junit.runner.JUnitCore() ;
-        runner.addListener(new TextListener2(System.out)) ;
-        //TestRadix.beforeClass() ;
-        Result result = runner.run(TestRadix.class) ;
-        //TestRadix.afterClass() ;
-        System.exit(0) ;
-    }
+//    static private void runJUnit()
+//    {
+//        JUnitCore runner = new org.junit.runner.JUnitCore() ;
+//        runner.addListener(new TextListener2(System.out)) ;
+//        //TestRadix.beforeClass() ;
+//        Result result = runner.run(TestRadix.class) ;
+//        //TestRadix.afterClass() ;
+//        System.exit(0) ;
+//    }
 }

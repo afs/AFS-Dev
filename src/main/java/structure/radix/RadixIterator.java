@@ -86,7 +86,7 @@ class RadixIterator implements Iterator<ByteBuffer>
         
         static ByteBuffer min(RadixNode node, ByteBuffer slot)
         {
-            while(!node.isValue())
+            while(!node.hasEntry())
             {
                 // Copy as we go.
                 slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;
@@ -103,7 +103,7 @@ class RadixIterator implements Iterator<ByteBuffer>
         // TODO assumes bytebuffer large enough.
         private static RadixNode downToMinNode(RadixNode node, ByteBuffer slot)
         {
-            while(!node.isValue())
+            while(!node.hasEntry())
             {
                 // Copy as we go.
                 slot = appendBytes(node.prefix, 0, node.prefix.length, slot) ;

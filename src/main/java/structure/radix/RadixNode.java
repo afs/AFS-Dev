@@ -33,7 +33,10 @@ import com.hp.hpl.jena.util.iterator.ArrayIterator ;
 public final class RadixNode //extends PrintableBase implements Printable 
 {
     
-    //TODO Clean and refasctor to allow for different implementations
+    //TODO Clean and refactor to allow for different implementations
+    // Nibble mode: array of first nibble.
+    // Flag to say if to look in first or second nibble.
+    // Interface for lenStart, lenFinish
     // In-memory
     //    Old style list of subnodes.
     //    Here style 256-fan out
@@ -46,6 +49,8 @@ public final class RadixNode //extends PrintableBase implements Printable
     
     // Dirty flag.
     // boolean nodeChanged = true ;
+    
+    // Nibble flag
 
     /*
      * http://en.wikipedia.org/wiki/Radix_tree
@@ -68,36 +73,46 @@ public final class RadixNode //extends PrintableBase implements Printable
     //int maxNumChildren()    { return FanOutSize+1 ; }
     
     private RadixNode[] nodes = null ;      // null -> leaf (and here is not null)
+
+    // The "key exists, no value" maker when used as just a key, no value index.
+    static private byte[] value0 = new byte[0] ;
     
+    // Null means no entry here.
+    private byte[] value = null ; 
     
-    // TODO Remove "here" and support (key,value)
-    private boolean     here =  false ;     // Does this node also record a value?
-//    private byte[]  value = null ;
-//    /*package*/ void setValue(byte[] b) { value = b ; }
-//    public byte[]  getValue()           { return value ; }
-    
-    boolean isValue()                   { return here ; }
-    void    setAsValue(boolean state)   { here = state ; }
+    byte[]  getValue()                  { return (value==value0)?null:value ; }
+    boolean hasEntry()                  { return value != null && value != value0 ; }
+    void    setValue(byte[]  value)     { this.value = ((value==null) ? value0: value)  ; }
+    void    clearValue()                { this.value = null ; }
 
     private void setAsParent(RadixNode n)
     {
         if ( n != null )
         {
-            n.parent = this ;
-            n.parentId = this.id ;
+            this.parent = n ;
+            this.parentId = n.id ;
         }
     }
 
     // Get/set a slot
     RadixNode get(int idx)
     {
+        // Nodes -> long id ; long id -> RadixNode
+        //radixManager.get(idx) ;
         return nodes[idx] ;
+    }
+    
+    /** No longer in use. */
+    void release()
+    {
+        radixManager.release(this) ;
     }
 
     void set(int idx, RadixNode n)
     {
         nodes[idx] = n ;
-        setAsParent(n) ;
+        if ( n != null )
+            n.setAsParent(this) ;
     }
 
     int nextIndex(int start)
@@ -121,9 +136,13 @@ public final class RadixNode //extends PrintableBase implements Printable
         
     }
     
+    // XXX rename.
     void takeSubNodes(RadixNode n)
     {
-        this.here = n.here ;
+        if ( this.value != null )
+            error("takeSubNodes: Can't pull up - already got a value") ;
+        
+        this.value = n.value ;
         if ( n.nodes != null )
         {
             for ( int idx = 0 ; idx < n.nodes.length ; idx++ )
@@ -201,13 +220,14 @@ public final class RadixNode //extends PrintableBase implements Printable
         if ( nodes == null )
             nodes = new RadixNode[FanOutSize] ;
         Arrays.fill(nodes, null) ;
+        value = null ;
         return this ;
     }
     
     // XXX Version that always changes the node -- checking.
     RadixNode convertToLeaf()
     {
-        setAsValue(true) ;
+        setValue(null) ;
         if ( nodes == null )
             return this ;
         nodes = null ;
@@ -232,6 +252,7 @@ public final class RadixNode //extends PrintableBase implements Printable
      *      
      */
     
+    static RadixNodeManager radixManager = null ;
     
     static RadixNode allocBlank(RadixNode parent) { return new RadixNode(parent) ; }
     static void dealloc(RadixNode node) { }    
@@ -240,7 +261,7 @@ public final class RadixNode //extends PrintableBase implements Printable
     { 
         this.parent = parent ;
         this.parentId = (parent==null)? -1 : parent.id ;
-        setAsValue(false) ;
+        setValue(null) ;
     }
 
     // Space cost:
@@ -279,12 +300,17 @@ public final class RadixNode //extends PrintableBase implements Printable
     {
         String prefixStr = Bytes.asHex(prefix) ;
         if ( isLeaf() )
-            return String.format("Leaf[%d/%d]: Length=(%d,%d) :: prefix = %s", id, parentId, lenStart, lenFinish, prefixStr) ; 
+        {
+            String valStr = Bytes.asHex(value) ;
+            return String.format("Leaf[%d/%d]: Length=(%d,%d) :: prefix = %s : value = %s", id, parentId, lenStart, lenFinish, prefixStr, valStr) ;
+        }
+        
+        String valStr = "" ;
+        
+        if ( hasEntry() )
+            valStr = "["+Bytes.asHex(value)+"]" ;
         
         StringBuilder b = new StringBuilder() ;
-        if ( isValue() )
-            b.append(" [Value]") ;
-        
         for ( RadixNode n : nodes )
         {
             if ( n == null )
@@ -292,7 +318,8 @@ public final class RadixNode //extends PrintableBase implements Printable
             b.append(" ") ;
             b.append(n.id+"") ;
         }
-        return String.format("Node[%d/%d]: Length=(%d,%d) :: prefix = %s -> Sub:%s", id, parentId, lenStart, lenFinish, prefixStr, b.toString() ) ;
+        
+        return String.format("Node[%d/%d]: Length=(%d,%d) :: prefix = %s%s -> Sub:%s", id, parentId, lenStart, lenFinish, prefixStr, valStr, b.toString() ) ;
     }
     
     /*public*/ void output(final IndentedWriter out)
@@ -427,7 +454,7 @@ public final class RadixNode //extends PrintableBase implements Printable
 
         if ( isLeaf() )
         {
-            if ( ! isValue() )
+            if ( ! hasEntry() )
                 error(this, "leaf but not a value") ;
             return ;
         }
@@ -437,13 +464,13 @@ public final class RadixNode //extends PrintableBase implements Printable
         
         if ( c == 0 )
         {
-            if ( this.isValue() )
+            if ( this.hasEntry() )
                 error(this, "Branch should be a leaf.") ;
             else
                 error(this, "Branch with no subnodes and no value") ;
         }
             
-        if ( c == 1 && ! this.isValue() )
+        if ( c == 1 && ! this.hasEntry() )
             error(this, "One subnode but this is not a value") ;
         
         // Legal?
@@ -516,7 +543,12 @@ public final class RadixNode //extends PrintableBase implements Printable
         visitor.after(this) ;
     }
     
-    private static void error(RadixNode node, String message, Object... args)
+    void error(String message, Object... args)
+    {
+        error(this, message, args) ;
+    }
+    
+    /*package*/static void error(RadixNode node, String message, Object... args)
     {
         System.out.flush() ;
         message = String.format(message, args) ;

@@ -31,7 +31,6 @@ import org.openjena.atlas.lib.Bytes ;
 import org.openjena.atlas.lib.Chars ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
-
 /* http://en.wikipedia.org/wiki/Radix_tree */
 public final class RadixTree
 {
@@ -40,6 +39,7 @@ public final class RadixTree
     // Iteration
     // Value?
     // Architecture : action visitor pattern - find&do (overhead?)
+    // Add value
     
     static public boolean logging = true ;
     static public /*final*/ boolean checking = true ;
@@ -58,10 +58,10 @@ public final class RadixTree
      * <li>parent of the node </li>
      * </ul> 
      */
-    private interface Action { RadixNode exec(byte[] key, RadixNode node, int N, RadixNode parentNode) ; }
+    private interface Action { RadixNode exec(byte[] key, byte[] value, RadixNode node, int N, RadixNode parentNode) ; }
 
     /** Find the starting point - call the action */
-    private static RadixNode applicator(RadixNode root, byte[] key, Action action)
+    private static RadixNode applicator(RadixNode root, byte[] key, byte[] value, Action action)
     {
         // A convoluted way to "return" with three results by calling on to a handler.
         // Assumes root is not null.
@@ -75,24 +75,24 @@ public final class RadixTree
             if ( N < node.prefix.length )
                 // Includes negative N
                 // Key ran out.
-                return action.exec(key, node, N, nodePrev) ;
+                return action.exec(key, value, node, N, nodePrev) ;
             // N == prefix
             if ( node.isLeaf() )
                 // Whether it matches or not, this is the node where the action is.
-                return action.exec(key, node, N, nodePrev) ;
+                return action.exec(key, value, node, N, nodePrev) ;
             
             // Reached end; may end here, may not.
             // Longer or same length key.
             int j = node.locate(key, node.lenFinish) ;
             if ( j < 0 ) //|| j == node.nodes.length )
                 // No match across subnodes - this node is the point of longest match.
-                return action.exec(key, node, node.prefix.length, nodePrev) ;
+                return action.exec(key, value, node, node.prefix.length, nodePrev) ;
             // There is a next node down to try.
             nodePrev = node ;
             RadixNode node1 = node.get(j) ;
             // Nothign to go to
             if ( node1 == null )
-                return action.exec(key, node, node.prefix.length, nodePrev) ;
+                return action.exec(key, value, node, node.prefix.length, nodePrev) ;
             node = node1 ;
         }
         // Does not happen
@@ -108,19 +108,19 @@ public final class RadixTree
     {
         if ( root == null )
             return null ;
-        return applicator(root, key, findAction) ;
+        return applicator(root, key, null, findAction) ;
     }        
 
     
     private static Action findAction = new Action() {
 
         @Override
-        public RadixNode exec(byte[] key, RadixNode node, int N, RadixNode nodePrev)
+        public RadixNode exec(byte[] key, byte[] value, RadixNode node, int N, RadixNode nodePrev)
         {
             if ( N == node.prefix.length && node.lenFinish == key.length )
             {
-                if ( node.isValue() )
-                    // Exact match
+                if ( node.hasEntry() )
+                    // Exact match of key.
                     return node ;
             }
             return null ;
@@ -130,11 +130,11 @@ public final class RadixTree
     private static Action searchAction = new Action() {
 
         @Override
-        public RadixNode exec(byte[] key, RadixNode node, int N, RadixNode nodePrev)
+        public RadixNode exec(byte[] key, byte[] value, RadixNode node, int N, RadixNode nodePrev)
         {
             if ( N != node.prefix.length )
                 return null ;
-            if ( node.isValue())
+            if ( node.hasEntry())
                 return node ;
             return null ;
         }
@@ -144,18 +144,18 @@ public final class RadixTree
     {
         if ( root == null )
             return null ;
-        return applicator(root, key, searchAction) ;
+        return applicator(root, key, null, searchAction) ;
     }
 
     // Return top changed node.
     private static Action insertAction = new Action()
     {
         @Override
-        public RadixNode exec(byte[] key, RadixNode node, int N, RadixNode nodePrev)
+        public RadixNode exec(byte[] key, byte[] value, RadixNode node, int N, RadixNode nodePrev)
         {
             if (logging && log.isDebugEnabled() )
             {
-                log.debug("insert: "+RLib.str(key)) ;
+                log.debug("insert: ("+RLib.str(key)+", "+RLib.str(value)+")") ;
                 log.debug("insert: here => "+node) ;
                 log.debug("insert: prev => "+ ((nodePrev==null)?"null":nodePrev.toString()) ) ;
                 log.debug("insert: N = "+N) ;
@@ -178,7 +178,7 @@ public final class RadixTree
              * There is common processing.
              */
 
-            // Key already present - we ended at a leaf.
+            // Key already present - we ended at leaf or branch exactly.
             if ( N == node.prefix.length && node.lenFinish == key.length ) 
             {
                 // Cases L1, B1 and B2
@@ -187,10 +187,12 @@ public final class RadixTree
                     // L1 and B1
                     if (logging && log.isDebugEnabled() )
                         log.debug("insert: Already present") ;
+                    node.setValue(value) ;
+                    //XXX return node is different.
                     return null ;
                 }
                 // B2
-                node.setAsValue(true) ;
+                node.setValue(value) ;
                 return node ;
             }
 
@@ -209,7 +211,7 @@ public final class RadixTree
                 if ( node.isLeaf() )
                 {
                     node = node.convertToEmptyBranch() ;
-                    node.setAsValue(true) ;
+                    node.setValue(value) ;
                 }
                 RadixNode n = RadixNode.allocBlank(node) ;
                 n = n.convertToLeaf() ;
@@ -224,55 +226,81 @@ public final class RadixTree
                 return node ;
             }
 
+            // Key shorter or diverges in the middle of the prefix.
+            
             // Cases remaining. L3, B3, L4, B4  
             
             // Cases L3, B3 : Key is shorter than prefix.
             // Split the prefix upto the end of the key.
             // Make this node a value node (or leaf).
             
-            
             // Cases L4, B4.
-            // Key diverges at this node at point N.
+            // Key diverges at this node at point N, not the full prefix.
             // Split the prefix upto the point of diverence.
             // Don't make this node a value node.
             
-            byte[] prefixHere ;
-            // Original data.
-            byte[] prefixSub1 ;
-            // New data.
-            byte[] prefixSub2 ;
-            
-            boolean makeAValueNode = false ;
-            
             if ( N < 0 )
             {
-                // Key ran out.
+                // Key ran out.  new node will be inserted.
+                // Cases L3, B3.
                 N = -(N+1) ;
-                prefixHere = Bytes.copyOf(node.prefix, 0, N) ;
+                byte[] prefixHere = Bytes.copyOf(node.prefix, 0, N) ;
                 // Remainder of original data.
-                prefixSub1  = Bytes.copyOf(node.prefix, N) ;
-                // New data.  Keys end here so no more data.
-                prefixSub2  = null ;
-                makeAValueNode = true ;
-            }
-            else
-            {
-                // N >= 0
-                // Key diverges at N
-                if ( key.length <= node.lenStart )
-                    error("Incorrect key length: "+key.length+" ("+node.lenStart+","+node.lenFinish+")") ;
-                // Case N = 0 only occurs at root (else a match to previous node).
-                // Key shorter than this node and ends here.
-                prefixHere = Bytes.copyOf(node.prefix, 0, N) ;
-                // Remainder of original data.
-                prefixSub1  = Bytes.copyOf(node.prefix, N) ;
-                // New data from key.
-                prefixSub2  = Bytes.copyOf(key, N+node.lenStart) ;
-                makeAValueNode = false ;
-            }
-            
+                byte[] prefixSub  = Bytes.copyOf(node.prefix, N) ;
                 
-            // Key shorter than this node and ends here. 
+                if (logging && log.isDebugEnabled() )
+                {
+                    log.debug("Key ends mid-way through this node") ;
+                    log.debug("  Prefix here : "+Bytes.asHex(prefixHere)) ;
+                    log.debug("  Prefix sub  : "+Bytes.asHex(prefixSub)) ;
+                }
+
+                // New node to go under this one.
+                RadixNode node1 = RadixNode.allocBlank(node) ;
+                node1.prefix = prefixSub ; 
+                node1.lenStart = node.lenStart+N ;
+                node1.lenFinish = node.lenFinish ;
+                if ( ! node.isLeaf() )
+                {
+                    node1 = node1.convertToEmptyBranch() ;
+                    node1.takeSubNodes(node) ;
+                }
+                else
+                    node1.setValue(node.getValue()) ;
+                
+                // Clear this node, making is a part of the prefix from before.
+                node = node.convertToEmptyBranch() ;
+                node.prefix = prefixHere ;
+                //node.lenStart = node.lenStart ;
+                node.lenFinish = node.lenStart+N ;
+                // Carry the inserted value.
+                node.setValue(value) ;
+                
+                // Put in the neew subnode.
+                int idx1 = node.locate(prefixSub) ;
+                node.set(idx1, node1) ;
+                return node ;
+            }
+            // While there is some duplication of code fragement between this case
+            // and the last, it's easier to have simple, direct code without
+            // various "if"s.
+
+            // N >= 0
+            // Key diverges at N
+            // Cases L4, B4
+
+            
+            if ( key.length <= node.lenStart )
+                error("Incorrect key length: "+key.length+" ("+node.lenStart+","+node.lenFinish+")") ;
+            // Case N = 0 only occurs at root (else a match to previous node).
+            // Key shorter than this node and ends here.
+            
+            // New prefix to the split point
+            byte[] prefixHere = Bytes.copyOf(node.prefix, 0, N) ;
+            // Remainder of original data.
+            byte[] prefixSub1  = Bytes.copyOf(node.prefix, N) ;
+            // New data from key.
+            byte[] prefixSub2  = Bytes.copyOf(key, N+node.lenStart) ;
                 
             if (logging && log.isDebugEnabled() )
             {
@@ -294,43 +322,42 @@ public final class RadixTree
                 node1 = node1.convertToEmptyBranch() ;
                 node1.takeSubNodes(node) ;
             }
-            node1.setAsValue(node.isValue()) ;
+            node1.setValue(node.getValue()) ;
+            
+            // The new leaf for the new data
+            RadixNode node2 = RadixNode.allocBlank(node) ;
+            node2.prefix = prefixSub2 ; 
+            node2.lenStart = node.lenStart+N ;
+            node2.lenFinish = key.length ;
+            node2.setValue(value) ;
 
-            // The new leaf for the new data if key longer.
-            RadixNode node2 = null ;
-            if ( prefixSub2 != null )
-            {
-                node2 = RadixNode.allocBlank(node) ;
-                node2.prefix = prefixSub2 ; 
-                node2.lenStart = node.lenStart+N ;
-                node2.lenFinish = key.length ;
-                node2.setAsValue(true) ;
-            }
-            else
-                node.setAsValue(true) ;
-                
-            // Now make node a two way (or one way if it is now the value)
+            // Now make node a two way in-place.
+            
             node = node.convertToEmptyBranch() ;
             node.prefix = prefixHere ;
             //node.lenStart
             node.lenFinish = node.lenStart+N ;
-            node.setAsValue(makeAValueNode) ;
+            node.setValue(null) ;
                 
             int idx1 = node.locate(prefixSub1) ;
             node.set(idx1, node1) ;
-            if ( node2 != null )
-            {
-                int idx2 = node.locate(prefixSub2) ;
-                node.set(idx2, node2) ;
-            }
+            int idx2 = node.locate(prefixSub2) ;
+            node.set(idx2, node2) ;
             return node ;
         }
     } ;
     
-    public boolean insert(byte[] key)
+    public boolean insert(byte[] key, byte[] value)
     {
         if (logging && log.isDebugEnabled() )
-            log.debug("** Insert : "+Bytes.asHex(key)) ;
+        {
+            String v = (value==null)?"null":Bytes.asHex(value) ;
+            log.debug("** Insert : ("+Bytes.asHex(key)+","+v+")") ;
+        }
+     
+        if ( value == null )
+            // XXX Value is never null.
+            value = key ;
         
         if ( root == null )
         {
@@ -338,17 +365,17 @@ public final class RadixTree
             root.prefix = key ;
             root.lenStart = 0 ;
             root.lenFinish = key.length ;
-            root.setAsValue(true) ;
+            root.setValue(value) ;
             return true ;
         }
         
-        return applicator(root, key, insertAction) != null ;
+        return applicator(root, key, value, insertAction) != null ;
     }
     
     private static Action deleteAction = new Action()
     {
         @Override
-        public RadixNode exec(byte[] key, RadixNode node, int N, RadixNode prevNode)
+        public RadixNode exec(byte[] key, byte[] value, RadixNode node, int N, RadixNode prevNode)
         {
             if (logging && log.isDebugEnabled() )
             {
@@ -396,15 +423,15 @@ public final class RadixTree
                 else
                 {
                     // Root.
-                    node.setAsValue(false) ;
+                    node.clearValue() ;
                     return node ;
                 }
             }
             else
             {
                 // Branch.  Delete is a value branch.
-                if ( node.isValue() && node.isValue() )
-                    node.setAsValue(false) ;
+                if ( node.hasEntry() && node.hasEntry() )
+                    node.setValue(null) ;
                     // Drop though to fixup.
                 else
                     // Didn't match after all.
@@ -429,11 +456,11 @@ public final class RadixTree
     {
         if ( root == null )
             return false ;
-        RadixNode n = applicator(root, key, deleteAction) ;
+        RadixNode n = applicator(root, key, null, deleteAction) ;
         
         // Fixup root.
         // If the root changed and now has no-subnodes and no value, free it.
-        if ( n != null && n.isRoot() && (n.countSubNodes() == 0 && ! n.isValue() ) )
+        if ( n != null && n.isRoot() && (n.countSubNodes() == 0 && ! n.hasEntry() ) )
         {
             RadixNode.dealloc(n) ;
             root = null ;
@@ -454,7 +481,7 @@ public final class RadixTree
         int c = node.countSubNodes() ;
         if ( c == 0 )
         {
-            if ( node.isValue() )
+            if ( node.hasEntry() )
                 node = node.convertToLeaf() ;
             // else; should not happen  - a non-value branch which had one leaf subnode 
             else
@@ -465,7 +492,7 @@ public final class RadixTree
         if ( c != 1 )
             return null ;
         
-        if ( node.isValue() )
+        if ( node.hasEntry() )
             return null ;
         // Find exactly one subnode.
         RadixNode sub = node.oneSubNode() ;
@@ -482,7 +509,7 @@ public final class RadixTree
         }
         
         // We're a value if the subnode was a value.
-        node.setAsValue(sub.isValue()) ;
+        node.setValue(sub.getValue()) ;
 
         // Combined prefix.
         int len1 = node.prefix.length + sub.prefix.length ;  
@@ -583,7 +610,7 @@ public final class RadixTree
             @Override
             public void before(RadixNode node)
             {
-                if (node.isValue()) 
+                if (node.hasEntry()) 
                     count++ ;
             }
             
@@ -653,7 +680,7 @@ public final class RadixTree
             {
                 for ( byte b : node.prefix )
                     x.addLast(b) ;
-                if ( node.isValue() )
+                if ( node.hasEntry() )
                 {
                     System.out.print("[") ;
                     System.out.print(Iter.iter(x.iterator()).map(hex).asString(", ")) ;

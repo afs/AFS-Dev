@@ -29,5 +29,9 @@ public class RadixNodeManager
     // TODO Finish!
     RadixNode allocBlank(RadixNode parent)  { return RadixNode.allocBlank(parent) ; }
     void dealloc(RadixNode node)            { RadixNode.dealloc(node) ; }
+    
+    RadixNode get(long id)                   { return null ; }
+    void release(RadixNode node)            {} 
+
 }
 

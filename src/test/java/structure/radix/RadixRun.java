@@ -213,7 +213,7 @@ public class RadixRun
     static void insertAndCheck(RadixTree trie, byte[] key)
     {
         boolean b2 = ! trie.contains(key) ;
-        boolean b = trie.insert(key) ;
+        boolean b = trie.insert(key, key) ;
         if ( b != b2 )
         {
             System.out.flush() ;

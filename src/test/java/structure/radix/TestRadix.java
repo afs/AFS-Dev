@@ -190,7 +190,7 @@ public class TestRadix extends BaseTest
         for ( byte[]k : keys )
         {
             if (print) System.out.println("Build: "+RLib.str(k)) ;
-            t.insert(k) ;
+            t.insert(k, k) ;
             if (print) t.print() ;
             t.check() ;
             if (print) System.out.println() ;
@@ -206,9 +206,11 @@ public class TestRadix extends BaseTest
     
     static void test(RadixTree t, byte[]... keys)
     {
+        
         for ( byte[]k : keys )
         {
-            t.insert(k) ;
+            byte[] v = valFromKey(k) ;
+            t.insert(k, v) ;
             t.check() ;
             assertTrue(t.contains(k)) ; 
         }
@@ -225,30 +227,38 @@ public class TestRadix extends BaseTest
         assertTrue(t.isEmpty()) ;
     }
 
+    public static byte[] valFromKey(byte[] k)
+    {
+        byte[] v = new byte[k.length] ;
+        for ( int j = 0 ; j < v.length ; j++ )
+            v[j] = (byte)(k[j]+10) ;
+        return v ;
+    }
+
     static void check(RadixTree t, byte[] ... keys)
     {
         for ( byte[]k : keys )
             assertTrue("Not found: Key: "+RLib.str(k), t.contains(k)) ;
     }
     
-    private static void insert(RadixTree t, byte[] key)
-    {
-        t.insert(key) ;
-        t.check();
-        RadixNode n = t.find(key) ;
-        assertNotNull(n) ;
-        assertEquals(key.length, n.lenFinish) ;
-    }
-    
-    private static void delete(RadixTree trie, byte[] key)
-    {
-        boolean b2 = ( trie.find(key) != null ) ;
-        boolean b = trie.delete(key) ;
-        System.out.flush() ;
-        if ( b != b2 )
-            System.err.println("Inconsistent (delete)") ;
-        trie.check() ;
-    }
+//    private static void insert(RadixTree t, byte[] key, byte[] value)
+//    {
+//        t.insert(key, value) ;
+//        t.check();
+//        RadixNode n = t.find(key) ;
+//        assertNotNull(n) ;
+//        assertEquals(key.length, n.lenFinish) ;
+//    }
+//    
+//    private static void delete(RadixTree trie, byte[] key)
+//    {
+//        boolean b2 = ( trie.find(key) != null ) ;
+//        boolean b = trie.delete(key) ;
+//        System.out.flush() ;
+//        if ( b != b2 )
+//            System.err.println("Inconsistent (delete)") ;
+//        trie.check() ;
+//    }
 
     static void count(RadixTree t, int size)
     {
