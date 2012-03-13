@@ -23,6 +23,7 @@ import java.util.Iterator ;
 import java.util.List ;
 
 import org.junit.Test ;
+import org.openjena.atlas.AtlasException ;
 import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.junit.BaseTest ;
 
@@ -210,20 +211,14 @@ public class TestRadix extends BaseTest
         for ( byte[]k : keys )
         {
             byte[] v = valFromKey(k) ;
-            t.insert(k, v) ;
-            t.check() ;
-            assertTrue(t.contains(k)) ; 
+            insert(t, k, v) ;
         }
         count(t, keys.length) ;
         check(t, keys) ;
         if ( keys.length > 0 )
             assertFalse(t.isEmpty()) ;
         for ( byte[]k : keys )
-        {
-            t.delete(k) ;
-            t.check() ;
-            assertFalse(t.contains(k)) ; 
-        }
+            delete(t, k) ;
         assertTrue(t.isEmpty()) ;
     }
 
@@ -241,24 +236,32 @@ public class TestRadix extends BaseTest
             assertTrue("Not found: Key: "+RLib.str(k), t.contains(k)) ;
     }
     
-//    private static void insert(RadixTree t, byte[] key, byte[] value)
-//    {
-//        t.insert(key, value) ;
-//        t.check();
-//        RadixNode n = t.find(key) ;
-//        assertNotNull(n) ;
-//        assertEquals(key.length, n.lenFinish) ;
-//    }
-//    
-//    private static void delete(RadixTree trie, byte[] key)
-//    {
-//        boolean b2 = ( trie.find(key) != null ) ;
-//        boolean b = trie.delete(key) ;
-//        System.out.flush() ;
-//        if ( b != b2 )
-//            System.err.println("Inconsistent (delete)") ;
-//        trie.check() ;
-//    }
+    private static void insert(RadixTree t, byte[] key, byte[] value)
+    {
+        t.insert(key, value) ;
+        t.check();
+        assertTrue(t.contains(key)) ; 
+        RadixNode n = t.find(key) ;
+        assertNotNull(n) ;
+        assertEquals(key.length, n.lenFinish) ;
+    }
+    
+    private static void delete(RadixTree trie, byte[] key)
+    {
+        boolean b2 = ( trie.find(key) != null ) ;
+        boolean b = trie.delete(key) ;
+        try {
+            trie.check() ;
+        } catch (AtlasException ex) 
+        {
+            trie.print() ;
+            throw ex ;
+        }
+        
+        assertFalse(trie.contains(key)) ;
+        RadixNode n = trie.find(key) ;
+        assertNull(n) ;
+    }
 
     static void count(RadixTree t, int size)
     {
