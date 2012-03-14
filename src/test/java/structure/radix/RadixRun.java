@@ -45,7 +45,7 @@ public class RadixRun
 
         int nRuns = 100000 ;
         int maxLen = 10 ;
-        int nKeys = 200 ;
+        int nKeys = 100 ;
         
         final int dotsToCycle = nRuns > 10000 ? 100 : 10 ;
         final int dotsPerLine = 100 ;

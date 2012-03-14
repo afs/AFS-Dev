@@ -210,14 +210,16 @@ public final class RadixTree
                 // L5: Leaf to branch.
                 if ( node.isLeaf() )
                 {
+                    byte[] v = node.getValue() ;
                     node = node.convertToEmptyBranch() ;
-                    node.setValue(value) ;
+                    node.setValue(v) ;
                 }
                 RadixNode n = RadixNode.allocBlank(node) ;
                 n = n.convertToLeaf() ;
                 n.prefix = prefixNew ;
                 n.lenStart = node.lenFinish ;
                 n.lenFinish = key.length ;
+                n.setValue(value) ;
                 
                 int idx = node.locate(prefixNew) ;
                 if ( node.get(idx) != null )
@@ -434,8 +436,7 @@ public final class RadixTree
                     node.setValue(null) ;
                     // Drop though to fixup.
                 else
-                    // Didn't match after all.
-                    return null ;
+                    return null ;       // Didn't match after all.
             }
 
             // Now we need to sort out the tree after a change.
@@ -447,13 +448,15 @@ public final class RadixTree
             if ( fixupNode2 != null )
                 fixupNode = fixupNode2 ;
             return fixupNode ;
-
         }
     } ;
     
     /** Delete - return true if the tree changed (i.e the key was present and so was removed) */
     public boolean delete(byte[] key)
     {
+        if (logging && log.isDebugEnabled() )
+            log.debug("** Delete : "+Bytes.asHex(key)) ;
+        
         if ( root == null )
             return false ;
         RadixNode n = applicator(root, key, null, deleteAction) ;
@@ -482,7 +485,11 @@ public final class RadixTree
         if ( c == 0 )
         {
             if ( node.hasEntry() )
+            {
+                byte[] v = node.getValue() ;
                 node = node.convertToLeaf() ;
+                node.setValue(v) ;
+            }
             // else; should not happen  - a non-value branch which had one leaf subnode 
             else
                 error("Branch has no subnodes but didn't have a value") ;
@@ -508,36 +515,43 @@ public final class RadixTree
             log.debug("  sub : "+sub) ;
         }
         
-        // We're a value if the subnode was a value.
-        node.setValue(sub.getValue()) ;
+//        // We're a value if the subnode was a value.
+//        node.setValue(sub.getValue()) ;
 
         // Combined prefix.
         int len1 = node.prefix.length + sub.prefix.length ;  
         int len =  sub.lenFinish - node.lenStart ;
         if ( len1 != len )
             error("Inconsistency in length calculations") ;
+
         // Merged prefix.
-        byte [] p = new byte[len] ;
-        System.arraycopy(node.prefix, 0, p, 0, node.prefix.length) ;
-        System.arraycopy(sub.prefix,  0, p, node.prefix.length, sub.prefix.length) ;  
+        byte [] newPrefix = new byte[len] ;
+        System.arraycopy(node.prefix, 0, newPrefix, 0, node.prefix.length) ;
+        System.arraycopy(sub.prefix,  0, newPrefix, node.prefix.length, sub.prefix.length) ;
         if ( logging && log.isDebugEnabled() )
-            log.debug("New prefix: "+RLib.str(p)) ;
-        
-        // Clear, pull up subnodes.
-        node = node.convertToEmptyBranch() ;
-        node.takeSubNodes(sub) ;
-        
+            log.debug("New prefix: "+RLib.str(newPrefix)) ;
+
         // Prefix
-        node.prefix = p ;
+        node.prefix = newPrefix ;
         // node.lenStart ;
         node.lenFinish = sub.lenFinish ;
 
+        if ( sub.isLeaf() )
+        {
+            node.convertToLeaf() ;
+            node.setValue(sub.getValue()) ;
+        }
+        else
+        {
+            // Clear, pull up subnodes.
+            node = node.convertToEmptyBranch() ;
+            node.takeSubNodes(sub) ;
+            if ( sub.hasEntry() )
+                node.setValue(sub.getValue()) ;
+        }
+
         if ( logging && log.isDebugEnabled() )
             log.debug("  --> : "+node) ;
-
-        if ( sub.isLeaf() )
-          node = node.convertToLeaf() ;    
-      
         RadixNode.dealloc(sub) ;
         return node; 
     }

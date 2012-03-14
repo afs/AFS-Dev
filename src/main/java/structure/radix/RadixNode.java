@@ -299,16 +299,17 @@ public final class RadixNode //extends PrintableBase implements Printable
     public String toString()
     {
         String prefixStr = Bytes.asHex(prefix) ;
-        if ( isLeaf() )
-        {
-            String valStr = Bytes.asHex(value) ;
-            return String.format("Leaf[%d/%d]: Length=(%d,%d) :: prefix = %s : value = %s", id, parentId, lenStart, lenFinish, prefixStr, valStr) ;
-        }
-        
         String valStr = "" ;
-        
         if ( hasEntry() )
             valStr = "["+Bytes.asHex(value)+"]" ;
+
+        if ( isLeaf() )
+        {
+            return String.format("Leaf[%d/%d]: Length=(%d,%d) :: prefix = %s%s", id, parentId, lenStart, lenFinish, prefixStr, valStr) ;
+        }
+        
+        
+        
         
         StringBuilder b = new StringBuilder() ;
         for ( RadixNode n : nodes )

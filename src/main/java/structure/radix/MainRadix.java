@@ -60,28 +60,38 @@ public class MainRadix
             byte[] k1 = { 1 , 2 , 3 } ;
             byte[] k2 = { 1 , 2 } ;
             byte[] k3 = { 1 } ;
+            
+            byte[][] insertOrder = { k2, k1, k3 } ;
+            byte[][] deleteOrder = { k2, k1, k3 } ;
 
-            RadixTree t = tree(k1,k2,k3) ;
+            RadixTree t = tree(insertOrder) ;
             t.print() ;
             t.check() ;
 
             Log.enable("structure.radix") ;
-            
-            t.delete(k1) ;
+            for ( byte[] d : deleteOrder )
+            {
+                t.delete(d) ;
+                t.print() ;
+                t.check() ;
+            }
+            System.exit(0) ;
 
+            // Unrolled.
+            t.delete(deleteOrder[0]) ;
             t.print() ;
             t.check() ;
             
-            t.delete(k2) ;
-
+            t.delete(deleteOrder[1]) ;
             t.check() ;
             t.print() ;
             
-            t.delete(k3) ;
+            t.delete(deleteOrder[2]) ;
             t.print() ;
             t.check() ;
             System.exit(0) ;
         }
+        
         if ( false )
         {   
             byte[][] data1 = { {0x01}, {0x09}, {0x02}, {}, {0x04,0x12}, {0x04,0x0E}, {0x01,0x11,0x11,0x00,0x05,0x05}, {0x0A,0x07,0x01,0x02,0x00,0x06}, {0x0F}, {0x0F,0x0B,0x05,0x00,0x0B} } ;
@@ -115,7 +125,7 @@ public class MainRadix
         for ( int i = 0 ; i < keys.length ; i++ )
         {
             byte[] k = keys[i] ;
-            byte[] v = TestRadix.valFromKey(k) ;
+            byte[] v = valFromKey(k) ;
             if (print) System.out.println("Build: "+RLib.str(k)) ;
             t.insert(k,v) ;
             if (print) t.print() ;
@@ -124,6 +134,17 @@ public class MainRadix
         }
         return t ;
     }
+    
+
+    public static byte[] valFromKey(byte[] k)
+    {
+        byte[] v = new byte[k.length] ;
+        for ( int j = 0 ; j < v.length ; j++ )
+            v[j] = (byte)(k[j]+10) ;
+        return v ;
+    }
+
+
 
 //    static private void runJUnit()
 //    {
