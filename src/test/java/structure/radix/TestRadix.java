@@ -180,6 +180,73 @@ public class TestRadix extends BaseTest
         assertArrayEquals(key2, x.get(2).array()) ;
     }
 
+    static byte[][] order = { key6, key3, key5, key1, key4, key2 } ; 
+
+    @Test
+    public void radix_iter_3()
+    {
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        Iterator<ByteBuffer> iter = t.iterator() ;
+        for ( int i = 0 ;  i < order.length ; i++ )
+        {
+            ByteBuffer k = iter.next() ;
+            assertArrayEquals(order[i], k.array()) ;
+        }
+    }
+
+    @Test
+    public void radix_minmax_0()
+    {
+        RadixTree t = tree() ;
+        assertNull(t.min()) ;
+        assertNull(t.max()) ;
+    }
+
+    
+    @Test
+    public void radix_minmax_1()
+    {
+        RadixTree t = tree(key1) ;
+        minmaxtest(t, key1, key1) ;
+    }
+    
+    @Test
+    public void radix_minmax_2()
+    {
+        RadixTree t = tree(key1, key2, key3) ;
+        minmaxtest(t, key3, key2) ;
+    }
+    
+
+    @Test
+    public void radix_minmax_3()
+    {
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        minmaxtest(t, key6, key2) ;
+    }
+
+    @Test
+    public void radix_minmax_9()
+    {
+        RadixTree t = tree(key1) ;
+        t.delete(key1) ;
+        assertNull(t.min()) ;
+        assertNull(t.max()) ;
+    }
+
+    private static void minmaxtest(RadixTree t, byte[] min, byte[] max)
+    {
+        ByteBuffer bb = t.min() ;
+        byte[] b = new byte[bb.limit()] ;
+        bb.get(b) ;
+        assertArrayEquals(min, b) ;
+        bb = t.max() ;
+        b = new byte[bb.limit()] ;
+        bb.get(b) ;
+        assertArrayEquals(max, b) ;
+        
+    }
+    
     static RadixTree tree(byte[] ... keys)
     {
         return tree(new RadixTree(), keys) ;

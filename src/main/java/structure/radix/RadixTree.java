@@ -37,10 +37,6 @@ public final class RadixTree
     // TODO Sepaarte RadixNode and RadixTree
     // nibble nodes.
     
-    // TODO contains tests
-    // TODO Min tests, max tests, iterator tests.
-    // TODO isEmpty
-    
     static public boolean logging = true ;
     static public /*final*/ boolean checking = true ;
     static final byte[] bytes0 = new byte[]{} ;
