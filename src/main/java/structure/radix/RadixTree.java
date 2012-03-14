@@ -34,12 +34,12 @@ import org.slf4j.LoggerFactory ;
 /* http://en.wikipedia.org/wiki/Radix_tree */
 public final class RadixTree
 {
-    // TODO
-    // More checking, all if'ed out
-    // Iteration
-    // Value?
-    // Architecture : action visitor pattern - find&do (overhead?)
-    // Add value
+    // TODO Sepaarte RadixNode and RadixTree
+    // nibble nodes.
+    
+    // TODO contains tests
+    // TODO Min tests, max tests, iterator tests.
+    // TODO isEmpty
     
     static public boolean logging = true ;
     static public /*final*/ boolean checking = true ;
@@ -662,7 +662,7 @@ public final class RadixTree
                 log.debug("iterator: empty tree") ;
             return Iter.nullIterator() ;
         }
-        // TODO -- Empty root : shoudl not occur but copy with it.
+        // TODO -- Empty root : should not occur but cope with it.
         return new RadixIterator(root, start, finish) ;
     }
     

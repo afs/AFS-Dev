@@ -38,9 +38,6 @@ import org.openjena.atlas.lib.StrUtils ;
 // Scala?
 public class CSVParser
 {
-    // Toy.
-    // TODO Tokenizer.
-    
     public static void main(String ... argv)
     {
         Sink<List<String>> sink = new Sink<List<String>>(){

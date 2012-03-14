@@ -38,7 +38,6 @@ import structure.avl.AVL ;
 
 public abstract class AVLRun
 {
-    // TODO Combine with TTreeRun
     static boolean showProgress = true ;
     
     static public void main(String...a)

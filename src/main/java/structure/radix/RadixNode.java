@@ -32,10 +32,9 @@ import com.hp.hpl.jena.util.iterator.ArrayIterator ;
 
 public final class RadixNode //extends PrintableBase implements Printable 
 {
-    
     //TODO Clean and refactor to allow for different implementations
-    // Nibble mode: array of first nibble.
-    // Flag to say if to look in first or second nibble.
+    // Nibble mode: array by nibble.
+    //    Flag to say if to look in first or second nibble.
     // Interface for lenStart, lenFinish
     // In-memory
     //    Old style list of subnodes.

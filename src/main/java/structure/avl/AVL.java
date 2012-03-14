@@ -40,8 +40,8 @@ public class AVL<T extends Comparable<? super T>> implements Printable, OrderedS
 {
     private static Logger log = LoggerFactory.getLogger(AVL.class) ;
     
-    /* ==== AVL TODO
-     * Reenable all of test "del_10" 
+    /* ==== AVL to do
+     * Re-enable all of test "del_10" 
      * + Boolean returns on delete
      * + Size by tracking ins/del
      */

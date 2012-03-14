@@ -38,7 +38,6 @@ import structure.ttree.TTree ;
 
 public abstract class TTreeRun
 {
-    // TODO Combine with AVLRun
     static boolean showProgress = true ;
     
     static public void main(String...a)

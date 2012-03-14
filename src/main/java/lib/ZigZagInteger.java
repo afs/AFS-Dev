@@ -43,7 +43,6 @@ public final class ZigZagInteger
 
 	public static byte[] encode(long value)
 	{
-		// TODO
 	    //return null ;
 	    throw new NotImplemented("ZigZagInteger.encode") ;
 	}
@@ -63,7 +62,7 @@ public final class ZigZagInteger
     public static long decode(ByteBuffer bytes, int idx)
     { return -1 ; }
 	
-/** Make a VarInteger from the bytes found start from idx */ 
+    /** Make a VarInteger from the bytes found start from idx */ 
     public static ZigZagInteger make(byte[] bytes)
     {
         return new ZigZagInteger(bytes) ;
