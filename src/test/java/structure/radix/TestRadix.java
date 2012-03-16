@@ -165,7 +165,7 @@ public class TestRadix extends BaseTest
     public void radix_iter_1()
     {
         RadixTree t = tree() ;
-        Iterator<ByteBuffer> iter = t.iterator() ;
+        Iterator<RadixEntry> iter = t.iterator() ;
         assertFalse(iter.hasNext()) ;
     }
     
@@ -173,11 +173,11 @@ public class TestRadix extends BaseTest
     public void radix_iter_2()
     {
         RadixTree t = tree(key1, key2, key3) ;
-        Iterator<ByteBuffer> iter = t.iterator() ;
-        List<ByteBuffer> x = Iter.toList(iter) ;
-        assertArrayEquals(key3, x.get(0).array()) ;
-        assertArrayEquals(key1, x.get(1).array()) ;
-        assertArrayEquals(key2, x.get(2).array()) ;
+        Iterator<RadixEntry> iter = t.iterator() ;
+        List<RadixEntry> x = Iter.toList(iter) ;
+        assertArrayEquals(key3, x.get(0).key) ;
+        assertArrayEquals(key1, x.get(1).key) ;
+        assertArrayEquals(key2, x.get(2).key) ;
     }
 
     static byte[][] order = { key6, key3, key5, key1, key4, key2 } ; 
@@ -186,12 +186,37 @@ public class TestRadix extends BaseTest
     public void radix_iter_3()
     {
         RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
-        Iterator<ByteBuffer> iter = t.iterator() ;
-        for ( int i = 0 ;  i < order.length ; i++ )
+        testIter(t, null, null, order) ;
+    }
+    
+    @Test
+    public void radix_iter_4()
+    {
+        byte[] keyStart = { 2 , 4 , 6 } ;
+        byte[] keyFinish = null ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish, key1, key4, key2) ;
+    }
+    
+    @Test
+    public void radix_iter_5()
+    {
+        byte[] keyStart = null ;
+        byte[] keyFinish = { 2 , 4 , 6 } ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish, key6, key3, key5) ;
+    }
+
+    private static void testIter(RadixTree t, byte[] keyStart, byte[] keyFinish, byte[]...results)
+    {
+        Iterator<RadixEntry> iter = t.iterator(keyStart, keyFinish) ;
+        for ( int i = 0 ;  i < results.length ; i++ )
         {
-            ByteBuffer k = iter.next() ;
-            assertArrayEquals(order[i], k.array()) ;
+            assertTrue("Iterator ran out", iter.hasNext()) ;
+            byte[] k = iter.next().key ;
+            assertArrayEquals(results[i], k) ;
         }
+        assertFalse("Iterator still has elements", iter.hasNext()) ;
     }
 
     @Test

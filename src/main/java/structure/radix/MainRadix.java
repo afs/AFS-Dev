@@ -17,10 +17,10 @@
  */
 
 package structure.radix;
-import java.nio.ByteBuffer ;
 import java.util.Arrays ;
 import java.util.Iterator ;
 
+import org.openjena.atlas.lib.Bytes ;
 import org.openjena.atlas.logging.Log ;
 
 public class MainRadix
@@ -50,10 +50,33 @@ public class MainRadix
     public static void main(String ...argv)
     { 
         Log.setLog4j() ;
-        RadixTree.logging = true ;
-        RadixTree.checking = true ;
-        Log.enable("structure.radix") ;
         //runJUnit() ;
+        RadixTree.checking = true ;
+        RadixTree.logging = false ;
+        Log.enable("structure.radix") ;
+        print = false ;
+        
+        {
+            byte[] keyStart = { 2 , 4 , 6 } ;
+            byte[] keyFinish = null ;
+            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+
+            RadixTree.logging = true ;
+            testIter(t, keyStart, keyFinish, key1, key4, key2) ;
+            RadixTree.logging = false ;
+        }
+        
+        {
+            byte[] keyStart = null ;
+            byte[] keyFinish = { 2 , 4 , 6 } ;
+            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+            RadixTree.logging = true ;
+            testIter(t, keyStart, keyFinish, key6, key3, key5) ;
+            RadixTree.logging = false ;
+        }
+
+        System.exit(0) ;
+        
         
         if ( true )
         {
@@ -104,12 +127,7 @@ public class MainRadix
         }
         
         RadixTree tree = tree(key0, key1, key2, key3, key4, key5) ;
-        Iterator<ByteBuffer> iter = tree.iterator() ; 
-        for ( ; iter.hasNext() ; )
-        {
-            ByteBuffer bb = iter.next() ;
-            System.out.println("["+RLib.str(bb)+"]") ;
-        }
+        tree.printLeaves() ;
         System.exit(0) ;
         
         System.out.println() ;
@@ -118,6 +136,19 @@ public class MainRadix
     static private RadixTree tree(byte[] ... keys)
     {
         return tree(new RadixTree(), keys) ;
+    }
+    
+    private static void testIter(RadixTree t, byte[] keyStart, byte[] keyFinish, byte[]...results)
+    {
+        Iterator<RadixEntry> iter = t.iterator(keyStart, keyFinish) ;
+        for ( int i = 0 ;  i < results.length ; i++ )
+        {
+            if ( ! iter.hasNext() ) throw new RuntimeException("Iterator ran out") ;
+            byte[] k = iter.next().key ;
+            if ( 0 != Bytes.compare(results[i], k) ) 
+                throw new RuntimeException("Arrays differ: "+RLib.str(results[i])+" : "+RLib.str(k)) ;
+        }
+        if ( ! iter.hasNext() ) throw new RuntimeException("Iterator still has elements") ;
     }
     
     static private RadixTree tree(RadixTree t, byte[] ... keys)

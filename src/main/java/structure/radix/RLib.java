@@ -21,11 +21,20 @@ package structure.radix;
 import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 
+import com.hp.hpl.jena.tdb.base.record.Record ;
+
 import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.iterator.Transform ;
 
 public class RLib
 {
+    static Transform<RadixEntry, Record> entryToRecord = new Transform<RadixEntry, Record>() {
+        @Override
+        public Record convert(RadixEntry item)
+        {
+            return new Record(item.key, item.value) ;
+        }} ;
+    
     public static String str(ByteBuffer bytes)
     {
         StringBuilder sb = new StringBuilder() ;
@@ -49,6 +58,8 @@ public class RLib
     
     public static String str(byte[] bytes, String sep)
     {
+        if ( bytes == null )
+            return "" ;
         StringBuilder sb = new StringBuilder() ;
         boolean first = true ;
         for ( byte b : bytes )
@@ -63,14 +74,29 @@ public class RLib
 
     private static String str(RadixTree rt)
     {
-        Iterator<String> iter = Iter.map(rt.iterator(), new Transform<ByteBuffer, String>(){
+        Iterator<String> iter = Iter.map(rt.iterator(), new Transform<RadixEntry, String>(){
             @Override
-            public String convert(ByteBuffer item)
+            public String convert(RadixEntry item)
             {
-                return "["+str(item)+"]" ;
+                return "["+item+"]" ;
             }}) ;
         return Iter.asString(iter, ", ") ;
     }
 
+    // When right , move to ByteBufferLib.
+    /** Copy from a byte buffer */
+    final public static byte[] bb2array(ByteBuffer bb, int start, int finish)
+    {
+        byte[] b = new byte[finish-start] ;
+        bb2array(bb, start, finish, b) ;
+        return b ;
+    }
+    
+    private static void bb2array(ByteBuffer bb, int start, int finish, byte[] b)
+    {
+        for ( int j = 0 , i = start; i < finish ; j++,i++ )
+            b[j] = bb.get(i) ;
+    }
+    
 }
 

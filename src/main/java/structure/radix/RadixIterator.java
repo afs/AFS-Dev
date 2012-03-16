@@ -22,9 +22,9 @@ import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 
-import org.openjena.atlas.lib.ByteBufferLib ;
+import org.openjena.atlas.AtlasException ;
 
-class RadixIterator implements Iterator<ByteBuffer>
+class RadixIterator implements Iterator<RadixEntry>
     {
         // Or parent.
         // Deque<RadixNode> stack = new ArrayDeque<RadixNode>() ;
@@ -35,10 +35,10 @@ class RadixIterator implements Iterator<ByteBuffer>
         
         byte[] finish = null ;
         
-        RadixIterator(RadixNode root, byte[] start, byte[] finish)
+        RadixIterator(RadixTree tree, byte[] start, byte[] finish)
         {
+            node = tree.getRoot() ;
             this.finish = finish ;
-            node = root ;
             int N = -1 ;
            
             if ( start != null )
@@ -59,6 +59,8 @@ class RadixIterator implements Iterator<ByteBuffer>
                     // Copy all bytes that match.
                     prefix = appendBytes(node.prefix, 0, numMatch, slot) ;
                     
+                    //****** If N +ve, keys ends here so includes any value under this node so start at this node or it's first value (min value)
+                    //****** If N -ve, key diverges at this node so maybe less or more than this node.
                     
                     if ( N < node.prefix.length )   // Includes negative N
                         break ;
@@ -72,7 +74,7 @@ class RadixIterator implements Iterator<ByteBuffer>
                 }
             }
             else
-                prefix = ByteBuffer.allocate(10) ;    //Reallocating?
+                prefix = ByteBuffer.allocate(50) ;    //Reallocating?
             // Now move until leaf.
             node = downToMinNode(node, prefix) ;
             slot = prefix ;
@@ -224,14 +226,15 @@ class RadixIterator implements Iterator<ByteBuffer>
         }
 
         @Override
-        public ByteBuffer next()
+        public RadixEntry next()
         {
             if ( ! hasNext() )
                 throw new NoSuchElementException() ;
-            ByteBuffer x = ByteBuffer.allocate(slot.position()) ;
-            ByteBufferLib.bbcopy(slot,  0, x, 0, slot.position(), 1) ;
+            if ( ! node.hasEntry() )
+                throw new AtlasException("yielding a non value") ;
+            byte[] x = RLib.bb2array(prefix, 0, slot.position()) ;
             slot = null ;
-            return x ;
+            return new RadixEntry(x, node.getValue()) ;
         }
 
         @Override

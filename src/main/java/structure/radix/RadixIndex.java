@@ -18,11 +18,9 @@
 
 package structure.radix;
 
-import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 
 import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.iterator.Transform ;
 
 import com.hp.hpl.jena.tdb.base.record.Record ;
 import com.hp.hpl.jena.tdb.base.record.RecordFactory ;
@@ -65,20 +63,39 @@ public class RadixIndex implements RangeIndex
         return radix.delete(record.getKey()) ;
     }
 
-    Transform<ByteBuffer, Record> byteBufferToRecord = new Transform<ByteBuffer, Record>() {
-        @Override
-        public Record convert(ByteBuffer item)
-        {
-            byte[] b = new byte[item.limit()] ;
-            // Shame about the copy.
-            System.arraycopy(item.array(), 0, b, 0, item.limit()) ;
-            return recordFactory.create(b) ;
-        }} ;
-    
     @Override
     public Iterator<Record> iterator()
     {
-        return Iter.map(radix.iterator(), byteBufferToRecord) ;
+        return Iter.map(radix.iterator(null, null), RLib.entryToRecord) ;
+    }
+
+    @Override
+    public Iterator<Record> iterator(Record recordMin, Record recordMax)
+    {
+        byte[] s = (recordMin==null)?null:recordMin.getKey() ;
+        byte[] f = (recordMax==null)?null:recordMax.getKey() ;
+        
+        return Iter.map(radix.iterator(s,f), RLib.entryToRecord) ;
+    }
+
+    @Override
+    public Record minKey()
+    {
+        // Provide the byte buffer to the min() function.
+        // Avoid copy.
+        Record r = recordFactory.create() ;
+        radix.min(r.getKey()) ;
+        return r ;
+    }
+
+    @Override
+    public Record maxKey()
+    {
+        // Provide the byte buffer to the max() function.
+        // Avoid copy.
+        Record r = recordFactory.create() ;
+        radix.max(r.getKey()) ;
+        return r ;
     }
 
     @Override
@@ -118,31 +135,5 @@ public class RadixIndex implements RangeIndex
     @Override
     public void sync()
     {}
-
-    @Override
-    public Iterator<Record> iterator(Record recordMin, Record recordMax)
-    {
-        return Iter.map(radix.iterator(recordMin.getKey(), recordMax.getKey()), byteBufferToRecord) ;
-    }
-
-    @Override
-    public Record minKey()
-    {
-        // Provide the byte buffer to the min() function.
-        // Avoid copy.
-        Record r = recordFactory.create() ;
-        radix.min(r.getKey()) ;
-        return r ;
-    }
-
-    @Override
-    public Record maxKey()
-    {
-        // Provide the byte buffer to the max() function.
-        // Avoid copy.
-        Record r = recordFactory.create() ;
-        radix.max(r.getKey()) ;
-        return r ;
-    }
     
 }

@@ -19,7 +19,6 @@
 package structure.radix;
 import static structure.radix.RLib.str ;
 
-import java.nio.ByteBuffer ;
 import java.util.ArrayList ;
 import java.util.Arrays ;
 import java.util.Iterator ;
@@ -197,14 +196,14 @@ public class RadixRun
             System.err.printf("size[%d] != length[%d]\n",N1, keys.size()) ;
         
         // check ordered.
-        ByteBuffer prev = null ;
-        for ( Iterator<ByteBuffer> elements = trie.iterator() ; elements.hasNext() ; )
+        byte[] prev = null ;
+        for ( Iterator<RadixEntry> elements = trie.iterator() ; elements.hasNext() ; )
         {
-            ByteBuffer here = elements.next() ;
+            byte[] here = elements.next().key ;
             if ( prev != null )
             {
-                if ( Bytes.compare(prev.array(), here.array()) >= 0 )
-                    System.err.println("Not increasing: "+str(prev.array())+" // "+str(here.array())) ;
+                if ( Bytes.compare(prev, here) >= 0 )
+                    System.err.println("Not increasing: "+str(prev)+" // "+str(here)) ;
             }
             prev = here ;
         }

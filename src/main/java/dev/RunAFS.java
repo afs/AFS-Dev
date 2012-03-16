@@ -18,45 +18,81 @@
 
 package dev;
 
-import structure.radix.RadixIndex ;
+import java.util.Iterator ;
 
-import com.hp.hpl.jena.tdb.base.file.FileSet ;
-import com.hp.hpl.jena.tdb.base.record.RecordFactory ;
-import com.hp.hpl.jena.tdb.index.Index ;
-import com.hp.hpl.jena.tdb.index.RangeIndex ;
+import org.openjena.atlas.lib.Pair ;
+import org.openjena.atlas.logging.Log ;
+import org.openjena.riot.RiotLoader ;
+
+import com.hp.hpl.jena.graph.Node ;
+import com.hp.hpl.jena.sparql.sse.SSE ;
+import com.hp.hpl.jena.tdb.base.file.Location ;
+import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
 import com.hp.hpl.jena.tdb.setup.* ;
+import com.hp.hpl.jena.tdb.store.* ;
 
 public class RunAFS
 {
     public static void main(String ...argv)
     {
-        BlockMgrBuilder blockMgrBuilder = null ;
-        NodeTableBuilder nodeTableBuilder = null ;
+        Log.setLog4j() ;
+        DatasetBuilder builder = new DatasetBuilderBasic(new IndexBuilderRadix(), new RangeIndexBuilderRadix() ) ;
+        DatasetGraphTDB dsg = builder.build(Location.mem(), null) ;
         
-        new DatasetBuilderStd(blockMgrBuilder, nodeTableBuilder) ;
+        //dsg.add(SSE.parseQuad("(_ <s> <p> 123)")) ;
         
+        RiotLoader.read("D.trig", dsg) ;
+        
+        SSE.write(dsg) ;
     }
     
-    static class RangeIndexBuilderR implements RangeIndexBuilder
+    static class NodeTableRadix implements NodeTable
     {
 
         @Override
-        public RangeIndex buildRangeIndex(FileSet fileSet, RecordFactory recordfactory)
+        public void sync()
+        {}
+
+        @Override
+        public void close()
+        {}
+
+        @Override
+        public NodeId getNodeIdForNode(Node node)
         {
-            return new RadixIndex(recordfactory) ;
+            return null ;
+        }
+
+        @Override
+        public Node getNodeForNodeId(NodeId id)
+        {
+            return null ;
+        }
+
+        @Override
+        public NodeId getAllocateNodeId(Node node)
+        {
+            return null ;
+        }
+
+        @Override
+        public Iterator<Pair<NodeId, Node>> all()
+        {
+            return null ;
+        }
+
+        @Override
+        public NodeId allocOffset()
+        {
+            return null ;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return false ;
         }
         
     }
-
-    static class IndexBuilderR implements IndexBuilder
-    {
-
-        @Override
-        public Index buildIndex(FileSet fileSet, RecordFactory recordfactory)
-        {
-            return new RadixIndex(recordfactory) ;
-        }
-    }
-
 }
 

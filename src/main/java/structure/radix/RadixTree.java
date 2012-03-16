@@ -19,8 +19,6 @@
 package structure.radix;
 
 import java.nio.ByteBuffer ;
-import java.util.ArrayDeque ;
-import java.util.Deque ;
 import java.util.Iterator ;
 
 import org.openjena.atlas.AtlasException ;
@@ -320,7 +318,8 @@ public final class RadixTree
                 node1 = node1.convertToEmptyBranch() ;
                 node1.takeSubNodes(node) ;
             }
-            node1.setValue(node.getValue()) ;
+            if ( node.hasEntry() )
+                node1.setValue(node.getValue()) ;
             
             // The new leaf for the new data
             RadixNode node2 = RadixNode.allocBlank(node) ;
@@ -335,7 +334,7 @@ public final class RadixTree
             node.prefix = prefixHere ;
             //node.lenStart
             node.lenFinish = node.lenStart+N ;
-            node.setValue(null) ;
+            node.clearValue() ;
                 
             int idx1 = node.locate(prefixSub1) ;
             node.set(idx1, node1) ;
@@ -353,10 +352,6 @@ public final class RadixTree
             log.debug("** Insert : ("+Bytes.asHex(key)+","+v+")") ;
         }
      
-        if ( value == null )
-            // XXX Value is never null.
-            value = key ;
-        
         if ( root == null )
         {
             root = RadixNode.allocBlank(null) ;
@@ -429,7 +424,7 @@ public final class RadixTree
             {
                 // Branch.  Delete is a value branch.
                 if ( node.hasEntry() && node.hasEntry() )
-                    node.setValue(null) ;
+                    node.clearValue() ;
                     // Drop though to fixup.
                 else
                     return null ;       // Didn't match after all.
@@ -642,9 +637,9 @@ public final class RadixTree
         return root.zeroSubNodes() ;
     }
     
-    public Iterator<ByteBuffer> iterator() { return iterator(null, null) ; }
+    public Iterator<RadixEntry>iterator() { return iterator(null, null) ; }
     
-    public Iterator<ByteBuffer> iterator(byte[] start, byte[] finish)
+    public Iterator<RadixEntry> iterator(byte[] start, byte[] finish)
     { 
         if ( logging && log.isDebugEnabled() )
         {
@@ -659,7 +654,7 @@ public final class RadixTree
             return Iter.nullIterator() ;
         }
         // TODO -- Empty root : should not occur but cope with it.
-        return new RadixIterator(root, start, finish) ;
+        return new RadixIterator(this, start, finish) ;
     }
     
     static Transform<Byte, String> hex = new Transform<Byte, String>(){
@@ -682,34 +677,44 @@ public final class RadixTree
             return ;
         }
         
-        final Deque<Byte> x = new ArrayDeque<Byte>() ;
-        RadixNodeVisitor<Object> v = new RadixNodeVisitorBase()
-        {
+        org.openjena.atlas.iterator.Action<RadixEntry> a = new org.openjena.atlas.iterator.Action<RadixEntry>(){
             @Override
-            public void before(RadixNode node)
+            public void apply(RadixEntry item)
             {
-                for ( byte b : node.prefix )
-                    x.addLast(b) ;
-                if ( node.hasEntry() )
-                {
-                    System.out.print("[") ;
-                    System.out.print(Iter.iter(x.iterator()).map(hex).asString(", ")) ;
-                    System.out.print("]\n") ;
-                }
-            }
-
-            @Override
-            public void after(RadixNode node)
-            {
-                for ( int i = node.lenStart ; i < node.lenFinish ; i++ )
-                    x.removeLast() ;
-            }
-
-        } ;
+                System.out.println(item) ;
+            }} ;
         
-        root.visit(v) ;
-        System.out.println() ;
-        System.out.flush() ;
+        Iterator<RadixEntry> iter = iterator() ;
+        Iter.apply(iter, a) ;
+
+//        final Deque<Byte> x = new ArrayDeque<Byte>() ;
+//        RadixNodeVisitor<Object> v = new RadixNodeVisitorBase()
+//        {
+//            @Override
+//            public void before(RadixNode node)
+//            {
+//                for ( byte b : node.prefix )
+//                    x.addLast(b) ;
+//                if ( node.hasEntry() )
+//                {
+//                    System.out.print("[") ;
+//                    System.out.print(Iter.iter(x.iterator()).map(hex).asString(", ")) ;
+//                    System.out.print("]\n") ;
+//                }
+//            }
+//
+//            @Override
+//            public void after(RadixNode node)
+//            {
+//                for ( int i = node.lenStart ; i < node.lenFinish ; i++ )
+//                    x.removeLast() ;
+//            }
+//
+//        } ;
+//        
+//        root.visit(v) ;
+//        System.out.println() ;
+//        System.out.flush() ;
     }
     
     static void error(String string)

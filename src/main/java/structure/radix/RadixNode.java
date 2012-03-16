@@ -80,7 +80,7 @@ public final class RadixNode //extends PrintableBase implements Printable
     private byte[] value = null ; 
     
     byte[]  getValue()                  { return (value==value0)?null:value ; }
-    boolean hasEntry()                  { return value != null && value != value0 ; }
+    boolean hasEntry()                  { return value != null ; }
     void    setValue(byte[]  value)     { this.value = ((value==null) ? value0: value)  ; }
     void    clearValue()                { this.value = null ; }
 
@@ -219,14 +219,14 @@ public final class RadixNode //extends PrintableBase implements Printable
         if ( nodes == null )
             nodes = new RadixNode[FanOutSize] ;
         Arrays.fill(nodes, null) ;
-        value = null ;
+        clearValue() ;
         return this ;
     }
     
     // XXX Version that always changes the node -- checking.
     RadixNode convertToLeaf()
     {
-        setValue(null) ;
+        clearValue() ;
         if ( nodes == null )
             return this ;
         nodes = null ;
@@ -260,7 +260,7 @@ public final class RadixNode //extends PrintableBase implements Printable
     { 
         this.parent = parent ;
         this.parentId = (parent==null)? -1 : parent.id ;
-        setValue(null) ;
+        clearValue() ;
     }
 
     // Space cost:
@@ -300,15 +300,17 @@ public final class RadixNode //extends PrintableBase implements Printable
         String prefixStr = Bytes.asHex(prefix) ;
         String valStr = "" ;
         if ( hasEntry() )
-            valStr = "["+Bytes.asHex(value)+"]" ;
+        {
+            if ( value == value0 )
+                valStr = "[--]" ;
+            else
+                valStr = "["+Bytes.asHex(value)+"]" ;
+        }
 
         if ( isLeaf() )
         {
             return String.format("Leaf[%d/%d]: Length=(%d,%d) :: prefix = %s%s", id, parentId, lenStart, lenFinish, prefixStr, valStr) ;
         }
-        
-        
-        
         
         StringBuilder b = new StringBuilder() ;
         for ( RadixNode n : nodes )
