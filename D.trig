@@ -1,0 +1,5 @@
+@prefix : <http://example/> .
+
+{ :s :p 99 }
+
+:g { :s :p 123 . }
