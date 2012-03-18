@@ -162,7 +162,7 @@ public class TestRadix extends BaseTest
     }
     
     @Test
-    public void radix_iter_1()
+    public void radix_iter_01()
     {
         RadixTree t = tree() ;
         Iterator<RadixEntry> iter = t.iterator() ;
@@ -170,7 +170,7 @@ public class TestRadix extends BaseTest
     }
     
     @Test
-    public void radix_iter_2()
+    public void radix_iter_02()
     {
         RadixTree t = tree(key1, key2, key3) ;
         Iterator<RadixEntry> iter = t.iterator() ;
@@ -183,15 +183,26 @@ public class TestRadix extends BaseTest
     static byte[][] order = { key6, key3, key5, key1, key4, key2 } ; 
 
     @Test
-    public void radix_iter_3()
+    public void radix_iter_03()
     {
         RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
         testIter(t, null, null, order) ;
     }
     
     @Test
-    public void radix_iter_4()
+    public void radix_iter_10()
     {
+        // Short key over subtree.
+        byte[] keyStart = key1 ;
+        byte[] keyFinish = null ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish, key1, key4, key2) ;
+    }
+
+    @Test
+    public void radix_iter_11()
+    {
+        // Short key over subtree.
         byte[] keyStart = { 2 , 4 , 6 } ;
         byte[] keyFinish = null ;
         RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
@@ -199,12 +210,60 @@ public class TestRadix extends BaseTest
     }
     
     @Test
-    public void radix_iter_5()
+    public void radix_iter_12()
+    {
+        byte[] keyStart = { 9 } ;
+        byte[] keyFinish = null ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish) ;
+    }
+
+    @Test
+    public void radix_iter_13()
+    {
+        // Key diverges, below.
+        byte[] keyStart = { 2, 4, 6, 1} ;
+        byte[] keyFinish = null ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish, key1, key4, key2) ;
+    }
+
+    @Test
+    public void radix_iter_14()
+    {
+        // Key diverges, above
+        byte[] keyStart = { 2, 4, 6, 9} ;
+        byte[] keyFinish = null ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish, key4, key2) ;
+    }
+
+
+    @Test
+    public void radix_iter_20()
     {
         byte[] keyStart = null ;
         byte[] keyFinish = { 2 , 4 , 6 } ;
         RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
         testIter(t, keyStart, keyFinish, key6, key3, key5) ;
+    }
+
+    @Test
+    public void radix_iter_21()
+    {
+        byte[] keyStart = null ;
+        byte[] keyFinish = { 2 , 4 , 5 } ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish, key6, key3, key5) ;
+    }
+
+    @Test
+    public void radix_iter_7()
+    {
+        byte[] keyStart = key1 ;
+        byte[] keyFinish = { 2 , 4 , 6 , 9 } ;
+        RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+        testIter(t, keyStart, keyFinish, key6, key3, key5, key1, key4) ;
     }
 
     private static void testIter(RadixTree t, byte[] keyStart, byte[] keyFinish, byte[]...results)
@@ -282,7 +341,7 @@ public class TestRadix extends BaseTest
     {
         for ( byte[]k : keys )
         {
-            if (print) System.out.println("Build: "+RLib.str(k)) ;
+            if (print) System.out.println("Build: "+Str.str(k)) ;
             t.insert(k, k) ;
             if (print) t.print() ;
             t.check() ;
@@ -325,7 +384,7 @@ public class TestRadix extends BaseTest
     static void check(RadixTree t, byte[] ... keys)
     {
         for ( byte[]k : keys )
-            assertTrue("Not found: Key: "+RLib.str(k), t.contains(k)) ;
+            assertTrue("Not found: Key: "+Str.str(k), t.contains(k)) ;
     }
     
     private static void insert(RadixTree t, byte[] key, byte[] value)

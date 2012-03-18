@@ -17,8 +17,7 @@
  */
 
 package structure.radix;
-import static structure.radix.RLib.str ;
-
+import static structure.radix.Str.str;
 import java.util.ArrayList ;
 import java.util.Arrays ;
 import java.util.Iterator ;
@@ -228,7 +227,7 @@ public class RadixRun
         if ( b != b2 )
         {
             System.out.flush() ;
-            System.err.println("Inconsistent (delete): "+RLib.str(key)) ;
+            System.err.println("Inconsistent (delete): "+str(key)) ;
         }
         trie.check() ;
     }

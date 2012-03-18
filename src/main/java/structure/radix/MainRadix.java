@@ -57,26 +57,33 @@ public class MainRadix
         print = false ;
         
         {
-            byte[] keyStart = { 2 , 4 , 6 } ;
+            byte[] k1 = { 0 , 2 } ;
+            byte[] k2 = { 0 , 3 } ;
+            byte[] k3 = { 0 , 2 , 4 , 6  } ;
+            
+            byte[] k4 = { 0 , 2 , 4 , 5 } ;
+            byte[] k5 = { 0 , 1 } ; 
+            
+            byte[] keyStart1 = { 0 , 2 } ;
+            byte[] keyStart2 = { 0 , 1 } ;
+            byte[] keyStart3 = { 0 , 2 , 4} ;
+            byte[] keyStart4 = { 0 , 2 , 4, 6} ;
             byte[] keyFinish = null ;
-            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+            RadixTree t = tree(k1,k2,k3) ;
+            //t.printLeaves() ;
+            t.print() ;
 
             RadixTree.logging = true ;
-            testIter(t, keyStart, keyFinish, key1, key4, key2) ;
-            RadixTree.logging = false ;
-        }
-        
-        {
-            byte[] keyStart = null ;
-            byte[] keyFinish = { 2 , 4 , 6 } ;
-            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
-            RadixTree.logging = true ;
-            testIter(t, keyStart, keyFinish, key6, key3, key5) ;
+            iterator(t, keyStart1, keyFinish) ;
+            iterator(t, keyStart2, keyFinish) ;
+            iterator(t, keyStart3, keyFinish) ;
+            iterator(t, keyStart4, keyFinish) ;
+            
+            //testIter(t, keyStart, keyFinish, k2, k3) ; 
             RadixTree.logging = false ;
         }
 
         System.exit(0) ;
-        
         
         if ( true )
         {
@@ -133,6 +140,15 @@ public class MainRadix
         System.out.println() ;
     }
     
+    private static void iterator(RadixTree t, byte[] keyStart, byte[] keyFinish)
+    {
+        System.out.println("** Iterator("+Str.str(keyStart)+", "+Str.str(keyFinish)+")") ;
+        Iterator<RadixEntry> iter = t.iterator(keyStart, keyFinish) ;
+        for ( ; iter.hasNext() ; )
+            System.out.println(iter.next()) ;
+        System.out.println() ;
+    }
+
     static private RadixTree tree(byte[] ... keys)
     {
         return tree(new RadixTree(), keys) ;
@@ -146,7 +162,7 @@ public class MainRadix
             if ( ! iter.hasNext() ) throw new RuntimeException("Iterator ran out") ;
             byte[] k = iter.next().key ;
             if ( 0 != Bytes.compare(results[i], k) ) 
-                throw new RuntimeException("Arrays differ: "+RLib.str(results[i])+" : "+RLib.str(k)) ;
+                throw new RuntimeException("Arrays differ: "+Str.str(results[i])+" : "+Str.str(k)) ;
         }
         if ( ! iter.hasNext() ) throw new RuntimeException("Iterator still has elements") ;
     }
@@ -157,7 +173,7 @@ public class MainRadix
         {
             byte[] k = keys[i] ;
             byte[] v = valFromKey(k) ;
-            if (print) System.out.println("Build: "+RLib.str(k)) ;
+            if (print) System.out.println("Build: "+Str.str(k)) ;
             t.insert(k,v) ;
             if (print) t.print() ;
             t.check() ;
