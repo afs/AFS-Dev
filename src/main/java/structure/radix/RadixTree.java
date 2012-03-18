@@ -651,6 +651,8 @@ public final class RadixTree
     
     public Iterator<RadixEntry> iterator(byte[] start, byte[] finish)
     { 
+        this.print() ;
+        
         if ( logging && log.isDebugEnabled() )
             RadixTree.log.debug("Iterator("+Str.str(start)+", "+Str.str(finish)+")") ;
         

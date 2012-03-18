@@ -59,6 +59,7 @@ public class MainRadix
         {
             byte[] k1 = { 0 , 2 } ;
             byte[] k2 = { 0 , 3 } ;
+
             byte[] k3 = { 0 , 2 , 4 , 6  } ;
             
             byte[] k4 = { 0 , 2 , 4 , 5 } ;
