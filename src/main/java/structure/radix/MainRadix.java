@@ -67,10 +67,11 @@ public class MainRadix
             
             byte[] keyStart1 = { 0 , 2 } ;
             byte[] keyStart2 = { 0 , 1 } ;
-            byte[] keyStart3 = { 0 , 2 , 4} ;
-            byte[] keyStart4 = { 0 , 2 , 4, 6} ;
+            byte[] keyStart3 = { 0 , 2 , 4 } ;
+            byte[] keyStart4 = { 0 , 2 , 4 , 6 } ;
+            byte[] keyStart5 = { 0 , 2 , 4 , 5 , 1 } ;
             byte[] keyFinish = null ;
-            RadixTree t = tree(k1,k2,k3) ;
+            RadixTree t = tree(k1,k2,k3,k4,k5) ;
             //t.printLeaves() ;
             t.print() ;
 
@@ -79,6 +80,7 @@ public class MainRadix
             iterator(t, keyStart2, keyFinish) ;
             iterator(t, keyStart3, keyFinish) ;
             iterator(t, keyStart4, keyFinish) ;
+            iterator(t, keyStart5, keyFinish) ;
             
             //testIter(t, keyStart, keyFinish, k2, k3) ; 
             RadixTree.logging = false ;
