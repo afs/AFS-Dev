@@ -57,26 +57,28 @@ public class MainRadix
         print = false ;
         
         {
-            byte[] keyStart = { 2 , 4 , 6 } ;
+            byte[] k1 = { 0 , 2 } ;
+            byte[] k2 = { 0 , 4 } ;
+            byte[] k3 = { 0 , 2 , 4 , 6  } ;
+            
+            byte[] k4 = { 0 , 2 , 4 , 5 } ;
+            byte[] k5 = { 0 , 1 } ; 
+            
+            byte[] keyStart = { 0 ,2 , 4} ;
             byte[] keyFinish = null ;
-            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+            RadixTree t = tree(k1,k2,k3) ;
 
             RadixTree.logging = true ;
-            testIter(t, keyStart, keyFinish, key1, key4, key2) ;
-            RadixTree.logging = false ;
-        }
-        
-        {
-            byte[] keyStart = null ;
-            byte[] keyFinish = { 2 , 4 , 6 } ;
-            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
-            RadixTree.logging = true ;
-            testIter(t, keyStart, keyFinish, key6, key3, key5) ;
+            
+            Iterator<RadixEntry> iter = t.iterator(keyStart, keyFinish) ;
+            for ( ; iter.hasNext() ; )
+                System.out.println(iter.next()) ;
+            
+            //testIter(t, keyStart, keyFinish, k2, k3) ; 
             RadixTree.logging = false ;
         }
 
         System.exit(0) ;
-        
         
         if ( true )
         {
@@ -146,7 +148,7 @@ public class MainRadix
             if ( ! iter.hasNext() ) throw new RuntimeException("Iterator ran out") ;
             byte[] k = iter.next().key ;
             if ( 0 != Bytes.compare(results[i], k) ) 
-                throw new RuntimeException("Arrays differ: "+RLib.str(results[i])+" : "+RLib.str(k)) ;
+                throw new RuntimeException("Arrays differ: "+Str.str(results[i])+" : "+Str.str(k)) ;
         }
         if ( ! iter.hasNext() ) throw new RuntimeException("Iterator still has elements") ;
     }
@@ -157,7 +159,7 @@ public class MainRadix
         {
             byte[] k = keys[i] ;
             byte[] v = valFromKey(k) ;
-            if (print) System.out.println("Build: "+RLib.str(k)) ;
+            if (print) System.out.println("Build: "+Str.str(k)) ;
             t.insert(k,v) ;
             if (print) t.print() ;
             t.check() ;

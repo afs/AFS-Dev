@@ -35,43 +35,10 @@ public class RLib
             return new Record(item.key, item.value) ;
         }} ;
     
-    public static String str(ByteBuffer bytes)
-    {
-        StringBuilder sb = new StringBuilder() ;
-        char sep = 0 ;
-        for ( int i = bytes.position() ; i < bytes.limit() ; i++ )
-        {
-            byte b = bytes.get(i) ;
-            if ( sep != 0 )
-                sb.append(sep) ;
-            else
-                sep = ' ' ;
-                
-            sb.append(String.format("%02X", b)) ;
-        }
-        return sb.toString() ;
-    }
-
-    public static String str(byte[] bytes)
-    { return str(bytes, " ") ; }
-
-    
-    public static String str(byte[] bytes, String sep)
-    {
-        if ( bytes == null )
-            return "" ;
-        StringBuilder sb = new StringBuilder() ;
-        boolean first = true ;
-        for ( byte b : bytes )
-        {
-            if ( ! first )
-                sb.append(sep) ;
-            first = false ;
-            sb.append(String.format("0x%02X", b)) ;
-        }
-        return sb.toString() ;
-    }
-
+    // Collect all str(X) into a single class
+    // See also ByteBufferLib
+    // Bytes, Chars, StrUtils.
+        
     private static String str(RadixTree rt)
     {
         Iterator<String> iter = Iter.map(rt.iterator(), new Transform<RadixEntry, String>(){

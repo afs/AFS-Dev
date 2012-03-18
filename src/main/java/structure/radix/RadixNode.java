@@ -356,7 +356,6 @@ public final class RadixNode //extends PrintableBase implements Printable
     /** return the index of the bytes, within this node subnodes. -1 if bytes too short. */
     int locate(byte[] bytes, int idx)
     {
-        
         if ( bytes.length <= idx )
             return -1 ;
         

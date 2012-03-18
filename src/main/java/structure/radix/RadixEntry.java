@@ -35,9 +35,9 @@ public class RadixEntry
     public String toString()
     {
         if ( value == null )
-            return "["+RLib.str(key)+"]" ;
+            return "["+Str.str(key)+"]" ;
         else
-            return "["+RLib.str(key)+":"+RLib.str(value)+"]" ;
+            return "["+Str.str(key)+" :: "+Str.str(value)+"]" ;
     }
 }
 

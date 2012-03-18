@@ -35,6 +35,13 @@ public final class RadixTree
     // TODO Sepaarte RadixNode and RadixTree
     // nibble nodes.
     
+    // Need a reallocating ByteArrayBuilder
+    
+    // Package wide error function and exception.
+    // Class Radix.
+    
+    // RLib - all str to a Str class.
+    
     static public boolean logging = true ;
     static public /*final*/ boolean checking = true ;
     static final byte[] bytes0 = new byte[]{} ;
@@ -57,6 +64,9 @@ public final class RadixTree
     /** Find the starting point - call the action */
     private static RadixNode applicator(RadixNode root, byte[] key, byte[] value, Action action)
     {
+        // TODO Return a struct and be normal.
+        // Such short lives objects are very cheap in java (e.g. pure eden heap)
+        
         // A convoluted way to "return" with three results by calling on to a handler.
         // Assumes root is not null.
         RadixNode nodePrev = null ; // Last node.
@@ -84,7 +94,7 @@ public final class RadixTree
             // There is a next node down to try.
             nodePrev = node ;
             RadixNode node1 = node.get(j) ;
-            // Nothign to go to
+            // Nothing to go to
             if ( node1 == null )
                 return action.exec(key, value, node, node.prefix.length, nodePrev) ;
             node = node1 ;
@@ -149,7 +159,7 @@ public final class RadixTree
         {
             if (logging && log.isDebugEnabled() )
             {
-                log.debug("insert: ("+RLib.str(key)+", "+RLib.str(value)+")") ;
+                log.debug("insert: ("+Str.str(key)+", "+Str.str(value)+")") ;
                 log.debug("insert: here => "+node) ;
                 log.debug("insert: prev => "+ ((nodePrev==null)?"null":nodePrev.toString()) ) ;
                 log.debug("insert: N = "+N) ;
@@ -372,7 +382,7 @@ public final class RadixTree
         {
             if (logging && log.isDebugEnabled() )
             {
-                log.debug("delete: "+RLib.str(key)) ;
+                log.debug("delete: "+Str.str(key)) ;
                 log.debug("delete: here => "+node) ;
                 log.debug("delete: prev => "+ ((prevNode==null)?"null":prevNode.toString()) ) ;
                 log.debug("delete: N = "+N) ;
@@ -520,7 +530,7 @@ public final class RadixTree
         System.arraycopy(node.prefix, 0, newPrefix, 0, node.prefix.length) ;
         System.arraycopy(sub.prefix,  0, newPrefix, node.prefix.length, sub.prefix.length) ;
         if ( logging && log.isDebugEnabled() )
-            log.debug("New prefix: "+RLib.str(newPrefix)) ;
+            log.debug("New prefix: "+Str.str(newPrefix)) ;
 
         // Prefix
         node.prefix = newPrefix ;
@@ -641,11 +651,10 @@ public final class RadixTree
     
     public Iterator<RadixEntry> iterator(byte[] start, byte[] finish)
     { 
+        this.print() ;
+        
         if ( logging && log.isDebugEnabled() )
-        {
-            log.debug("iterator: start:  "+((start==null)?"null":Bytes.asHex(start))) ;
-            log.debug("iterator: finish: "+((finish==null)?"null":Bytes.asHex(finish))) ;
-        }
+            RadixTree.log.debug("Iterator("+Str.str(start)+", "+Str.str(finish)+")") ;
         
         if ( root == null )
         {
