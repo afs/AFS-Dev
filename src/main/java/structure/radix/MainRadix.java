@@ -56,7 +56,10 @@ public class MainRadix
         Log.enable("structure.radix") ;
         print = false ;
         
+        if ( false )
         {
+            // To become more iterator tests. 
+            
             byte[] k1 = { 0 , 2 } ;
             byte[] k2 = { 0 , 3 } ;
 
@@ -64,22 +67,37 @@ public class MainRadix
             
             byte[] k4 = { 0 , 2 , 4 , 5 } ;
             byte[] k5 = { 0 , 1 } ; 
+            byte[] k6 = { 7 } ; 
             
             byte[] keyStart1 = { 0 , 2 } ;
             byte[] keyStart2 = { 0 , 1 } ;
             byte[] keyStart3 = { 0 , 2 , 4} ;
             byte[] keyStart4 = { 0 , 2 , 4, 6} ;
+            byte[] keyStart5 = { 99 } ;
+            
             byte[] keyFinish = null ;
-            RadixTree t = tree(k1,k2,k3) ;
-            //t.printLeaves() ;
+            //RadixTree t = tree(k1,k2,k3,k6) ;
+            RadixTree t = tree(k1,k6) ;
             t.print() ;
+            t.printLeaves() ;
 
-            RadixTree.logging = true ;
+            //RadixTree.logging = true ;
             iterator(t, keyStart1, keyFinish) ;
             iterator(t, keyStart2, keyFinish) ;
             iterator(t, keyStart3, keyFinish) ;
             iterator(t, keyStart4, keyFinish) ;
-            
+            iterator(t, keyStart5, keyFinish) ;
+        }
+        
+        
+        if ( true )
+        {    
+            byte[] keyStart = { 2, 4, 6, 1} ;
+            byte[] keyFinish = null ;
+            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+            t.printLeaves() ;
+            System.out.println("** Iterator("+Str.str(keyStart)+", "+Str.str(keyFinish)+")") ;
+            testIter(t, keyStart, keyFinish, key1, key4, key2) ;
             //testIter(t, keyStart, keyFinish, k2, k3) ; 
             RadixTree.logging = false ;
         }

@@ -95,12 +95,16 @@ class RadixIterator implements Iterator<RadixEntry>
                 break ;
             
             // N == node.prefix.length, not a leaf.
-            int j = node.locate(start, node.lenFinish) ;
-            if ( j < 0 ) //|| j == node.nodes.size() )
-                // No match across subnodes - this node is the point of longest match.
-                break ;
-            // There is a next node down to try.
-            RadixNode node2 = node.get(j) ;
+            RadixNode node2 = null ;
+            if ( ! node.isLeaf() )
+            {
+                int j = node.locate(start, node.lenFinish) ;
+                if ( j < 0 ) //|| j == node.nodes.size() )
+                    // No match across subnodes - this node is the point of longest match.
+                    break ;
+                // There is a next node down to try.
+                node2 = node.get(j) ;
+            }
             
             //****************************************
             if ( node2 == null )
@@ -113,10 +117,30 @@ class RadixIterator implements Iterator<RadixEntry>
                 // DRY
                 ByteBuffer bb = ByteBuffer.allocate(node.lenFinish+50) ;
                 bb.put(start, 0, node.lenFinish) ;
-                //bb.position(node.lenStart+numHere) ;
                 prefix = bb ;
-                slot = null ;
+                //bb.position(node.lenStart+numHere) ;
+//                slot = null ;
+//                return ;
+                // COPY
+                // Diverge - key more than this node and all it's sub nodes.
+                // Start here but do not yield a slot.
+                RadixNode node3 = gotoUpAndAcross(node) ;
+                if ( node3 == null )
+                {
+                    node = null ;
+                    return ;
+                }
+                // Very like in hasNext - can be combine?
+                prefix.position(node3.lenStart) ;
+                node3 = downToMinNode(node3, prefix) ;
+                slot = prefix ;
+                node = node3 ;
                 return ;
+                
+                
+                
+
+                
             }
              
             // Start key continues.
@@ -156,8 +180,8 @@ class RadixIterator implements Iterator<RadixEntry>
         if ( N < node.prefix.length )
         {
             // Key diverges.
-            byte a = node.prefix[N] ;
-            byte b = start[node.lenStart+N] ;
+            byte a = start[node.lenStart+N] ;   // Key byte of divergence
+            byte b = node.prefix[N] ;           // Prefix byte of divergence
             int x = Byte.compare(a, b) ;
             if ( x == 0 )
                 throw new AtlasException("bytes compare same - expected different") ;
@@ -182,7 +206,18 @@ class RadixIterator implements Iterator<RadixEntry>
                 }
                 // Diverge - key more than this node and all it's sub nodes.
                 // Start here but do not yield a slot.
-                slot = null ;
+                RadixNode node2 = gotoUpAndAcross(node) ;
+                if ( node2 == null )
+                {
+                    node = null ;
+                    return ;
+                }
+                // Very like in hasNext - can be combine?
+                prefix.position(node2.lenStart) ;
+                node2 = downToMinNode(node2, prefix) ;
+                slot = prefix ;
+                node = node2 ;
+                return ;
             }
             // Done.
             return ;
@@ -302,6 +337,7 @@ class RadixIterator implements Iterator<RadixEntry>
         }
         else
         {
+            // Next across this node? When does this happen?
             int idx = node.nextIndex(0) ;
             node2 = ( idx < 0 ) ? null : node.get(idx) ;
         }
