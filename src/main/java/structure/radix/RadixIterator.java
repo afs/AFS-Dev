@@ -27,6 +27,7 @@ import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 
 import org.openjena.atlas.AtlasException ;
+import org.openjena.atlas.lib.Bytes ;
 
 class RadixIterator implements Iterator<RadixEntry>
 {
@@ -56,10 +57,23 @@ class RadixIterator implements Iterator<RadixEntry>
             return ;
         }
 
-        // Like RadixTree.applicator
+        // BB : basically broken.
+
+        // We need to find the first node equal to or just greater than the start.
+        // If we find that start is (just) bugger than some point, we can do that
+        // by setting slot to null so it's fixed on first .hasNext.
+
+
+        // Like RadixTree.applicator, except copies into slot on the way down.
+        // RadixTree.applicator -> a struct
+        // Add arg: a per step action.
+
         int N = -999 ;
 
         // Find node of interest.
+        
+        // Doh! We do not need to accumulate the prefix, because we can copy out of start.
+        // Whice means can share with RadixTree.applicator.
 
         for(;;)
         {
@@ -82,34 +96,63 @@ class RadixIterator implements Iterator<RadixEntry>
                 break ;
             
             // N == node.prefix.length, not a leaf.
-            int j = node.locate(start, node.lenFinish) ;
-            if ( j < 0 ) //|| j == node.nodes.size() )
-                // No match across subnodes - this node is the point of longest match.
-                break ;
-            // There is a next node down to try.
             RadixNode node2 = null ;
             if ( ! node.isLeaf() )
+            {
+                int j = node.locate(start, node.lenFinish) ;
+                if ( j < 0 ) //|| j == node.nodes.size() )
+                    // No match across subnodes - this node is the point of longest match.
+                    break ;
+                // There is a next node down to try.
                 node2 = node.get(j) ;
+            }
             
             //****************************************
-            if ( node2 == null )
+            if ( node2 != null )
             {
-                if ( logging && log.isDebugEnabled() )
-                    log.debug("    Loop: no where to go") ; 
+                // Start key continues.
+                node = node2 ;
+                continue ;      // LOOP
+            }
                 
-                // no matching next level down but key longer.  
-                // Start at min tree of next index, if any.
-                // DRY
-                ByteBuffer bb = ByteBuffer.allocate(node.lenFinish+50) ;
-                bb.put(start, 0, node.lenFinish) ;
-                //bb.position(node.lenStart+numHere) ;
-                prefix = bb ;
-                slot = null ;
+            // TODO Move out of loop.
+            
+            if ( logging && log.isDebugEnabled() )
+                log.debug("    Loop: no where to go") ; 
+                
+            // no matching next level down but key longer.  
+            // Start at min tree of next index, if any.
+            // DRY
+            ByteBuffer bb = ByteBuffer.allocate(node.lenFinish+50) ;
+            bb.put(start, 0, node.lenFinish) ;
+            prefix = bb ;
+                
+            if ( !node.isLeaf() )
+            {
+                int j = node.locate(start, node.lenFinish) ;
+                j = node.nextIndex(j) ;
+                if ( j > 0 )
+                {
+                    node2 = node.get(j) ;
+                    node = downToMinNode(node2, prefix) ;
+                    slot = prefix ;
+                    return ;
+                }
+                // above all this tree - drop out. 
+            }
+            
+            RadixNode node3 = gotoUpAndAcross(node) ;
+            if ( node3 == null )
+            {
+                node = null ;
                 return ;
             }
-             
-            // Start key continues.
-            node = node2 ;
+            // Very like in hasNext - can be combine?
+            prefix.position(node3.lenStart) ;
+            node3 = downToMinNode(node3, prefix) ;
+            slot = prefix ;
+            node = node3 ;
+            return ;
         }                
 
         if ( logging && log.isDebugEnabled() )
@@ -145,8 +188,8 @@ class RadixIterator implements Iterator<RadixEntry>
         if ( N < node.prefix.length )
         {
             // Key diverges.
-            byte a = node.prefix[N] ;
-            byte b = start[node.lenStart+N] ;
+            byte a = start[node.lenStart+N] ;   // Key byte of divergence
+            byte b = node.prefix[N] ;           // Prefix byte of divergence
             int x = Byte.compare(a, b) ;
             if ( x == 0 )
                 throw new AtlasException("bytes compare same - expected different") ;
@@ -171,7 +214,18 @@ class RadixIterator implements Iterator<RadixEntry>
                 }
                 // Diverge - key more than this node and all it's sub nodes.
                 // Start here but do not yield a slot.
-                slot = null ;
+                RadixNode node2 = gotoUpAndAcross(node) ;
+                if ( node2 == null )
+                {
+                    node = null ;
+                    return ;
+                }
+                // Very like in hasNext - can be combine?
+                prefix.position(node2.lenStart) ;
+                node2 = downToMinNode(node2, prefix) ;
+                slot = prefix ;
+                node = node2 ;
+                return ;
             }
             // Done.
             return ;
@@ -291,6 +345,7 @@ class RadixIterator implements Iterator<RadixEntry>
         }
         else
         {
+            // Next across this node? When does this happen?
             int idx = node.nextIndex(0) ;
             node2 = ( idx < 0 ) ? null : node.get(idx) ;
         }
@@ -305,6 +360,19 @@ class RadixIterator implements Iterator<RadixEntry>
         node2 = downToMinNode(node2, prefix) ;
         slot = prefix ;
         node = node2 ;
+        
+        // Finished?
+        if ( finish != null )
+        {
+            int x = Bytes.compare(slot.array(), finish) ;
+            if ( x >= 0 )
+            {
+                slot = null ;
+                node = null ;
+                return false ;
+            }
+        }
+        
         return true ;
     }
 

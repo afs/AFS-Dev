@@ -183,7 +183,7 @@ public class RadixRun
     {
         for ( byte[] k : keys )
         {
-            if ( trie.find(k) == null )
+            if ( trie.find(k, k) == null )
                 System.err.println("Did not find: ["+str(k)+"]") ;
         }
         

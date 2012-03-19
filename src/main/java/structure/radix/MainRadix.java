@@ -17,6 +17,8 @@
  */
 
 package structure.radix;
+import static structure.radix.Str.str ;
+
 import java.util.Arrays ;
 import java.util.Iterator ;
 
@@ -56,34 +58,63 @@ public class MainRadix
         Log.enable("structure.radix") ;
         print = false ;
         
+        if ( false )
         {
+            // To become more iterator tests. 
+            // cases
+            //  Diverge before at branch
+            //  Diverge between at branch
+            //  Diverge after at branch
+            
+            // Test key exactly on finish of iterator.
+            
             byte[] k1 = { 0 , 2 } ;
             byte[] k2 = { 0 , 3 } ;
 
-            byte[] k3 = { 0 , 2 , 4 , 6  } ;
+            byte[] k3 = { 0 , 2 , 4 , 7  } ;
             
             byte[] k4 = { 0 , 2 , 4 , 5 } ;
             byte[] k5 = { 0 , 1 } ; 
+            byte[] k6 = { 7 } ; 
             
             byte[] keyStart1 = { 0 , 2 } ;
             byte[] keyStart2 = { 0 , 1 } ;
-            byte[] keyStart3 = { 0 , 2 , 4 } ;
-            byte[] keyStart4 = { 0 , 2 , 4 , 6 } ;
-            byte[] keyStart5 = { 0 , 2 , 4 , 5 , 1 } ;
+            byte[] keyStart3 = { 0 , 2 , 4} ;
+            byte[] keyStart4 = { 0 , 2 , 4, 5 } ;
+            byte[] keyStart5 = { 0 , 2 , 4, 6 } ;
+            byte[] keyStart6 = { 0 , 2 , 4, 7 } ;
+            
+            byte[] keyStart9 = { 99 } ;
+            
             byte[] keyFinish = null ;
-            RadixTree t = tree(k1,k2,k3,k4,k5) ;
-            //t.printLeaves() ;
+            //RadixTree t = tree(k1,k2,k3,k6) ;
+            RadixTree t = tree(k1,k6) ;
             t.print() ;
+            t.printLeaves() ;
 
-            RadixTree.logging = true ;
+            //RadixTree.logging = true ;
             iterator(t, keyStart1, keyFinish) ;
             iterator(t, keyStart2, keyFinish) ;
             iterator(t, keyStart3, keyFinish) ;
             iterator(t, keyStart4, keyFinish) ;
             iterator(t, keyStart5, keyFinish) ;
+            iterator(t, keyStart6, keyFinish) ;
+            iterator(t, keyStart9, keyFinish) ;
+        }
+        
+        
+        if ( true )
+        {    
+            byte[] keyStart = key1 ;
+            byte[] keyFinish = { 2 , 4 , 6 , 9 } ;
+            RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
+            t.print() ;
+            t.printLeaves() ;
+            RadixTree.logging = true ;
+            System.out.println("** Iterator("+Str.str(keyStart)+", "+Str.str(keyFinish)+")") ;
             
-            //testIter(t, keyStart, keyFinish, k2, k3) ; 
-            RadixTree.logging = false ;
+            iterator(t, keyStart, keyFinish) ;
+            testIter(t, keyStart, keyFinish, key1, key4) ;
         }
 
         System.exit(0) ;
@@ -165,9 +196,21 @@ public class MainRadix
             if ( ! iter.hasNext() ) throw new RuntimeException("Iterator ran out") ;
             byte[] k = iter.next().key ;
             if ( 0 != Bytes.compare(results[i], k) ) 
-                throw new RuntimeException("Arrays differ: "+Str.str(results[i])+" : "+Str.str(k)) ;
+                throw new RuntimeException("idx = "+i+" Arrays differ: "+Str.str(results[i])+" : "+Str.str(k)) ;
         }
-        if ( ! iter.hasNext() ) throw new RuntimeException("Iterator still has elements") ;
+        if ( iter.hasNext() )
+        {
+            System.out.println("-- Iterator still has elements") ;
+            Iterator<RadixEntry> iter2 = t.iterator(keyStart, keyFinish) ;
+            for ( ; iter2.hasNext() ; )
+                System.out.println(iter2.next()) ;
+            System.out.println("----") ;
+            for ( byte[] r : results ) 
+                System.out.println(str(r)) ;
+            System.out.println("----") ;
+            
+        }
+        if ( iter.hasNext() ) throw new RuntimeException("Iterator still has elements") ;
     }
     
     static private RadixTree tree(RadixTree t, byte[] ... keys)

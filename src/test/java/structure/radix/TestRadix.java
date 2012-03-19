@@ -21,7 +21,7 @@ package structure.radix;
 import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 import java.util.List ;
-
+import static structure.radix.Str.str ; 
 import org.junit.Test ;
 import org.openjena.atlas.AtlasException ;
 import org.openjena.atlas.iterator.Iter ;
@@ -235,7 +235,7 @@ public class TestRadix extends BaseTest
         byte[] keyStart = { 2, 4, 6, 9} ;
         byte[] keyFinish = null ;
         RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
-        testIter(t, keyStart, keyFinish, key4, key2) ;
+        testIter(t, keyStart, keyFinish, key2) ;
     }
 
 
@@ -257,13 +257,14 @@ public class TestRadix extends BaseTest
         testIter(t, keyStart, keyFinish, key6, key3, key5) ;
     }
 
+    // All start keys.
     @Test
-    public void radix_iter_7()
+    public void radix_iter_22()
     {
         byte[] keyStart = key1 ;
         byte[] keyFinish = { 2 , 4 , 6 , 9 } ;
         RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
-        testIter(t, keyStart, keyFinish, key6, key3, key5, key1, key4) ;
+        testIter(t, keyStart, keyFinish, key1, key4) ;
     }
 
     private static void testIter(RadixTree t, byte[] keyStart, byte[] keyFinish, byte[]...results)
@@ -273,8 +274,23 @@ public class TestRadix extends BaseTest
         {
             assertTrue("Iterator ran out", iter.hasNext()) ;
             byte[] k = iter.next().key ;
-            assertArrayEquals(results[i], k) ;
+            assertArrayEquals("At idx="+i+" : Expected: "+str(results[i])+" / Actual: "+str(k),
+                              results[i], k) ;
         }
+        
+        if ( iter.hasNext() )
+        {
+            System.out.println("-- Iterator still has elements") ;
+            Iterator<RadixEntry> iter2 = t.iterator(keyStart, keyFinish) ;
+            for ( ; iter2.hasNext() ; )
+                System.out.println(iter2.next()) ;
+            System.out.println("----") ;
+            for ( byte[] r : results ) 
+                System.out.println(str(r)) ;
+            System.out.println("----") ;
+            
+        }
+        
         assertFalse("Iterator still has elements", iter.hasNext()) ;
     }
 
@@ -392,26 +408,26 @@ public class TestRadix extends BaseTest
         t.insert(key, value) ;
         t.check();
         assertTrue(t.contains(key)) ; 
-        RadixNode n = t.find(key) ;
-        assertNotNull(n) ;
-        assertEquals(key.length, n.lenFinish) ;
+        byte v[] = t.find(key,null) ;
+        assertNotNull(v) ;
+        assertArrayEquals(value, v) ;
     }
     
     private static void delete(RadixTree trie, byte[] key)
     {
-        boolean b2 = ( trie.find(key) != null ) ;
+        boolean b2 = ( trie.find(key,null) != null ) ;
         boolean b = trie.delete(key) ;
         try {
             trie.check() ;
         } catch (AtlasException ex) 
         {
-            trie.print() ;
+            //trie.print() ;
             throw ex ;
         }
         
         assertFalse(trie.contains(key)) ;
-        RadixNode n = trie.find(key) ;
-        assertNull(n) ;
+        byte v[] = trie.find(key,null) ;
+        assertNull(v) ;
     }
 
     static void count(RadixTree t, int size)

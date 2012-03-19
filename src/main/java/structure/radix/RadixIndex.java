@@ -40,9 +40,11 @@ public class RadixIndex implements RangeIndex
     @Override
     public Record find(Record record)
     {
-        if ( radix.contains(record.getKey()) )
-            return record ;
-        return null ;
+        byte[] v = radix.find(record.getKey(), record.getValue()) ;
+        if ( v == null )
+            return null ;
+        
+        return recordFactory.create(record.getKey(), v) ;
     }
 
     @Override
