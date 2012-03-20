@@ -18,8 +18,8 @@
 
 package structure.radix;
 
-import static structure.radix.RadixTree.log ;
-import static structure.radix.RadixTree.logging ;
+import static structure.radix.RadixTreeImpl.log ;
+import static structure.radix.RadixTreeImpl.logging ;
 import static structure.radix.Str.strToPosn ;
 
 import java.nio.ByteBuffer ;
@@ -40,7 +40,7 @@ class RadixIterator implements Iterator<RadixEntry>
 
     byte[] finish = null ;
 
-    RadixIterator(RadixTree tree, byte[] start, byte[] finish)
+    RadixIterator(RadixTreeImpl tree, byte[] start, byte[] finish)
     {
         node = tree.getRoot() ;
         this.finish = finish ;

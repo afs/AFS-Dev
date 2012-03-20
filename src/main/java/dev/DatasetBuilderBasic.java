@@ -29,6 +29,7 @@ import com.hp.hpl.jena.tdb.base.file.FileSet ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
+import com.hp.hpl.jena.tdb.nodetable.NodeTableLogger ;
 import com.hp.hpl.jena.tdb.setup.* ;
 import com.hp.hpl.jena.tdb.store.* ;
 import com.hp.hpl.jena.tdb.sys.DatasetControl ;
@@ -61,9 +62,12 @@ public class DatasetBuilderBasic implements DatasetBuilder
             params = SystemParams.getStdSystemParams() ;
         
         NodeTable nodeTable = makeNodeTable(location, params.indexNode2Id, params.indexId2Node,
+                                            -1, -1, -1) ; // No caches
                                             // Small caches 
-                                            10,1000, 10) ;
+                                            //10, 1000, 10) ;
                                             //params.Node2NodeIdCacheSize, params.NodeId2NodeCacheSize, params.NodeMissCacheSize) ;
+        
+        //nodeTable = new NodeTableLogger("Radix", nodeTable) ;
         
         TripleTable tripleTable = makeTripleTable(location, nodeTable, policy) ; 
         QuadTable quadTable = makeQuadTable(location, nodeTable, policy) ;

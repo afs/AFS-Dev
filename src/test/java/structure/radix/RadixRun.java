@@ -38,7 +38,7 @@ public class RadixRun
         Log.enable(RadixTree.class) ;
         //RadixTree.logging = false ;
         
-        RadixTree.logging = false ;
+        RadixTreeImpl.logging = false ;
 
 
         int nRuns = 100000 ;
@@ -52,7 +52,7 @@ public class RadixRun
         System.out.printf("Runs: %,d maxLen=%d nKeys=%d\n", nRuns, maxLen, nKeys ) ;
         for ( int i = 0 ; i < nRuns ; i++ )
         {
-            RadixTree trie = new RadixTree() ;
+            RadixTree trie = RadixTreeFactory.create() ;
             List<byte[]> x1 = gen(nKeys, maxLen, (byte)20) ;
             List<byte[]> x2 = randomize(x1) ;
 

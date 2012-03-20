@@ -53,8 +53,8 @@ public class MainRadix
     { 
         Log.setLog4j() ;
         //runJUnit() ;
-        RadixTree.checking = true ;
-        RadixTree.logging = false ;
+        RadixTreeImpl.checking = true ;
+        RadixTreeImpl.logging = false ;
         Log.enable("structure.radix") ;
         print = false ;
         
@@ -110,7 +110,7 @@ public class MainRadix
             RadixTree t = tree(key1, key2, key3, key4, key5, key6) ;
             t.print() ;
             t.printLeaves() ;
-            RadixTree.logging = true ;
+            RadixTreeImpl.logging = true ;
             System.out.println("** Iterator("+Str.str(keyStart)+", "+Str.str(keyFinish)+")") ;
             
             iterator(t, keyStart, keyFinish) ;
@@ -185,7 +185,7 @@ public class MainRadix
 
     static private RadixTree tree(byte[] ... keys)
     {
-        return tree(new RadixTree(), keys) ;
+        return tree(RadixTreeFactory.create(), keys) ;
     }
     
     private static void testIter(RadixTree t, byte[] keyStart, byte[] keyFinish, byte[]...results)

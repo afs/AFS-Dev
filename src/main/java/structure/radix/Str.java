@@ -35,6 +35,7 @@ public class Str
         return str(bytes, bytes.position(), bytes.limit()) ;
     }
     
+    public static String str(ByteBuffer bytes) { return strToPosn(bytes) ; }
 
     public static String str(ByteBuffer bytes, int start, int finish)
     {
@@ -49,14 +50,13 @@ public class Str
                 sb.append(sep) ;
             else
                 sep = ' ' ;
-                
-            sb.append(String.format("%02X", b)) ;
+            str(sb, b) ;
         }
         return sb.toString() ;
     }
 
     public static String str(byte[] bytes)
-    { return str(bytes, " ") ; }
+    { return str(bytes, "") ; }
 
     public static String str(byte[] bytes, String sep)
     {
@@ -69,9 +69,14 @@ public class Str
             if ( ! first )
                 sb.append(sep) ;
             first = false ;
-            sb.append(String.format("0x%02X", b)) ;
+            str(sb, b) ;
         }
         return sb.toString() ;
+    }
+    
+    private static void str(StringBuilder sb, byte x)
+    {
+        sb.append(String.format("%02X", x)) ;
     }
 
 }

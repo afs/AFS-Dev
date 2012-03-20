@@ -68,7 +68,7 @@ public final class RadixNode //extends PrintableBase implements Printable
     int lenStart ;
     
     // The nodes below this one, corresponding to each possible next byte
-    private final static int FanOutSize = 255 ;
+    private final static int FanOutSize = 256 ;
     //int maxNumChildren()    { return FanOutSize+1 ; }
     
     private RadixNode[] nodes = null ;      // null -> leaf (and here is not null)
@@ -404,9 +404,9 @@ public final class RadixNode //extends PrintableBase implements Printable
     
     private void _check(int length, Set<Integer> seen)
     {
-        if ( RadixTree.logging && RadixTree.log.isDebugEnabled() )
+        if ( RadixTreeImpl.logging && RadixTreeImpl.log.isDebugEnabled() )
         {
-            RadixTree.log.debug("Check: node "+this.id) ;
+            RadixTreeImpl.log.debug("Check: node "+this.id) ;
             System.out.flush() ;
         }
         
@@ -555,6 +555,6 @@ public final class RadixNode //extends PrintableBase implements Printable
         message = String.format(message, args) ;
         System.err.println("Error: "+node) ;
         System.err.println(message) ;
-        RadixTree.error(message) ;
+        RadixTreeImpl.error(message) ;
     }
 }

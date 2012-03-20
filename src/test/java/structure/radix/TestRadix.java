@@ -349,7 +349,7 @@ public class TestRadix extends BaseTest
     
     static RadixTree tree(byte[] ... keys)
     {
-        return tree(new RadixTree(), keys) ;
+        return tree(RadixTreeFactory.create(), keys) ;
     }
 
     final static boolean print = false ; 
@@ -369,7 +369,7 @@ public class TestRadix extends BaseTest
     /** Add the keys, delete the keys. */
     static void test(byte[]... keys)
     {
-        test(new RadixTree(), keys) ;
+        test(RadixTreeFactory.create(), keys) ;
     }
     
     static void test(RadixTree t, byte[]... keys)

@@ -28,19 +28,21 @@ import com.hp.hpl.jena.tdb.index.RangeIndex ;
 
 public class RadixIndex implements RangeIndex
 {
-    // DEBUG
-    public RadixTree radix = new RadixTree() ;
+    private RadixTree radix = RadixTreeFactory.create() ;
     private RecordFactory recordFactory ;
+    
+    static int counter = 0 ;
     
     public RadixIndex(RecordFactory recordFactory)
     {
+        //radix = new RadixTreeLogger(("Idx-"+counter++), radix) ; 
         this.recordFactory = recordFactory ;
     }
     
     @Override
     public Record find(Record record)
     {
-        byte[] v = radix.find(record.getKey(), record.getValue()) ;
+        byte[] v = radix.find(record.getKey(), null) ;
         if ( v == null )
             return null ;
         

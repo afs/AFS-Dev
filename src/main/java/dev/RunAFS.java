@@ -26,6 +26,7 @@ import org.openjena.riot.RiotLoader ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
+import com.hp.hpl.jena.sparql.util.Timer ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
 import com.hp.hpl.jena.tdb.setup.* ;
@@ -39,11 +40,17 @@ public class RunAFS
         DatasetBuilder builder = new DatasetBuilderBasic(new IndexBuilderRadix(), new RangeIndexBuilderRadix() ) ;
         DatasetGraphTDB dsg = builder.build(Location.mem(), null) ;
         
-        //dsg.add(SSE.parseQuad("(_ <s> <p> 123)")) ;
+        //Log.enable(NodeTable.class) ;
+        //dsg.add(SSE.parseQuad("(_ <s> <p> <o>)")) ;
+        //if ( false )
+        Timer t = new Timer() ;
+        t.startTimer() ;
+        RiotLoader.read("artists.nt", dsg) ;
+        long x = t.endTimer() ;
+        System.out.println("load = "+Timer.timeStr(x)+"s") ;
         
-        RiotLoader.read("D.trig", dsg) ;
-        
-        SSE.write(dsg) ;
+        if ( false )
+            SSE.write(dsg) ;
     }
     
     static class NodeTableRadix implements NodeTable
