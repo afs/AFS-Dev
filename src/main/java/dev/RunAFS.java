@@ -45,7 +45,7 @@ public class RunAFS
         //if ( false )
         Timer t = new Timer() ;
         t.startTimer() ;
-        RiotLoader.read("artists.nt", dsg) ;
+        RiotLoader.read("/home/afs/Datasets/BSBM/bsbm-1m.nt.gz", dsg) ;
         long x = t.endTimer() ;
         System.out.println("load = "+Timer.timeStr(x)+"s") ;
         
