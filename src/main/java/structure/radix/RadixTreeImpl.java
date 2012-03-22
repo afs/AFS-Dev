@@ -66,6 +66,8 @@ public final class RadixTreeImpl implements RadixTree
     private static RadixNode locator(RadixNode root, byte[] key)
     {
         // TODO ?? Return a struct and be normal.
+        // TODO ?? An object that presents the process (and slots for multi returns).
+        
         // Such short lives objects are very cheap in java (e.g. pure eden heap)
         
         RadixNode node = root ;     // The current node.
