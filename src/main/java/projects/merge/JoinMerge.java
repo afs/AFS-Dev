@@ -68,7 +68,7 @@ public class JoinMerge
         {
             ColumnMap colmap = new ColumnMap("SPO", idx) ;
             Tuple<String> tuple2 = tuple.map(colmap) ;
-            System.out.println(tuple2) ;
+            System.out.println(idx+": "+tuple2) ;
         }
         
         Var[] vars = new Var[3] ;
