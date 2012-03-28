@@ -140,13 +140,16 @@ public class JoinMerge
             String idxPrefix2 = prefix2+linkage.getRight();
             //System.out.println("Calc: "+idx1+"-"+idx2) ;
             
+            // 0 - contants
+            // 1 - join var cols
+            // 2 - rest
             String[] joinIndex1 = new String[3] ;
             joinIndex1[0] = prefix1 ;
-            joinIndex1[1] = linkage.getLeft(); ;
+            joinIndex1[1] = linkage.getLeft();
             joinIndex1[2] = null ;
             String[] joinIndex2 = new String[3] ;
             joinIndex2[0] = prefix2 ;
-            joinIndex2[1] = linkage.getRight(); ;
+            joinIndex2[1] = linkage.getRight();
             joinIndex2[2] = null ;
             
             
@@ -155,24 +158,23 @@ public class JoinMerge
                 if ( index.startsWith(idxPrefix1))
                 {
                     if ( joinIndex1[2] != null )
-                        System.out.println("Chocies! (1) : "+index) ;
+                        System.out.println("Choices! (1) : "+index) ;
                     else
                         joinIndex1[2] = index.substring(idxPrefix1.length()) ;
                 }
                 if ( index.startsWith(idxPrefix2))
                 {
                     if ( joinIndex2[2] != null )
-                        System.out.println("Chocies! (2) : "+index) ;
+                        System.out.println("Choices! (2) : "+index) ;
                     else
                         joinIndex2[2] = index.substring(idxPrefix2.length()) ;
-                    
                 }
             }
             
             
             String s1 = strJoinIndex(joinIndex1) ;
             String s2 = strJoinIndex(joinIndex2) ;
-            System.out.println("Calc: "+s1+" "+s2) ;
+            System.out.println("Decision: "+s1+" "+s2) ;
         }
 
         // Another way of thinking about it.
