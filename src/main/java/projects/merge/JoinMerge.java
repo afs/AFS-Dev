@@ -21,9 +21,11 @@ package projects.merge;
 import java.util.ArrayList ;
 import java.util.Arrays ;
 import java.util.List ;
+import java.util.Set ;
 
 import org.openjena.atlas.lib.ColumnMap ;
 import org.openjena.atlas.lib.Pair ;
+import org.openjena.atlas.lib.SetUtils ;
 import org.openjena.atlas.lib.Tuple ;
 import org.openjena.atlas.logging.Log ;
 
@@ -31,6 +33,7 @@ import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
+import com.hp.hpl.jena.sparql.util.VarUtils ;
 
 public class JoinMerge
 {
@@ -68,11 +71,13 @@ public class JoinMerge
         Triple triple1 = SSE.parseTriple(tripleStr1) ;
         Triple triple2 = SSE.parseTriple(tripleStr2) ;
         
-        SSE.write(triple1) ; System.out.println() ;
-        SSE.write(triple2) ; System.out.println() ;
+        System.out.print("Join: ") ;
+        SSE.write(triple1) ;
+        System.out.print("  ") ;
+        SSE.write(triple2) ;
+        System.out.println() ;
         
-        System.out.println("{"+triple1+"}    {"+triple2+"}") ;
-        
+        //System.out.println("{"+triple1+"}    {"+triple2+"}") ;
         Pair<String, String> p = choose(triple1, triple2, indexes) ;
         
         if ( p == null )
@@ -104,16 +109,74 @@ public class JoinMerge
 //        print(const1, indexes) ;
 //        print(const2, indexes) ;
         
-        // joining var(s)
-        // S-var -- S-var
-        // S-var -- O-var
-        // O-var -- S-var
-        // O-var -- O-var
-        
         // Assume P fixed.
+        // Look for join vars.
+        Set<Var> vars1 = VarUtils.getVars(triple1) ;
+        Set<Var> vars2 = VarUtils.getVars(triple2) ;
+        Set<Var> joinVars = SetUtils.intersection(vars1, vars2) ;
+        //System.out.println("Join: "+joinVars) ;
         
+        // Find join linkages.
+        // Assume one for now.
+        Pair<String, String> linkage = joinLinkages(triple1, triple2) ;
+
+        // There parts.
+        // Const, vars, remainederr
+        
+        if ( linkage == null )
+        {
+            System.out.println("No linkage") ;
+        }
+        else
+        {
+            // Base index for
+            String prefix1 = constantIndexPrefix(triple1) ;
+            String prefix2 = constantIndexPrefix(triple2) ;
+            System.out.print("Prefixes="+prefix1+"/"+prefix2) ;
+            System.out.println("  JoinVars="+joinVars+"  Linkage="+linkage) ;
+        
+            // .. conclusion.
+            String idxPrefix1 = prefix1+linkage.getLeft();
+            String idxPrefix2 = prefix2+linkage.getRight();
+            //System.out.println("Calc: "+idx1+"-"+idx2) ;
+            
+            String[] joinIndex1 = new String[3] ;
+            joinIndex1[0] = prefix1 ;
+            joinIndex1[1] = linkage.getLeft(); ;
+            joinIndex1[2] = null ;
+            String[] joinIndex2 = new String[3] ;
+            joinIndex2[0] = prefix2 ;
+            joinIndex2[1] = linkage.getRight(); ;
+            joinIndex2[2] = null ;
+            
+            
+            for ( String index : indexes )
+            {
+                if ( index.startsWith(idxPrefix1))
+                {
+                    if ( joinIndex1[2] != null )
+                        System.out.println("Chocies! (1) : "+index) ;
+                    else
+                        joinIndex1[2] = index.substring(idxPrefix1.length()) ;
+                }
+                if ( index.startsWith(idxPrefix2))
+                {
+                    if ( joinIndex2[2] != null )
+                        System.out.println("Chocies! (2) : "+index) ;
+                    else
+                        joinIndex2[2] = index.substring(idxPrefix2.length()) ;
+                    
+                }
+            }
+            
+            
+            String s1 = strJoinIndex(joinIndex1) ;
+            String s2 = strJoinIndex(joinIndex2) ;
+            System.out.println("Calc: "+s1+" "+s2) ;
+        }
+
+        // Another way of thinking about it.
         // Generate possibilities.
-        // Try P-P first.
         
         if ( constants(triple1.getPredicate()) == null ||
              constants(triple2.getPredicate()) == null )
@@ -151,6 +214,48 @@ public class JoinMerge
         return Pair.create(i1, i2) ;
     }
 
+
+    private static String strJoinIndex(String[] joinIndex)
+    {
+        return "["+joinIndex[0]+","+joinIndex[1]+","+joinIndex[2]+"]" ;
+    }
+
+    private static String constantIndexPrefix(Triple triple)
+    {
+        // Rework!
+        String x = "" ;
+        Tuple<String> tuple = constants(triple) ;
+        if ( tuple.get(1) != null ) x = "P" ;
+        if ( tuple.get(0) != null ) x = x+ "S" ;
+        if ( tuple.get(2) != null ) x = x+ "O" ;
+        return x  ;
+    }
+
+    private static Pair<String, String> joinLinkages(Triple triple1, Triple triple2)
+    {
+        String x = joinLinkage(triple1.getSubject(), triple2) ;
+        if ( x != null ) return Pair.create("S", x) ;
+        x = joinLinkage(triple1.getPredicate(), triple2) ;
+        if ( x != null ) return Pair.create("P", x) ;
+        x = joinLinkage(triple1.getObject(), triple2) ;
+        if ( x != null ) return Pair.create("O", x) ;
+        return null ;
+    }
+
+    private static String joinLinkage(Node x, Triple triple)
+    {
+        if ( ! Var.isVar(x) ) return null ;
+        
+        if ( triple.getSubject().equals(x) )    return "S" ;
+        if ( triple.getPredicate().equals(x) )  return "P" ;
+        if ( triple.getObject().equals(x) )     return "O" ;
+        return null ;
+    }
+    
+    private static Set<Var> vars(Triple triple1)
+    {
+        return null ;
+    }
 
     private static String chooseIndex(Node node, String idx1, String idx2)
     {
