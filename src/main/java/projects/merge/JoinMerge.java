@@ -78,33 +78,31 @@ public class JoinMerge
         System.out.println() ;
         
         //System.out.println("{"+triple1+"}    {"+triple2+"}") ;
-        Pair<String, String> p = choose(triple1, triple2, indexes) ;
+        MergeAction action = choose(triple1, triple2, indexes) ;
         
-        if ( p == null )
+        if ( action == null )
         {
             System.out.println("** No match") ;
             return ;
         }
-        String i1 = p.getLeft() ;
-        String i2 = p.getRight() ;
+        String i1 = action.index1 ;
+        String i2 = action.index2 ;
         
         if ( !index1.equals(i1) || !index2.equals(i2) )
             System.out.println("** Expected: "+index1+"-"+index2+" : Got "+i1+"-"+i2) ;
         else
-            System.out.println("** "+i1+"-"+i2) ;
+            System.out.println("** "+action) ;
         System.out.println() ;
     }
      
     
-    private static Pair<String, String> choose(Triple triple1, Triple triple2, String[] indexes)
+    private static MergeAction choose(Triple triple1, Triple triple2, String[] indexes)
     {
-        // Join vars.
-        
         Tuple<String> const1 = constants(triple1) ;
         Tuple<String> const2 = constants(triple2) ;
         
-        int x1 = const1.countNotNull() ;
-        int x2 = const2.countNotNull() ;
+//        int x1 = const1.countNotNull() ;
+//        int x2 = const2.countNotNull() ;
 
 //        print(const1, indexes) ;
 //        print(const2, indexes) ;
@@ -113,79 +111,87 @@ public class JoinMerge
         // Look for join vars.
         Set<Var> vars1 = VarUtils.getVars(triple1) ;
         Set<Var> vars2 = VarUtils.getVars(triple2) ;
-        Set<Var> joinVars = SetUtils.intersection(vars1, vars2) ;
-        //System.out.println("Join: "+joinVars) ;
-        
         // Find join linkages.
         // Assume one for now.
         Pair<String, String> linkage = joinLinkages(triple1, triple2) ;
 
-        // There parts.
-        // Const, vars, remainederr
+        // Const, vars, remainder
         
         if ( linkage == null )
         {
             System.out.println("No linkage") ;
-        }
-        else
-        {
-            // Base index for
-            String prefix1 = constantIndexPrefix(triple1) ;
-            String prefix2 = constantIndexPrefix(triple2) ;
-            System.out.print("Prefixes="+prefix1+"/"+prefix2) ;
-            System.out.println("  JoinVars="+joinVars+"  Linkage="+linkage) ;
-        
-            // .. conclusion.
-            String idxPrefix1 = prefix1+linkage.getLeft();
-            String idxPrefix2 = prefix2+linkage.getRight();
-            //System.out.println("Calc: "+idx1+"-"+idx2) ;
-            
-            // 0 - contants
-            // 1 - join var cols
-            // 2 - rest
-            String[] joinIndex1 = new String[3] ;
-            joinIndex1[0] = prefix1 ;
-            joinIndex1[1] = linkage.getLeft();
-            joinIndex1[2] = null ;
-            String[] joinIndex2 = new String[3] ;
-            joinIndex2[0] = prefix2 ;
-            joinIndex2[1] = linkage.getRight();
-            joinIndex2[2] = null ;
-            
-            
-            for ( String index : indexes )
-            {
-                if ( index.startsWith(idxPrefix1))
-                {
-                    if ( joinIndex1[2] != null )
-                        System.out.println("Choices! (1) : "+index) ;
-                    else
-                        joinIndex1[2] = index.substring(idxPrefix1.length()) ;
-                }
-                if ( index.startsWith(idxPrefix2))
-                {
-                    if ( joinIndex2[2] != null )
-                        System.out.println("Choices! (2) : "+index) ;
-                    else
-                        joinIndex2[2] = index.substring(idxPrefix2.length()) ;
-                }
-            }
-            
-            
-            String s1 = strJoinIndex(joinIndex1) ;
-            String s2 = strJoinIndex(joinIndex2) ;
-            System.out.println("Decision: "+s1+" "+s2) ;
-        }
-
-        // Another way of thinking about it.
-        // Generate possibilities.
-        
-        if ( constants(triple1.getPredicate()) == null ||
-             constants(triple2.getPredicate()) == null )
-        {
-            System.out.println("Not a P-P pair") ;
             return null ;
         }
+
+        Set<Var> _joinVars = SetUtils.intersection(vars1, vars2) ;
+        Var joinVar = _joinVars.iterator().next(); 
+        //System.out.println("Join: "+joinVars) ;
+        
+        // Base index for
+        String prefix1 = constantIndexPrefix(triple1) ;
+        String prefix2 = constantIndexPrefix(triple2) ;
+//        System.out.print("Prefixes="+prefix1+"/"+prefix2) ;
+//        System.out.println("  JoinVar="+joinVar+"  Linkage="+linkage) ;
+        
+        // .. conclusion.
+        String idxPrefix1 = prefix1+linkage.getLeft();
+        String idxPrefix2 = prefix2+linkage.getRight();
+        //System.out.println("Calc: "+idx1+"-"+idx2) ;
+            
+        // 0 - contants
+        // 1 - join var cols
+        // 2 - rest
+        // Make a class? JoinIndexAccess
+        String[] joinIndex1 = new String[3] ;
+        joinIndex1[0] = prefix1 ;
+        joinIndex1[1] = linkage.getLeft();
+        joinIndex1[2] = null ;
+        String[] joinIndex2 = new String[3] ;
+        joinIndex2[0] = prefix2 ;
+        joinIndex2[1] = linkage.getRight();
+        joinIndex2[2] = null ;
+        
+        for ( String index : indexes )
+        {
+            if ( index.startsWith(idxPrefix1))
+            {
+                if ( joinIndex1[2] != null )
+                    System.out.println("Choices! (1) : "+index) ;
+                else
+                    joinIndex1[2] = index.substring(idxPrefix1.length()) ;
+            }
+            if ( index.startsWith(idxPrefix2))
+            {
+                if ( joinIndex2[2] != null )
+                    System.out.println("Choices! (2) : "+index) ;
+                else
+                    joinIndex2[2] = index.substring(idxPrefix2.length()) ;
+            }
+        }
+
+
+        String s1 = strJoinIndex(joinIndex1) ;
+        String s2 = strJoinIndex(joinIndex2) ;
+        //System.out.println("Decision: "+s1+" "+s2) ;
+        
+        return new MergeAction(s1, s2,
+                               prefix1, prefix2,
+                               joinVar
+                               )  ;
+
+    }
+    
+    // Another way of thinking about it.
+    // Generate possibilities.
+    private static Pair<String,String> calcMergeJoin2(Triple triple1, Triple triple2, String[] indexes)
+    {
+        if ( constants(triple1.getPredicate()) == null ||
+            constants(triple2.getPredicate()) == null )
+       {
+           System.out.println("Not a P-P pair") ;
+           return null ;
+       }
+        
         
         String i1 ;
         String i2 ; 
@@ -219,7 +225,8 @@ public class JoinMerge
 
     private static String strJoinIndex(String[] joinIndex)
     {
-        return "["+joinIndex[0]+","+joinIndex[1]+","+joinIndex[2]+"]" ;
+        return joinIndex[0]+joinIndex[1]+joinIndex[2] ;
+        //return "["+joinIndex[0]+","+joinIndex[1]+","+joinIndex[2]+"]" ;
     }
 
     private static String constantIndexPrefix(Triple triple)
