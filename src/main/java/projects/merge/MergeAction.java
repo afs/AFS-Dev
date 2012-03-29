@@ -19,16 +19,17 @@
 package projects.merge;
 
 import com.hp.hpl.jena.sparql.core.Var ;
+import com.hp.hpl.jena.tdb.index.TupleIndex ;
 
 public class MergeAction
 {
-    public String index1 ;
-    public String index2 ;
+    public TupleIndex index1 ;
+    public TupleIndex index2 ;
     public String prefix1 ;
     public String prefix2 ;
     public Var joinVar ;        // This is the first col after the prefix
     
-    public MergeAction(String index1, String index2, 
+    public MergeAction(TupleIndex index1, TupleIndex index2, 
                        String prefix1, String prefix2,
                        Var joinVar)
     {
@@ -43,6 +44,9 @@ public class MergeAction
     @Override
     public String toString() 
     {
-        return "[Join("+index1+","+index2+") ("+prefix1+","+prefix2+") "+joinVar+"]" ;
+        String s1 = JoinMerge.names.get(index1) ;
+        String s2 = JoinMerge.names.get(index2) ;
+        
+        return "[Join("+s1+","+s2+") ("+prefix1+","+prefix2+") "+joinVar+"]" ;
     }
 }

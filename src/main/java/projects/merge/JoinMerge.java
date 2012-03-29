@@ -18,9 +18,8 @@
 
 package projects.merge;
 
-import java.util.ArrayList ;
-import java.util.Arrays ;
-import java.util.List ;
+import java.util.HashMap ;
+import java.util.Map ;
 import java.util.Set ;
 
 import org.openjena.atlas.lib.ColumnMap ;
@@ -34,39 +33,40 @@ import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 import com.hp.hpl.jena.sparql.util.VarUtils ;
+import com.hp.hpl.jena.tdb.base.file.Location ;
+import com.hp.hpl.jena.tdb.index.TupleIndex ;
+import com.hp.hpl.jena.tdb.store.NodeId ;
+import com.hp.hpl.jena.tdb.sys.SetupTDB ;
 
 public class JoinMerge
 {
+    static Map<TupleIndex, String> names = new HashMap<>() ; 
+    
     public static void main(String ... argv)
     {
         Log.setLog4j() ;
         ColumnMap colMap = new ColumnMap("SPO", "POS") ;
-        String [] indexes = { "POS", "PSO"} ;
-        Triple[] triples = { SSE.parseTriple("(?s <p> ?o)") ,
-                             SSE.parseTriple("(?s <q> 123)") ,
-                             SSE.parseTriple("(<x> <q> 123)") ,
-                             } ;
-//        for ( Triple t : triples )
-//            choose(t, indexes) ;
+        Location loc = Location.mem() ;
+
+        TupleIndex POS = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
+        TupleIndex PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
         
-        // Test cases.
+        TupleIndex [] indexes = { POS, PSO } ;
+        names.put(POS, "POS") ;
+        names.put(PSO, "PSO") ;
         
-        test("(?s <p> ?o)", "(?s <q> 123)", indexes, "PSO", "POS") ;
-        test("(?s <p> ?o)", "(?s <q> ?v)",  indexes, "PSO", "PSO") ;
-        test("(?s <p> ?z)", "(?z <q> ?v)",  indexes, "POS", "PSO") ;
+
+        test("(?s <p> ?o)", "(?s <q> 123)", indexes, PSO, POS) ;
+        test("(?s <p> ?o)", "(?s <q> ?v)",  indexes, PSO, PSO) ;
+        test("(?s <p> ?z)", "(?z <q> ?v)",  indexes, POS, PSO) ;
         
-        test("(?s <p> ?z)", "(?z <q> 123)", indexes, "POS", "POS") ;
-        test("(?x <p> ?x)", "(?x <q> ?v)",  indexes, "PSO", "PSO") ;
+        test("(?s <p> ?z)", "(?z <q> 123)", indexes, POS, POS) ;
+        test("(?x <p> ?x)", "(?x <q> ?v)",  indexes, PSO, PSO) ;
         
-        test("(?a <p> ?b)", "(?c <q> ?d)",  indexes, "PSO", "PSO") ;
-        
+        test("(?a <p> ?b)", "(?c <q> ?d)",  indexes, PSO, PSO) ;
     }
 
-    // Find first sort order
-    // When is there a choice?
-    // Finger print: (Constants) (same vars).
-    
-    private static void test(String tripleStr1, String tripleStr2, String[] indexes, String index1, String index2)
+    private static void test(String tripleStr1, String tripleStr2, TupleIndex[] indexes, TupleIndex index1, TupleIndex index2)
     {
         Triple triple1 = SSE.parseTriple(tripleStr1) ;
         Triple triple2 = SSE.parseTriple(tripleStr2) ;
@@ -85,8 +85,8 @@ public class JoinMerge
             System.out.println("** No match") ;
             return ;
         }
-        String i1 = action.index1 ;
-        String i2 = action.index2 ;
+        TupleIndex i1 = action.index1 ;
+        TupleIndex i2 = action.index2 ;
         
         if ( !index1.equals(i1) || !index2.equals(i2) )
             System.out.println("** Expected: "+index1+"-"+index2+" : Got "+i1+"-"+i2) ;
@@ -96,7 +96,7 @@ public class JoinMerge
     }
      
     
-    private static MergeAction choose(Triple triple1, Triple triple2, String[] indexes)
+    private static MergeAction choose(Triple triple1, Triple triple2, TupleIndex[] indexes)
     {
         Tuple<String> const1 = constants(triple1) ;
         Tuple<String> const2 = constants(triple2) ;
@@ -151,95 +151,48 @@ public class JoinMerge
         joinIndex2[1] = linkage.getRight();
         joinIndex2[2] = null ;
         
-        for ( String index : indexes )
+        TupleIndex idx1 = null ;
+        TupleIndex idx2 = null ;
+        
+        for ( TupleIndex index : indexes )
         {
-            if ( index.startsWith(idxPrefix1))
+            String idxStr = index.getLabel().substring(5) ;
+            
+            if ( idxStr.startsWith(idxPrefix1))
             {
                 if ( joinIndex1[2] != null )
-                    System.out.println("Choices! (1) : "+index) ;
+                    System.out.println("Choices! (1) : "+idxStr) ;
                 else
-                    joinIndex1[2] = index.substring(idxPrefix1.length()) ;
+                {
+                    idx1 = index ;
+                    joinIndex1[2] = idxStr.substring(idxPrefix1.length()) ;
+                    
+                }
             }
-            if ( index.startsWith(idxPrefix2))
+            if ( idxStr.startsWith(idxPrefix2))
             {
                 if ( joinIndex2[2] != null )
-                    System.out.println("Choices! (2) : "+index) ;
+                    System.out.println("Choices! (2) : "+idxStr) ;
                 else
-                    joinIndex2[2] = index.substring(idxPrefix2.length()) ;
+                {
+                    idx2 = index ;
+                    joinIndex2[2] = idxStr.substring(idxPrefix2.length()) ;
+                }
             }
         }
 
 
-        String s1 = strJoinIndex(joinIndex1) ;
-        String s2 = strJoinIndex(joinIndex2) ;
+//        String s1 = strJoinIndex(joinIndex1) ;
+//        String s2 = strJoinIndex(joinIndex2) ;
         //System.out.println("Decision: "+s1+" "+s2) ;
         
-        return new MergeAction(s1, s2,
+        return new MergeAction(idx1, idx2,
                                prefix1, prefix2,
                                joinVar
                                )  ;
 
     }
     
-    // Another way of thinking about it.
-    // Generate possibilities.
-    private static Pair<String,String> calcMergeJoin2(Triple triple1, Triple triple2, String[] indexes)
-    {
-        if ( constants(triple1.getPredicate()) == null ||
-            constants(triple2.getPredicate()) == null )
-       {
-           System.out.println("Not a P-P pair") ;
-           return null ;
-       }
-        
-        
-        String i1 ;
-        String i2 ; 
-        
-        if ( varMatch(triple1.getSubject(), triple2.getSubject()) )
-        {
-            i1 = chooseIndex(triple1.getObject(),  "PSO" , "POS") ;
-            i2 = chooseIndex(triple2.getObject(),  "PSO" , "POS") ;
-        }
-        else if ( varMatch(triple1.getSubject(), triple2.getObject()) )  
-        {
-            i1 = chooseIndex(triple1.getObject(),  "PSO" , "POS") ;
-            i2 = chooseIndex(triple2.getSubject(), "POS" , "PSO") ;
-        }
-        else if ( varMatch(triple1.getObject(), triple2.getSubject()) )  
-        {
-            i1 = chooseIndex(triple1.getSubject(), "POS" , "PSO") ;
-            i2 = chooseIndex(triple2.getObject(),  "PSO" , "POS") ;
-        }
-        else if ( varMatch(triple1.getObject(), triple2.getObject()) )
-        {
-            i1 = chooseIndex(triple1.getSubject(), "POS" , "PSO") ;
-            i2 = chooseIndex(triple2.getSubject(), "POS" , "PSO") ;
-        }
-        else
-            return null ;
-            
-        return Pair.create(i1, i2) ;
-    }
-
-
-    private static String strJoinIndex(String[] joinIndex)
-    {
-        return joinIndex[0]+joinIndex[1]+joinIndex[2] ;
-        //return "["+joinIndex[0]+","+joinIndex[1]+","+joinIndex[2]+"]" ;
-    }
-
-    private static String constantIndexPrefix(Triple triple)
-    {
-        // Rework!
-        String x = "" ;
-        Tuple<String> tuple = constants(triple) ;
-        if ( tuple.get(1) != null ) x = "P" ;
-        if ( tuple.get(0) != null ) x = x+ "S" ;
-        if ( tuple.get(2) != null ) x = x+ "O" ;
-        return x  ;
-    }
-
     private static Pair<String, String> joinLinkages(Triple triple1, Triple triple2)
     {
         String x = joinLinkage(triple1.getSubject(), triple2) ;
@@ -254,44 +207,24 @@ public class JoinMerge
     private static String joinLinkage(Node x, Triple triple)
     {
         if ( ! Var.isVar(x) ) return null ;
-        
+
         if ( triple.getSubject().equals(x) )    return "S" ;
         if ( triple.getPredicate().equals(x) )  return "P" ;
         if ( triple.getObject().equals(x) )     return "O" ;
         return null ;
     }
-    
-    private static Set<Var> vars(Triple triple1)
+
+    private static String constantIndexPrefix(Triple triple)
     {
-        return null ;
+        // Rework!
+        String x = "" ;
+        Tuple<String> tuple = constants(triple) ;
+        if ( tuple.get(1) != null ) x = "P" ;
+        if ( tuple.get(0) != null ) x = x+ "S" ;
+        if ( tuple.get(2) != null ) x = x+ "O" ;
+        return x  ;
     }
 
-    private static String chooseIndex(Node node, String idx1, String idx2)
-    {
-        return isVar(node) ? idx1 : idx2  ;
-    }
-
-    private static boolean isVar(Node node)
-    {
-        return Var.isVar(node) ;
-    }
-
-    private static boolean varMatch(Node node1, Node node2)
-    {
-        return Var.isVar(node1) && node1.equals(node2) ;
-    }
-
-    private static void print(Tuple<String> constants, String[] indexes)
-    {
-        System.out.println(constants) ;
-        for ( String idx : indexes )
-        {
-            ColumnMap colmap = new ColumnMap("SPO", idx) ;
-            Tuple<String> tuple = constants ;
-            Tuple<String> tuple2 = tuple.map(colmap) ;
-            System.out.println(idx+": "+tuple2) ;
-        }
-    }
 
     private static Tuple<String> constants(Triple triple)
     {
@@ -301,48 +234,16 @@ public class JoinMerge
         if ( constants(triple.getObject()) != null )    colNames[2] = "O" ;
         return Tuple.create(colNames) ;
     }
-    
-    
-    private static void choose(Triple t1, String[] indexes)
-    {
-        System.out.println(t1) ;
-        List<String> cols = new ArrayList<String>() ;
-        Node[] constants = new Node[3] ;
-        constants[0] = constants(t1.getSubject()) ; 
-        constants[1] = constants(t1.getPredicate()) ; 
-        constants[2] = constants(t1.getObject()) ;
-        String[] colNames = new String[3] ;
-        
-        if ( constants[0] != null ) { cols.add("S") ; colNames[0] = "S" ; }
-        if ( constants[1] != null ) { cols.add("P") ; colNames[1] = "P" ; }
-        if ( constants[2] != null ) { cols.add("O") ; colNames[2] = "O" ; }
-        
-        Tuple<String> tuple = Tuple.create(colNames) ; 
-        System.out.println(cols) ;
-        System.out.println(Arrays.asList(colNames)) ;
-        
-        for ( String idx : indexes )
-        {
-            ColumnMap colmap = new ColumnMap("SPO", idx) ;
-            Tuple<String> tuple2 = tuple.map(colmap) ;
-            System.out.println(idx+": "+tuple2) ;
-        }
-        
-//        Var[] vars = new Var[3] ;
-//        vars[0] = vars(t1.getSubject()) ; 
-//        vars[1] = vars(t1.getPredicate()) ; 
-//        vars[2] = vars(t1.getObject()) ;
-    }
 
     private static Node constants(Node node)
     {
         return node.isConcrete() ? node : null ; 
     }
-    
-    private static Var vars(Node node)
-    {
-        return Var.isVar(node) ? Var.alloc(node) : null ; 
-    }
 
+//    private static String strJoinIndex(String[] joinIndex)
+//    {
+//        return joinIndex[0]+joinIndex[1]+joinIndex[2] ;
+//        //return "["+joinIndex[0]+","+joinIndex[1]+","+joinIndex[2]+"]" ;
+//    }
 }
 
