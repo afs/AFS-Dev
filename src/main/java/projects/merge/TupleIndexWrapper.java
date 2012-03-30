@@ -20,6 +20,7 @@ package projects.merge;
 
 import java.util.Iterator ;
 
+import org.openjena.atlas.lib.ColumnMap ;
 import org.openjena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
@@ -62,9 +63,23 @@ public class TupleIndexWrapper implements TupleIndex
     }
 
     @Override
-    public String getLabel()
+    public String getMapping()
     {
-        return index.getLabel() ;
+        return index.getMapping() ;
+    }
+
+    @Override
+    public ColumnMap getColumnMap()
+    {
+        return index.getColumnMap() ;
+    }
+
+
+    
+    @Override
+    public String getName()
+    {
+        return index.getName() ;
     }
 
     @Override

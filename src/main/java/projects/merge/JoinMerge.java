@@ -18,8 +18,6 @@
 
 package projects.merge;
 
-import java.util.HashMap ;
-import java.util.Map ;
 import java.util.Set ;
 
 import org.openjena.atlas.lib.ColumnMap ;
@@ -40,8 +38,6 @@ import com.hp.hpl.jena.tdb.sys.SetupTDB ;
 
 public class JoinMerge
 {
-    static Map<TupleIndex, String> names = new HashMap<>() ; 
-    
     public static void main(String ... argv)
     {
         Log.setLog4j() ;
@@ -52,9 +48,6 @@ public class JoinMerge
         TupleIndex PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
         
         TupleIndex [] indexes = { POS, PSO } ;
-        names.put(POS, "POS") ;
-        names.put(PSO, "PSO") ;
-        
 
         test("(?s <p> ?o)", "(?s <q> 123)", indexes, PSO, POS) ;
         test("(?s <p> ?o)", "(?s <q> ?v)",  indexes, PSO, PSO) ;
@@ -156,7 +149,7 @@ public class JoinMerge
         
         for ( TupleIndex index : indexes )
         {
-            String idxStr = index.getLabel().substring(5) ;
+            String idxStr = index.getName() ;
             
             if ( idxStr.startsWith(idxPrefix1))
             {

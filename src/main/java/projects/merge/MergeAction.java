@@ -44,9 +44,6 @@ public class MergeAction
     @Override
     public String toString() 
     {
-        String s1 = JoinMerge.names.get(index1) ;
-        String s2 = JoinMerge.names.get(index2) ;
-        
-        return "[Join("+s1+","+s2+") ("+prefix1+","+prefix2+") "+joinVar+"]" ;
+        return "[Join("+index1.getName()+","+index2.getName()+") ("+prefix1+","+prefix2+") "+joinVar+"]" ;
     }
 }
