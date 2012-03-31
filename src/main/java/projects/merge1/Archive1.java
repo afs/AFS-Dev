@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package projects.merge;
+package projects.merge1;
 
 import java.util.ArrayList ;
 import java.util.Arrays ;
@@ -31,7 +31,7 @@ import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.core.Var ;
 
-public class Archive
+public class Archive1
 {
     // Another way of thinking about it.
     private static Pair<String,String> calcMergeJoin2(Triple triple1, Triple triple2, String[] indexes)

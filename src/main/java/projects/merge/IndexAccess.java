@@ -18,41 +18,42 @@
 
 package projects.merge;
 
-public class MergeAction
+import com.hp.hpl.jena.sparql.core.Var ;
+import com.hp.hpl.jena.tdb.index.TupleIndex ;
+
+public class IndexAccess
 {
-    private IndexAccess indexAccess1 ;
-    private IndexAccess indexAccess2 ;
-    
-    public MergeAction(IndexAccess indexAccess1, IndexAccess indexAccess2)
+    // Special cases:
+    // Two vars: ?x <p> ?x
+    // Three vars: ?x ?x ?x
+    private TupleIndex index ;
+    private int prefixLen ;
+    private Var var ;
+
+    public IndexAccess(TupleIndex index, int prefixLen, Var var)
     {
-        super() ;
-        this.indexAccess1 = indexAccess1 ;
-        this.indexAccess2 = indexAccess2 ;
-        if ( ! indexAccess1.getVar().equals(indexAccess2.getVar()) )
-            // May relax this and allow (?x = ?y AS ?z) 
-            throw new InternalError("IndexAcceses in a merge must be joining the same variable") ; 
+        this.index = index ;
+        this.prefixLen = prefixLen ;
+        this.var = var ;
     }
 
-    public IndexAccess getIndexAccess1()
-    {
-        return indexAccess1 ;
-    }
+    public int getPrefixLen()       { return prefixLen ; }
 
-    public IndexAccess getIndexAccess2()
-    {
-        return indexAccess2 ;
-    }
+    public TupleIndex getIndex()    { return index ; } 
+
+    public Var getVar()             { return var ; }
 
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder() ;
-        builder.append("MergeAction [") ;
-        builder.append(indexAccess1) ;
-        builder.append(",") ;
-        builder.append(indexAccess2) ;
-        builder.append("]") ;
+        builder.append("[") 
+               .append(index.getName())
+               .append("/")
+               .append(index.getName().substring(0, prefixLen))
+               .append("->")
+               .append(var)
+               .append("]") ;
         return builder.toString() ;
     }
-   
 }

@@ -16,14 +16,11 @@
  * limitations under the License.
  */
 
-package projects.merge;
+package projects.merge1;
 
 import java.util.Set ;
 
-import org.openjena.atlas.lib.ColumnMap ;
-import org.openjena.atlas.lib.Pair ;
-import org.openjena.atlas.lib.SetUtils ;
-import org.openjena.atlas.lib.Tuple ;
+import org.openjena.atlas.lib.* ;
 import org.openjena.atlas.logging.Log ;
 
 import com.hp.hpl.jena.graph.Node ;
@@ -36,7 +33,7 @@ import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 import com.hp.hpl.jena.tdb.sys.SetupTDB ;
 
-public class JoinMerge
+public class Archive2
 {
     public static void main(String ... argv)
     {
@@ -71,7 +68,7 @@ public class JoinMerge
         System.out.println() ;
         
         //System.out.println("{"+triple1+"}    {"+triple2+"}") ;
-        MergeAction action = choose(triple1, triple2, indexes) ;
+        MergeAction1 action = choose(triple1, triple2, indexes) ;
         
         if ( action == null )
         {
@@ -87,9 +84,54 @@ public class JoinMerge
             System.out.println("** "+action) ;
         System.out.println() ;
     }
-     
     
-    private static MergeAction choose(Triple triple1, Triple triple2, TupleIndex[] indexes)
+    // Preferred.
+    enum ColNames { S("S"), P("P"), O("O"), G("G") ;
+        private String col ;
+        ColNames(String col) { this.col = col ; }
+        @Override public String toString() { return col ;}  
+    }
+    
+    static class ColumnName
+    {
+        @Override
+        public String toString()
+        {
+            return string ;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            final int prime = 31 ;
+            int result = 1 ;
+            result = prime * result + ((string == null) ? 0 : string.hashCode()) ;
+            return result ;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj) return true ;
+            if (obj == null) return false ;
+            if (getClass() != obj.getClass()) return false ;
+            ColumnName other = (ColumnName)obj ;
+            return Lib.equal(this.string, other.string) ;
+        }
+
+        private final String string ;
+
+        public ColumnName(String string)
+        { this.string = string ; }
+
+        public static ColumnName create(String colName) { return new ColumnName(colName.intern()) ; }
+    }
+    
+    static ColumnName _S = ColumnName.create("S") ;
+    static ColumnName _P = ColumnName.create("P") ;
+    static ColumnName _O = ColumnName.create("O") ;
+    
+    private static MergeAction1 choose(Triple triple1, Triple triple2, TupleIndex[] indexes)
     {
         Tuple<String> const1 = constants(triple1) ;
         Tuple<String> const2 = constants(triple2) ;
@@ -102,10 +144,9 @@ public class JoinMerge
         
         // Assume P fixed.
         // Look for join vars.
-        Set<Var> vars1 = VarUtils.getVars(triple1) ;
-        Set<Var> vars2 = VarUtils.getVars(triple2) ;
         // Find join linkages.
         // Assume one for now.
+
         Pair<String, String> linkage = joinLinkages(triple1, triple2) ;
 
         // Const, vars, remainder
@@ -116,6 +157,8 @@ public class JoinMerge
             return null ;
         }
 
+        Set<Var> vars1 = VarUtils.getVars(triple1) ;
+        Set<Var> vars2 = VarUtils.getVars(triple2) ;
         Set<Var> _joinVars = SetUtils.intersection(vars1, vars2) ;
         Var joinVar = _joinVars.iterator().next(); 
         //System.out.println("Join: "+joinVars) ;
@@ -131,19 +174,6 @@ public class JoinMerge
         String idxPrefix2 = prefix2+linkage.getRight();
         //System.out.println("Calc: "+idx1+"-"+idx2) ;
             
-        // 0 - contants
-        // 1 - join var cols
-        // 2 - rest
-        // Make a class? JoinIndexAccess
-        String[] joinIndex1 = new String[3] ;
-        joinIndex1[0] = prefix1 ;
-        joinIndex1[1] = linkage.getLeft();
-        joinIndex1[2] = null ;
-        String[] joinIndex2 = new String[3] ;
-        joinIndex2[0] = prefix2 ;
-        joinIndex2[1] = linkage.getRight();
-        joinIndex2[2] = null ;
-        
         TupleIndex idx1 = null ;
         TupleIndex idx2 = null ;
         
@@ -153,24 +183,17 @@ public class JoinMerge
             
             if ( idxStr.startsWith(idxPrefix1))
             {
-                if ( joinIndex1[2] != null )
+                if ( idx1 != null )
                     System.out.println("Choices! (1) : "+idxStr) ;
                 else
-                {
                     idx1 = index ;
-                    joinIndex1[2] = idxStr.substring(idxPrefix1.length()) ;
-                    
-                }
             }
             if ( idxStr.startsWith(idxPrefix2))
             {
-                if ( joinIndex2[2] != null )
+                if ( idx2 != null )
                     System.out.println("Choices! (2) : "+idxStr) ;
                 else
-                {
                     idx2 = index ;
-                    joinIndex2[2] = idxStr.substring(idxPrefix2.length()) ;
-                }
             }
         }
 
@@ -179,13 +202,17 @@ public class JoinMerge
 //        String s2 = strJoinIndex(joinIndex2) ;
         //System.out.println("Decision: "+s1+" "+s2) ;
         
-        return new MergeAction(idx1, idx2,
+        return new MergeAction1(idx1, idx2,
                                prefix1, prefix2,
+                               linkage.getLeft(), linkage.getRight(),
+                               // Join cols.
                                joinVar
                                )  ;
 
     }
     
+    // ----
+    /** Return a pair of columns for a match of variables betwen two triples. */   
     private static Pair<String, String> joinLinkages(Triple triple1, Triple triple2)
     {
         String x = joinLinkage(triple1.getSubject(), triple2) ;
@@ -206,6 +233,7 @@ public class JoinMerge
         if ( triple.getObject().equals(x) )     return "O" ;
         return null ;
     }
+    // ----
 
     private static String constantIndexPrefix(Triple triple)
     {
@@ -240,3 +268,38 @@ public class JoinMerge
 //    }
 }
 
+class MergeAction1
+{
+    public TupleIndex index1 ;
+    public TupleIndex index2 ;
+    public String prefix1 ;
+    public String prefix2 ;
+    public String joinCol1 ;
+    public String joinCol2 ;
+    public Var joinVar ;        // This is the first col after the prefix
+    
+    public MergeAction1(TupleIndex index1, TupleIndex index2, 
+                       String prefix1, String prefix2,  // cols
+                       String joinCol1 , String joinCol2,
+                       Var joinVar)
+    {
+        super() ;
+        this.index1 = index1 ;
+        this.index2 = index2 ;
+        this.prefix1 = prefix1 ;
+        this.prefix2 = prefix2 ;
+        this.joinCol1 = joinCol1 ;
+        this.joinCol2 = joinCol2 ;
+        this.joinVar = joinVar ;
+    }
+    
+    @Override
+    public String toString() 
+    {
+        return String.format("[Join(%s,%s) (%s[%s],%s[%s]) %s]",
+                             index1.getName(), index2.getName(),
+                             prefix1, joinCol1,
+                             prefix2, joinCol2,
+                             joinVar) ;
+    }
+}
