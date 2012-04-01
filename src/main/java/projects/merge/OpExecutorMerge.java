@@ -41,12 +41,17 @@ public class OpExecutorMerge
         {}
         if (triples.size() == 1 )
         {}
+        //if ( constant )
+        
+        
         Triple triple1 = triples.get(0) ;
         Triple triple2 = triples.get(1) ;
         
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
         
         MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
+        if ( action == null )
+        {}
        
         // perform action in NodeId space, get iterator of Bindings.
         
@@ -60,7 +65,22 @@ public class OpExecutorMerge
             Triple triple = triples.get(i) ;
             // Is it joined by a common variable?
             MergeActionVarIdx action2 = MergeLib.calcMergeAction(v, triple, indexes) ;
+            if ( action2 == null )
+            {}
         }
         return null ;
     }
+    
+    private static Iterator<BindingNodeId> exec(MergeActionIdxIdx action, Triple triple1, Triple triple2)
+    {
+        // Corresponds to triple1.
+        IndexAccess access1 = action.getIndexAccess1() ;
+        TupleIndex index = access1.getIndex() ;
+        int len = access1.getPrefixLen() ;
+        Var var = access1.getVar() ;
+      
+        
+        return null ;
+    }
+    
 }
