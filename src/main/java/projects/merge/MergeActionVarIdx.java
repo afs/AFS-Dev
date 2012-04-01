@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,41 +18,40 @@
 
 package projects.merge;
 
-public class MergeAction
+import com.hp.hpl.jena.sparql.core.Var ;
+
+public class MergeActionVarIdx
 {
-    private IndexAccess indexAccess1 ;
-    private IndexAccess indexAccess2 ;
+
+    private Var var ;
+    private IndexAccess indexAccess ;
     
-    public MergeAction(IndexAccess indexAccess1, IndexAccess indexAccess2)
+    public MergeActionVarIdx(Var var, IndexAccess indexAccess)
     {
-        super() ;
-        this.indexAccess1 = indexAccess1 ;
-        this.indexAccess2 = indexAccess2 ;
-        if ( ! indexAccess1.getVar().equals(indexAccess2.getVar()) )
-            // May relax this and allow (?x = ?y AS ?z) 
-            throw new InternalError("IndexAcceses in a merge must be joining the same variable") ; 
+        this.var = var ;
+        this.indexAccess = indexAccess ;
     }
 
-    public IndexAccess getIndexAccess1()
+    public Var getVar()
     {
-        return indexAccess1 ;
+        return var ;
     }
 
-    public IndexAccess getIndexAccess2()
+    public IndexAccess getIndexAccess()
     {
-        return indexAccess2 ;
+        return indexAccess ;
     }
 
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder() ;
-        builder.append("MergeAction [") ;
-        builder.append(indexAccess1) ;
+        builder.append("Merge [") ;
+        builder.append(var) ;
         builder.append(",") ;
-        builder.append(indexAccess2) ;
+        builder.append(indexAccess) ;
         builder.append("]") ;
         return builder.toString() ;
     }
-   
 }
+

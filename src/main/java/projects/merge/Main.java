@@ -25,9 +25,7 @@ import org.openjena.atlas.lib.ColumnMap ;
 import org.openjena.atlas.lib.Tuple ;
 import org.openjena.atlas.logging.Log ;
 
-import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
@@ -55,8 +53,11 @@ public class Main
         
         TupleIndex [] indexes = { POS, PSO } ;
         // Add "columns" to indexes.
-        Tuple<ColNames> primary = Tuple.create(S,P,O) ;
-        System.out.println(POS.getColumnMap().map(primary)) ; 
+        if ( false )
+        {
+            Tuple<ColNames> primary = Tuple.create(S,P,O) ;
+            System.out.println(POS.getColumnMap().map(primary)) ;
+        }
         
         
         // Setup
@@ -68,7 +69,6 @@ public class Main
         test("(?x <p> ?x)", "(?x <q> ?v)",  indexes, PSO, PSO) ;
         
         test("(?a <p> ?b)", "(?c <q> ?d)",  indexes, PSO, PSO) ;
-
     }
 
     private static void test(String tripleStr1, String tripleStr2, TupleIndex[] indexes, TupleIndex index1, TupleIndex index2)
@@ -83,7 +83,7 @@ public class Main
         System.out.println() ;
         
         //System.out.println("{"+triple1+"}    {"+triple2+"}") ;
-        MergeAction action = choose(triple1, triple2, indexes) ;
+        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
         
         if ( action == null )
         {
@@ -98,86 +98,5 @@ public class Main
         else
             System.out.println("** "+action) ;
         System.out.println() ;
-    }
-
-    private static MergeAction choose(Triple triple1, Triple triple2, TupleIndex[] indexes)
-    {
-        IndexAccess[] access1 = access(triple1, indexes) ;
-        IndexAccess[] access2 = access(triple2, indexes) ;
-        
-//        System.out.println(Arrays.asList(access1)) ;
-//        System.out.println(Arrays.asList(access2)) ;
-        
-        MergeAction action = null ;
-        for ( IndexAccess a1 : access1 )
-        {
-            if ( a1 == null ) continue ;
-            for ( IndexAccess a2 : access2 )
-            {
-                if ( a2 == null ) continue ;
-                if ( a1.getVar().equals(a2.getVar()))
-                {
-                    MergeAction action2 = new MergeAction(a1,a2) ;
-                    // Longest prefixes.
-                    if ( action == null )
-                        action = action2 ;
-                    else
-                    {
-                        System.out.println("Choose: "+action+" // "+action2) ;
-                        // Choose one with most prefixing.
-                        int len1 = action.getIndexAccess1().getPrefixLen()+action.getIndexAccess2().getPrefixLen() ;
-                        int len2 = action2.getIndexAccess1().getPrefixLen()+action2.getIndexAccess2().getPrefixLen() ;
-                        if ( len2 == len1 )
-                        {
-                            // Example: same var uses more than once in a triple.
-                            if ( action2.getIndexAccess1().getIndex() == action2.getIndexAccess2().getIndex() )
-                                // Prefer same index.
-                                // Better - special action.
-                                action = action2 ;
-                        }
-                        else if ( len2 > len1 )
-                            action = action2 ;
-                        // else do nothing.
-                    }
-                        
-                        
-                    
-                }
-            }
-        }
-        return action ;
-    }
-
-    private static IndexAccess[] access(Triple _triple, TupleIndex[] indexes)
-    {
-        IndexAccess[] accesses = new IndexAccess[indexes.length] ;
-        Tuple<Node> triple = tripleAsTuple(_triple) ;
-        int i = 0 ;
-        for ( TupleIndex idx : indexes )
-        {
-            IndexAccess a = access(triple, idx) ;
-            accesses[i++] = a ;
-        }
-        
-        return accesses ;
-    }
-    
-    private static IndexAccess access(Tuple<Node> triple, TupleIndex idx)
-    {
-        Tuple<Node> t = idx.getColumnMap().map(triple) ;
-        for ( int i = 0 ; i < triple.size() ; i++ )
-        {
-            Node n = t.get(i) ;
-            if ( Var.isVar(n) )
-                return new IndexAccess(idx, i, Var.alloc(n)) ;
-        }
-        return null ;
-    }
-
-    private static Tuple<Node> tripleAsTuple(Triple triple)
-    {
-        return Tuple.create(triple.getSubject(),
-                            triple.getPredicate(),
-                            triple.getObject()) ;
     }
 }
