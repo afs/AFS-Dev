@@ -37,12 +37,15 @@ import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.algebra.Op ;
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.engine.binding.Binding ;
+import com.hp.hpl.jena.sparql.engine.binding.BindingFactory ;
+import com.hp.hpl.jena.sparql.engine.binding.BindingMap ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 import com.hp.hpl.jena.tdb.StoreConnection ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.lib.TupleLib ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
+import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 import com.hp.hpl.jena.tdb.sys.SetupTDB ;
@@ -134,9 +137,10 @@ public class Main
         Tuple<Var> vars1 =  OpExecutorMerge.vars(triple1) ;
         Tuple<Var> vars2 =  OpExecutorMerge.vars(triple2) ;
         
-        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
-        Iterator<Binding> iter = merge(action, tuple1, vars1, tuple2, vars2) ;
         
+        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
+        Iterator<BindingNodeId> iter = merge(action, tuple1, vars1, tuple2, vars2) ;
+        Iter.print(iter) ;
         
        
         
@@ -150,16 +154,19 @@ public class Main
  
     }
 
-    private static Iterator<Binding> merge(MergeActionIdxIdx action, 
-                                           Tuple<NodeId> tuple1, Tuple<Var> vars1,
-                                           Tuple<NodeId> tuple2, Tuple<Var> vars2)
+    private static Iterator<BindingNodeId> merge(MergeActionIdxIdx action, 
+                                                 Tuple<NodeId> tuple1, Tuple<Var> vars1, 
+                                                 Tuple<NodeId> tuple2, Tuple<Var> vars2)
     {
         int len1 = action.getIndexAccess1().getPrefixLen() ;
         int len2 = action.getIndexAccess2().getPrefixLen() ;
-            
+        
         TupleIndex tupleIndex1 = action.getIndexAccess1().getIndex() ;
         TupleIndex tupleIndex2 = action.getIndexAccess2().getIndex() ;
         
+        ColumnMap map1 = tupleIndex1.getColumnMap() ; 
+        ColumnMap map2 = tupleIndex2.getColumnMap() ;
+
         Iterator<Tuple<NodeId>> iter1 = tupleIndex1.find(tuple1) ;
         System.out.println("-- Left:") ;
         Iter.print(iter1) ;
@@ -173,7 +180,7 @@ public class Main
         Tuple<NodeId> row1 = null ;
         Tuple<NodeId> row2 = null ;
         
-        List<Binding> results = new ArrayList<>() ;
+        List<BindingNodeId> results = new ArrayList<>() ;
         List<Tuple<NodeId>> tmp1 = new ArrayList<>() ;
         List<Tuple<NodeId>> tmp2 = new ArrayList<>() ;
         
@@ -203,7 +210,7 @@ public class Main
                 long v = v1 ;
                 row1 = advance(v, tupleIndex1, len1, iter1, tmp1, row1) ;
                 row2 = advance(v, tupleIndex2, len2, iter2, tmp2, row2) ;
-                join(results, vars1, tmp1, vars2, tmp2) ;
+                join(results, action.getVar(), map1, vars1, tmp1, map2, vars2, tmp2) ;
             }
             else if ( v1 > v2 )
             {
@@ -234,16 +241,44 @@ public class Main
         return row ;
     }
 
-    private static void join(List<Binding> results, Tuple<Var> vars1 , List<Tuple<NodeId>> tmp1, Tuple<Var> vars2 , List<Tuple<NodeId>> tmp2)
+    private static void join(List<BindingNodeId> results, Var joinVar, 
+                             ColumnMap map1, Tuple<Var> vars1 , List<Tuple<NodeId>> tmp1, 
+                             ColumnMap map2, Tuple<Var> vars2 , List<Tuple<NodeId>> tmp2)
     {
         System.out.println("join left="+tmp1.size()+" right="+tmp2.size()) ;
         for ( Tuple<NodeId> row1 : tmp1 )
             for ( Tuple<NodeId> row2 : tmp2 )
             {
                 System.out.println("Join: "+row1+" "+row2) ;
+                BindingNodeId b = new BindingNodeId((Binding)null) ;
+                bind(b, joinVar, map1, row1, vars1) ;
+                bind(b, joinVar, map2, row2, vars2) ;
+                results.add(b) ;
             }
         tmp1.clear() ;
         tmp2.clear() ;
+    }
+
+    private static void bind(BindingNodeId b, Var joinVar, ColumnMap map, Tuple<NodeId> row, Tuple<Var> vars)
+    {
+        System.out.println("Bind: "+vars+" "+row+ " "+map) ;
+        
+        for ( int i = 0 ; i < vars.size() ; i++ )
+        {
+          int j = map.mapSlotIdx(i) ;
+          Var v = vars.get(j) ;
+          if ( v == null )
+              continue ;
+          NodeId id = row.get(j) ;
+          b.put(v, id) ;
+
+          // Why is this wrong?
+//            Var v = vars.get(i) ;
+//            if ( v == null )
+//                continue ;
+//            NodeId id = map.fetchSlot(i, row) ;
+//            b.put(v, id) ;
+        }
     }
 
 
