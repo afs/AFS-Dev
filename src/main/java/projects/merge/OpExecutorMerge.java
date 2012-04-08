@@ -18,9 +18,11 @@
 
 package projects.merge;
 
+import java.util.ArrayList ;
 import java.util.Iterator ;
 import java.util.List ;
 
+import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.graph.Node ;
@@ -29,11 +31,15 @@ import com.hp.hpl.jena.sparql.algebra.op.OpBGP ;
 import com.hp.hpl.jena.sparql.core.BasicPattern ;
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.engine.ExecutionContext ;
+import com.hp.hpl.jena.sparql.engine.QueryIterator ;
+import com.hp.hpl.jena.sparql.engine.binding.Binding ;
+import com.hp.hpl.jena.sparql.engine.iterator.QueryIterPlainWrapper ;
 import com.hp.hpl.jena.sparql.engine.main.OpExecutor ;
 import com.hp.hpl.jena.sparql.engine.main.OpExecutorFactory ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
 import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
+import com.hp.hpl.jena.tdb.solver.SolverLib ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 
@@ -51,6 +57,29 @@ public class OpExecutorMerge extends OpExecutor
         super(execCxt) ;
     }
 
+    @Override
+    protected QueryIterator execute(OpBGP opBGP, QueryIterator input)
+    {
+        BasicPattern bgp = opBGP.getPattern() ;
+        List<Triple> triples = bgp.getList() ;
+        
+        if (triples.size() == 0 )
+        {}
+        if (triples.size() == 1 )
+        {}
+        
+        DatasetGraphTDB dsg = (DatasetGraphTDB)(execCxt.getDataset()) ;
+        
+        NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
+        Triple triple1 = triples.get(0) ;
+        Triple triple2 = triples.get(1) ;
+        TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
+
+        Iterator<BindingNodeId> iter1 = mergeJoin(triple1, triple2, nodeTable, indexes) ;
+        Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
+        return new QueryIterPlainWrapper(iter2, execCxt) ;
+    }
+    
     // (real) default graph only for now.
     public Iterator<BindingNodeId> execute(OpBGP opBGP, DatasetGraphTDB dsg)
     {
@@ -69,77 +98,149 @@ public class OpExecutorMerge extends OpExecutor
         Triple triple1 = triples.get(0) ;
         Triple triple2 = triples.get(1) ;
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
-        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
-        if ( action == null )
-        {}
-       
-        // perform action in NodeId space, get iterator of Bindings.
-        
-        Iterator<BindingNodeId> chain = null ; 
-        // which comes out in sorted var order.
-        
-        Var v = action.getVar() ;
-        for ( int i = 2 ; i < triples.size() ; )
-        {
-            // Next triples.
-            Triple triple = triples.get(i) ;
-            // Is it joined by a common variable?
-            MergeActionVarIdx action2 = MergeLib.calcMergeAction(v, triple, indexes) ;
-            if ( action2 == null )
-            {}
-        }
-        return null ;
-    }
-    
-    private static Iterator<BindingNodeId> exec(MergeActionIdxIdx action, Triple triple1, Triple triple2)
-    {
-        // Corresponds to triple1.
-        IndexAccess access1 = action.getIndexAccess1() ;
-        TupleIndex index1 = access1.getIndex() ;
-        int len1 = access1.getPrefixLen() ;
-        // Calc 
-        
-        
-        // from len1 prefix, to same+1
-        
-        IndexAccess access2 = action.getIndexAccess2() ;
-        TupleIndex index2 = access2.getIndex() ;
-        int len2 = access1.getPrefixLen() ;
-        
-        
-        Var var1 = access1.getVar() ;
-        Var var2 = access2.getVar() ;
-        // var1 == var2
-        Var var = var1 ;
-        
 
-        
-        
-        
+        Iterator<BindingNodeId> iter1 = mergeJoin(triple1, triple2, nodeTable, indexes) ;
+        Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
         return null ;
     }
     
-    private static Iterator<BindingNodeId> exec(MergeActionVarIdx action, Iterator<BindingNodeId> iterator, Triple triple)
+    static Iterator<BindingNodeId> mergeJoin(Triple triple1, Triple triple2, NodeTable nodeTable, TupleIndex[] indexes)
     {
-        // Corresponds to triple1.
-        IndexAccess access = action.getIndexAccess() ;
-        TupleIndex index = access.getIndex() ;
-        int len = access.getPrefixLen() ;
-        Var var = access.getVar() ;
-      
-        return null ;
+        Tuple<NodeId> tuple1 = convert(nodeTable, triple1) ;
+        Tuple<NodeId> tuple2 = convert(nodeTable, triple2) ;
+        Tuple<Var> vars1 =  vars(triple1) ;
+        Tuple<Var> vars2 =  vars(triple2) ;
+        
+        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
+        Iterator<BindingNodeId> iter1 = merge(action, tuple1, vars1, tuple2, vars2) ;
+        return iter1 ; 
     }
-    
-    
-    private static Iterator<Tuple<NodeId>> exec(TupleIndex index, int len, Triple triple, NodeTable nodeTable)
+
+    private static Iterator<BindingNodeId> merge(MergeActionIdxIdx action, 
+                                                 Tuple<NodeId> tuple1, Tuple<Var> vars1, 
+                                                 Tuple<NodeId> tuple2, Tuple<Var> vars2)
     {
+        int len1 = action.getIndexAccess1().getPrefixLen() ;
+        int len2 = action.getIndexAccess2().getPrefixLen() ;
         
+        TupleIndex tupleIndex1 = action.getIndexAccess1().getIndex() ;
+        TupleIndex tupleIndex2 = action.getIndexAccess2().getIndex() ;
         
+        Iterator<Tuple<NodeId>> iter1 = tupleIndex1.find(tuple1) ;
+        if ( false )
+        {
+            System.out.println("-- Left:") ;
+            Iter.print(iter1) ;
+            iter1 = tupleIndex1.find(tuple1) ;
+        }
         
+        Iterator<Tuple<NodeId>> iter2 = tupleIndex2.find(tuple2) ;
+        if ( false )
+        {
+            System.out.println("-- Right:") ;
+            Iter.print(iter2) ;
+            iter2 = tupleIndex2.find(tuple2) ;
+            System.out.println("----") ;
+        }
         
-        return null ;
+        Tuple<NodeId> row1 = null ;
+        Tuple<NodeId> row2 = null ;
+        
+        List<BindingNodeId> results = new ArrayList<>() ;
+        List<Tuple<NodeId>> tmp1 = new ArrayList<>() ;
+        List<Tuple<NodeId>> tmp2 = new ArrayList<>() ;
+        
+        for(;;)
+        {
+            if ( row1 == null )
+            {
+                if ( ! iter1.hasNext() )
+                    break ;
+                row1 = iter1.next() ;
+            }
+            if ( row2 == null )
+            {
+                if ( ! iter2.hasNext() )
+                    break ;
+                row2 = iter2.next() ;
+            }
+            
+            NodeId join1 = tupleIndex1.getColumnMap().fetchSlot(len1, row1) ;
+            NodeId join2 = tupleIndex2.getColumnMap().fetchSlot(len2, row2) ;
+            
+            long v1 = join1.getId() ;
+            long v2 = join2.getId() ;
+            
+            if ( v1 == v2 )
+            {
+                long v = v1 ;
+                row1 = advance(v, tupleIndex1, len1, iter1, tmp1, row1) ;
+                row2 = advance(v, tupleIndex2, len2, iter2, tmp2, row2) ;
+                join(results, action.getVar(), vars1, tmp1, vars2, tmp2) ;
+            }
+            else if ( v1 > v2 )
+            {
+                row2 = null ;
+            }
+            else
+            {
+                // v1 < v2
+                row1 = null ;
+            }
+        }
+        return results.iterator() ;
     }
+
+    private static Tuple<NodeId> advance(long v, TupleIndex tupleIndex , int len , Iterator<Tuple<NodeId>> iter, List<Tuple<NodeId>> acc, Tuple<NodeId> row)
+    {
+        for (;;)
+        {
+            // Overshoot :-(
+            long v1 = tupleIndex.getColumnMap().fetchSlot(len, row).getId() ;
+            if ( v != v1 )
+                break ;
+            acc.add(row) ;
+            if ( ! iter.hasNext() )
+                return null ;
+            row = iter.next() ;
+        }
+        return row ;
+    }
+
+    static void join(List<BindingNodeId> results, Var joinVar, 
+                             Tuple<Var> vars1 , List<Tuple<NodeId>> tmp1, 
+                             Tuple<Var> vars2 , List<Tuple<NodeId>> tmp2)
+    {
+        if ( false ) System.out.println("join left="+tmp1.size()+" right="+tmp2.size()) ;
+        for ( Tuple<NodeId> row1 : tmp1 )
+            for ( Tuple<NodeId> row2 : tmp2 )
+            {
+                if ( false ) System.out.println("Join: "+row1+" "+row2) ;
+                BindingNodeId b = new BindingNodeId((Binding)null) ;
+                bind(b, joinVar, row1, vars1) ;
+                bind(b, joinVar, row2, vars2) ;
+                if ( false ) System.out.println("Bind => "+b) ;
+                results.add(b) ;
+            }
+        tmp1.clear() ;
+        tmp2.clear() ;
+    }
+
+    private static void bind(BindingNodeId b, Var joinVar, Tuple<NodeId> row, Tuple<Var> vars)
+    {
+        // Tuples from indexes are in natural order.
+        if ( false ) System.out.println("Bind: "+vars+" "+row) ;
     
+        for ( int i = 0 ; i < vars.size() ; i++ )
+        {
+            Var v = vars.get(i) ;
+            if ( v == null )
+                continue ;
+            NodeId id = row.get(i) ;
+            b.put(v, id) ;
+        }
+    }
+
     static Tuple<NodeId> convert(NodeTable nodeTable, Triple triple)
     {
         return convert(nodeTable, triple.getSubject(), triple.getPredicate(), triple.getObject()) ; 

@@ -44,6 +44,8 @@ public class TestMergeJoin extends BaseTest
         indexes = new TupleIndex[]{ POS, PSO } ;
     }
 
+    // tests with partial index coverage.
+    
     @Test public void chooseMerge_01()      { test("(?s <p> ?o)", "(?s <q> 123)", indexes, PSO, POS) ; }
     @Test public void chooseMerge_02()      { test("(?s <p> ?o)", "(?s <q> ?v)",  indexes, PSO, PSO) ; }
     @Test public void chooseMerge_03()      { test("(?s <p> ?z)", "(?z <q> ?v)",  indexes, POS, PSO) ; }
@@ -55,14 +57,6 @@ public class TestMergeJoin extends BaseTest
     {
         Triple triple1 = SSE.parseTriple(tripleStr1) ;
         Triple triple2 = SSE.parseTriple(tripleStr2) ;
-        
-//        System.out.print("Join: ") ;
-//        SSE.write(triple1) ;
-//        System.out.print("  ") ;
-//        SSE.write(triple2) ;
-//        System.out.println() ;
-        
-        //System.out.println("{"+triple1+"}    {"+triple2+"}") ;
         MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
         
         if ( index1 != null )
@@ -78,7 +72,6 @@ public class TestMergeJoin extends BaseTest
 
         assertEquals(index1, i1) ;
         assertEquals(index2, i2) ;
-        //System.out.println("** Expected: "+index1+"-"+index2+" : Got "+i1+"-"+i2) ;
     }
 
 }
