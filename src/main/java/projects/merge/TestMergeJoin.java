@@ -18,7 +18,6 @@
 
 package projects.merge;
 
-import org.junit.BeforeClass ;
 import org.junit.Test ;
 import org.openjena.atlas.junit.BaseTest ;
 
@@ -33,25 +32,24 @@ public class TestMergeJoin extends BaseTest
 {
     static Location loc = Location.mem() ;
 
-    static TupleIndex POS ;
-    static TupleIndex PSO ;
-    static TupleIndex [] indexes ; 
-    
-    @BeforeClass public static void beforeClass()
-    {
-        POS = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
-        PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
-        indexes = new TupleIndex[]{ POS, PSO } ;
-    }
+    static TupleIndex SPO = SetupTDB.makeTupleIndex(loc, "SPO", "SPO", "SPO", 3*NodeId.SIZE) ;
+    static TupleIndex POS = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
+    static TupleIndex PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
+    static TupleIndex OSP = SetupTDB.makeTupleIndex(loc, "SPO", "OSP", "OSP", 3*NodeId.SIZE) ;
 
+    static TupleIndex [] indexesP2 = { POS, PSO } ;
+    static TupleIndex [] indexes1 =  { SPO, POS, OSP } ;
+    
     // tests with partial index coverage.
     
-    @Test public void chooseMerge_01()      { test("(?s <p> ?o)", "(?s <q> 123)", indexes, PSO, POS) ; }
-    @Test public void chooseMerge_02()      { test("(?s <p> ?o)", "(?s <q> ?v)",  indexes, PSO, PSO) ; }
-    @Test public void chooseMerge_03()      { test("(?s <p> ?z)", "(?z <q> ?v)",  indexes, POS, PSO) ; }
-    @Test public void chooseMerge_04()      { test("(?s <p> ?z)", "(?z <q> 123)", indexes, POS, POS) ; }
-    @Test public void chooseMerge_05()      { test("(?x <p> ?x)", "(?x <q> ?v)",  indexes, PSO, PSO) ; }
-    @Test public void chooseMerge_06()      { test("(?a <p> ?b)", "(?c <q> ?d)",  indexes, null, null) ; }
+    @Test public void chooseMerge_01()      { test("(?s <p> ?o)", "(?s <q> 123)", indexesP2, PSO, POS) ; }
+    @Test public void chooseMerge_02()      { test("(?s <p> ?o)", "(?s <q> ?v)",  indexesP2, PSO, PSO) ; }
+    @Test public void chooseMerge_03()      { test("(?s <p> ?z)", "(?z <q> ?v)",  indexesP2, POS, PSO) ; }
+    @Test public void chooseMerge_04()      { test("(?s <p> ?z)", "(?z <q> 123)", indexesP2, POS, POS) ; }
+    @Test public void chooseMerge_05()      { test("(?x <p> ?x)", "(?x <q> ?v)",  indexesP2, PSO, PSO) ; }
+    @Test public void chooseMerge_06()      { test("(?a <p> ?b)", "(?c <q> ?d)",  indexesP2, null, null) ; }
+    
+    @Test public void chooseMerge_10()      { test("(?s <p> ?o)", "(?s <q> 123)", indexes1, PSO, POS) ; }
 
     private static void test(String tripleStr1, String tripleStr2, TupleIndex[] indexes, TupleIndex index1, TupleIndex index2)
     {

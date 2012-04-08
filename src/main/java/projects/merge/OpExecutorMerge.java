@@ -207,7 +207,7 @@ public class OpExecutorMerge extends OpExecutor
         return row ;
     }
 
-    static void join(List<BindingNodeId> results, Var joinVar, 
+    private static void join(List<BindingNodeId> results, Var joinVar, 
                              Tuple<Var> vars1 , List<Tuple<NodeId>> tmp1, 
                              Tuple<Var> vars2 , List<Tuple<NodeId>> tmp2)
     {
@@ -217,8 +217,12 @@ public class OpExecutorMerge extends OpExecutor
             {
                 if ( false ) System.out.println("Join: "+row1+" "+row2) ;
                 BindingNodeId b = new BindingNodeId((Binding)null) ;
-                bind(b, joinVar, row1, vars1) ;
-                bind(b, joinVar, row2, vars2) ;
+                b = bind(b, joinVar, row1, vars1) ;
+                if ( b == null )
+                    continue ;
+                b = bind(b, joinVar, row2, vars2) ;
+                if ( b == null )
+                    continue ;
                 if ( false ) System.out.println("Bind => "+b) ;
                 results.add(b) ;
             }
@@ -226,7 +230,7 @@ public class OpExecutorMerge extends OpExecutor
         tmp2.clear() ;
     }
 
-    private static void bind(BindingNodeId b, Var joinVar, Tuple<NodeId> row, Tuple<Var> vars)
+    static BindingNodeId bind(BindingNodeId b, Var joinVar, Tuple<NodeId> row, Tuple<Var> vars)
     {
         // Tuples from indexes are in natural order.
         if ( false ) System.out.println("Bind: "+vars+" "+row) ;
@@ -237,8 +241,12 @@ public class OpExecutorMerge extends OpExecutor
             if ( v == null )
                 continue ;
             NodeId id = row.get(i) ;
+            NodeId id2 = b.get(v) ;
+            if ( id2 != null && ( id2.getId() != id.getId() ) ) 
+                return null ; 
             b.put(v, id) ;
         }
+        return b ;
     }
 
     static Tuple<NodeId> convert(NodeTable nodeTable, Triple triple)

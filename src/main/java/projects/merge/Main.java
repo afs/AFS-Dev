@@ -18,10 +18,13 @@
 
 package projects.merge;
 
+import java.util.ArrayList ;
+import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
 import org.openjena.atlas.lib.StrUtils ;
+import org.openjena.atlas.lib.Tuple ;
 import org.openjena.atlas.logging.Log ;
 
 import com.hp.hpl.jena.graph.Graph ;
@@ -63,16 +66,17 @@ public class Main
         // Fake the dataset.
         
         DatasetGraphTDB dsg = StoreConnection.make(Location.mem()).getBaseDataset() ;
-
         // -- Fix up
         Location loc = Location.mem() ;
-        TupleIndex POS = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
         TupleIndex PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
-
-        //indexes[0] = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
-        indexes[1] = POS ;
+        
+        TupleIndex SPO = indexes[0] ;
+        TupleIndex POS = indexes[1] ;
+        TupleIndex OSP = indexes[2] ;
+        
         indexes[2] = PSO ;
+        
         NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
 
         
@@ -86,19 +90,43 @@ public class Main
             "  (<s>   <q>  '5')",
             "  (<s1>  <q>  '6')" ,
             "  (<s>   <p>  '6')" ,
+            "  (<s>   <p>  <s>)" ,
             ")" 
             ) ;
         Graph g = SSE.parseGraph($) ;
         dsg.getDefaultGraph().getBulkUpdateHandler().add(g) ;
         // This is the triple access
         
-        if ( false )
+        if ( true )
         {
-            Triple triple1 = SSE.parseTriple("(?s <p> ?o)") ;
-            Triple triple2 = SSE.parseTriple("(?s <q> ?v)") ;
-            Iterator<BindingNodeId> iter1 = OpExecutorMerge.mergeJoin(triple1, triple2, nodeTable, indexes) ;
-            Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
+            TupleIndex[] indexes1 = { PSO } ; 
+            Triple triple = SSE.parseTriple("(?x <p> ?x)") ;   //  SPO/?p => no action found. OSP/?x -> wrong.
+            MergeActionVarIdx action = MergeLib.calcMergeAction(Var.alloc("x"), triple, indexes1) ;
+            System.out.println(action) ;
+            TupleIndex index = action.getIndexAccess().getIndex() ;
+            
+            Tuple<NodeId> tuple = OpExecutorMerge.convert(nodeTable, triple) ;
+            Tuple<Var> vars =  OpExecutorMerge.vars(triple) ;
+
+            Iterator<Tuple<NodeId>> iter = index.find(tuple) ;
+            List<BindingNodeId> r = new ArrayList<>() ;
+            
+            for ( ; iter.hasNext() ; )
+            {
+                Tuple<NodeId> row = iter.next() ;
+                // Library ise.
+                BindingNodeId b = new BindingNodeId((Binding)null) ;
+                b = OpExecutorMerge.bind(b, null, row, vars) ;
+                if ( b != null )
+                    r.add(b) ;
+            }
+            Iterator<Binding> iter2 = SolverLib.convertToNodes(r.iterator(), nodeTable) ;
             QueryIterator qIter = new QueryIterPlainWrapper(iter2) ;
+            List<String> varNames = Arrays.asList("x") ;
+            ResultSet rs = ResultSetFactory.create(qIter, varNames) ;
+            ResultSetFormatter.out(rs) ;
+            System.out.println("DONE") ;
+            System.exit(0) ;
         }
 
         // -- Execute
