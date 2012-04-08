@@ -77,12 +77,22 @@ public class MergeLib
     public static MergeActionVarIdx calcMergeAction(Var var, Triple triple, TupleIndex[] indexes)
     {
         IndexAccess[] access = access(triple, indexes) ;
+        MergeActionVarIdx iacc = null ;
+        int len = -1 ;
+        
         for ( IndexAccess a : access )
         {
-            if ( var.equals(a.getVar()) )
-                return new MergeActionVarIdx(var, a) ;
+            if ( len < a.getPrefixLen() )
+            {
+                // Find first longest IndexAccess
+                if ( var.equals(a.getVar()) )
+                {
+                    iacc = new MergeActionVarIdx(var, a) ;
+                    len = a.getPrefixLen() ;
+                }
+            }
         }
-        return null ;
+        return iacc ;
     }
 
     private static IndexAccess[] access(Triple _triple, TupleIndex[] indexes)

@@ -18,85 +18,234 @@
 
 package projects.merge;
 
-import static projects.merge.Main.ColNames.O ;
-import static projects.merge.Main.ColNames.P ;
-import static projects.merge.Main.ColNames.S ;
+import static projects.merge.ColNames.O ;
+import static projects.merge.ColNames.P ;
+import static projects.merge.ColNames.S ;
+
+import java.util.ArrayList ;
+import java.util.Arrays ;
+import java.util.Iterator ;
+import java.util.List ;
+
+import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.lib.ColumnMap ;
 import org.openjena.atlas.lib.Tuple ;
 import org.openjena.atlas.logging.Log ;
 
+import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
+import com.hp.hpl.jena.sparql.algebra.Op ;
+import com.hp.hpl.jena.sparql.core.Var ;
+import com.hp.hpl.jena.sparql.engine.binding.Binding ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
+import com.hp.hpl.jena.tdb.StoreConnection ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
+import com.hp.hpl.jena.tdb.lib.TupleLib ;
+import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
+import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 import com.hp.hpl.jena.tdb.sys.SetupTDB ;
 
 public class Main
 {
-    // Preferred.
-    enum ColNames { S("S"), P("P"), O("O"), G("G") ;
-        private String col ;
-        ColNames(String col) { this.col = col ; }
-        @Override public String toString() { return col ;}  
-    }
-    
-    public static void main(String[] args)
+    public static void main(String ... argv)
     {
         // Setup
         Log.setLog4j() ;
-        ColumnMap colMap = new ColumnMap("SPO", "POS") ;
-        Location loc = Location.mem() ;
-
-        TupleIndex POS = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
-        TupleIndex PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
+        //ColumnMap colMap = new ColumnMap("SPO", "POS") ;
         
-        TupleIndex [] indexes = { POS, PSO } ;
-        // Add "columns" to indexes.
         if ( false )
         {
+            ColumnMap colMap = new ColumnMap("POS", Arrays.asList(S,P,O), Arrays.asList(P,O,S)) ;
             Tuple<ColNames> primary = Tuple.create(S,P,O) ;
-            System.out.println(POS.getColumnMap().map(primary)) ;
+            System.out.println(colMap.map(primary)) ;
+            System.exit(0) ;
         }
         
+        // Fake the dataset.
         
-        // Setup
-        test("(?s <p> ?o)", "(?s <q> 123)", indexes, PSO, POS) ;
-        test("(?s <p> ?o)", "(?s <q> ?v)",  indexes, PSO, PSO) ;
-        test("(?s <p> ?z)", "(?z <q> ?v)",  indexes, POS, PSO) ;
+        //BasicPattern bgp = SSE.parseBGP("((?s :p ?o) ( ?s :q ?z))") ;
+        Op op = SSE.parseOp("(bgp (?s :p ?o) ( ?s :q ?z))") ;
         
-        test("(?s <p> ?z)", "(?z <q> 123)", indexes, POS, POS) ;
-        test("(?x <p> ?x)", "(?x <q> ?v)",  indexes, PSO, PSO) ;
+        DatasetGraphTDB dsg = StoreConnection.make(Location.mem()).getBaseDataset() ;
+
+        // Fix up
+        Location loc = Location.mem() ;
+        TupleIndex POS = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
+        TupleIndex PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
+        TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
+
+        //indexes[0] = SetupTDB.makeTupleIndex(loc, "SPO", "POS", "POS", 3*NodeId.SIZE) ;
+        indexes[1] = POS ;
+        indexes[2] = PSO ;
+        NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
+
+        System.out.println("== Data") ;
+        List<String> $ = Arrays.asList(
+            "(<s>   <p>  '1')",
+            "(<s1>  <p>  '3')",
+            //"(<s1>  <p>  '4')",
+            "(<s>   <q>  '5')",
+            "(<s1>  <q>  '6')" ,
+            "(<s>   <p>  '2')"
+            ) ;
+        for ( String s : $ )
+            dsg.getDefaultGraph().add(SSE.parseTriple(s)) ;
+        //System.out.println(dsg) ;
         
-        test("(?a <p> ?b)", "(?c <q> ?d)",  indexes, PSO, PSO) ;
+        //Iter.print(nodeTable.all()) ;
+        //System.out.println(dsg) ;
+        //System.exit(0) ;
+
+        if ( false )
+        {
+            System.out.println("== Access 1") ;
+            // This is the triple access
+            Triple triple = SSE.parseTriple("(?s <p> ?o)") ;
+            
+            // Convert triple to NodeIds or NodeId.ANY.
+            Tuple<NodeId> tuple = OpExecutorMerge.convert(nodeTable, triple.getSubject(), triple.getPredicate(), triple.getObject()) ;
+            //System.out.println(tuple) ;
+            
+            // action.
+            MergeActionVarIdx action = MergeLib.calcMergeAction(Var.alloc("s"), triple, indexes) ;
+            System.out.println(action) ;
+            
+            TupleIndex tupleIndex = action.getIndexAccess().getIndex() ;
+            
+            // access the index for a ann with this prefix.
+            // (It will do a partial scan if a trailing constant is set).
+            Iterator<Tuple<NodeId>> iter = tupleIndex.find(tuple) ;
+            List<Tuple<NodeId>> x = Iter.toList(iter) ;
+            System.out.println( Iter.asString(x.iterator(), "\n" ) ) ;
+            
+            Iterator<Tuple<Node>> iter2 = TupleLib.convertToNodes(nodeTable, x.iterator()) ;
+            
+            System.out.println( Iter.asString(iter2, "\n" ) ) ;
+        }
+        
+        System.out.println("== Access 2") ;
+        // This is the triple access
+        Triple triple1 = SSE.parseTriple("(?s <p> ?o)") ;
+        Triple triple2 = SSE.parseTriple("(?s <q> ?v)") ;
+        Tuple<NodeId> tuple1 = OpExecutorMerge.convert(nodeTable, triple1) ;
+        Tuple<NodeId> tuple2 = OpExecutorMerge.convert(nodeTable, triple2) ;
+        Tuple<Var> vars1 =  OpExecutorMerge.vars(triple1) ;
+        Tuple<Var> vars2 =  OpExecutorMerge.vars(triple2) ;
+        
+        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
+        Iterator<Binding> iter = merge(action, tuple1, vars1, tuple2, vars2) ;
+        
+        
+       
+        
+        
+//        ExecutionContext eCxt = new ExecutionContext(TDB.getContext(), dsg.getDefaultGraph(), dsg, OpExecutorMerge.factory) ;
+//
+//        OpExecutor opExec = OpExecutorMerge.factory.create(eCxt) ;
+//        opExec.executeOp(op, QueryIterRoot.create(eCxt)) ;
+        
+        System.out.println("DONE") ;
+ 
     }
 
-    private static void test(String tripleStr1, String tripleStr2, TupleIndex[] indexes, TupleIndex index1, TupleIndex index2)
+    private static Iterator<Binding> merge(MergeActionIdxIdx action, 
+                                           Tuple<NodeId> tuple1, Tuple<Var> vars1,
+                                           Tuple<NodeId> tuple2, Tuple<Var> vars2)
     {
-        Triple triple1 = SSE.parseTriple(tripleStr1) ;
-        Triple triple2 = SSE.parseTriple(tripleStr2) ;
+        int len1 = action.getIndexAccess1().getPrefixLen() ;
+        int len2 = action.getIndexAccess2().getPrefixLen() ;
+            
+        TupleIndex tupleIndex1 = action.getIndexAccess1().getIndex() ;
+        TupleIndex tupleIndex2 = action.getIndexAccess2().getIndex() ;
         
-        System.out.print("Join: ") ;
-        SSE.write(triple1) ;
-        System.out.print("  ") ;
-        SSE.write(triple2) ;
-        System.out.println() ;
+        Iterator<Tuple<NodeId>> iter1 = tupleIndex1.find(tuple1) ;
+        System.out.println("-- Left:") ;
+        Iter.print(iter1) ;
+        iter1 = tupleIndex1.find(tuple1) ;
         
-        //System.out.println("{"+triple1+"}    {"+triple2+"}") ;
-        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
+        Iterator<Tuple<NodeId>> iter2 = tupleIndex2.find(tuple2) ;
+        System.out.println("-- Right:") ;
+        Iter.print(iter2) ;
+        iter2 = tupleIndex2.find(tuple2) ;
+        System.out.println("----") ;
+        Tuple<NodeId> row1 = null ;
+        Tuple<NodeId> row2 = null ;
         
-        if ( action == null )
+        List<Binding> results = new ArrayList<>() ;
+        List<Tuple<NodeId>> tmp1 = new ArrayList<>() ;
+        List<Tuple<NodeId>> tmp2 = new ArrayList<>() ;
+        
+        for(;;)
         {
-            System.out.println("** No match") ;
-            return ;
+            if ( row1 == null )
+            {
+                if ( ! iter1.hasNext() )
+                    break ;
+                row1 = iter1.next() ;
+            }
+            if ( row2 == null )
+            {
+                if ( ! iter2.hasNext() )
+                    break ;
+                row2 = iter2.next() ;
+            }
+            
+            NodeId join1 = tupleIndex1.getColumnMap().fetchSlot(len1, row1) ;
+            NodeId join2 = tupleIndex2.getColumnMap().fetchSlot(len2, row2) ;
+            
+            long v1 = join1.getId() ;
+            long v2 = join2.getId() ;
+            
+            if ( v1 == v2 )
+            {
+                long v = v1 ;
+                row1 = advance(v, tupleIndex1, len1, iter1, tmp1, row1) ;
+                row2 = advance(v, tupleIndex2, len2, iter2, tmp2, row2) ;
+                join(results, vars1, tmp1, vars2, tmp2) ;
+            }
+            else if ( v1 > v2 )
+            {
+                row2 = null ;
+            }
+            else
+            {
+                // v1 < v2
+                row1 = null ;
+            }
         }
-        TupleIndex i1 = action.getIndexAccess1().getIndex() ;
-        TupleIndex i2 = action.getIndexAccess2().getIndex() ;
-        
-        if ( !index1.equals(i1) || !index2.equals(i2) )
-            System.out.println("** Expected: "+index1+"-"+index2+" : Got "+i1+"-"+i2) ;
-        else
-            System.out.println("** "+action) ;
-        System.out.println() ;
+        return results.iterator() ;
     }
+
+    private static Tuple<NodeId> advance(long v, TupleIndex tupleIndex , int len , Iterator<Tuple<NodeId>> iter, List<Tuple<NodeId>> acc, Tuple<NodeId> row)
+    {
+        for (;;)
+        {
+            // Overshoot :-(
+            long v1 = tupleIndex.getColumnMap().fetchSlot(len, row).getId() ;
+            if ( v != v1 )
+                break ;
+            acc.add(row) ;
+            if ( ! iter.hasNext() )
+                return null ;
+            row = iter.next() ;
+        }
+        return row ;
+    }
+
+    private static void join(List<Binding> results, Tuple<Var> vars1 , List<Tuple<NodeId>> tmp1, Tuple<Var> vars2 , List<Tuple<NodeId>> tmp2)
+    {
+        System.out.println("join left="+tmp1.size()+" right="+tmp2.size()) ;
+        for ( Tuple<NodeId> row1 : tmp1 )
+            for ( Tuple<NodeId> row2 : tmp2 )
+            {
+                System.out.println("Join: "+row1+" "+row2) ;
+            }
+        tmp1.clear() ;
+        tmp2.clear() ;
+    }
+
+
+
 }
