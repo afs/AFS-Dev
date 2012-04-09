@@ -27,6 +27,6 @@ import com.hp.hpl.jena.tdb.store.NodeId ;
 
 public interface TupleIndexPrefix extends TupleIndex
 {
-    /** Find all the entries which start with thegiven prefix */
+    /** Find all the entries which start with the given prefix */
     public Iterator<Tuple<NodeId>> findPrefix(Tuple<NodeId> pattern) ;
 }

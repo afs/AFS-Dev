@@ -26,7 +26,7 @@ import org.openjena.atlas.lib.Tuple ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 
-public class TupleIndexPrefixSimple  extends TupleIndexWrapper implements TupleIndexPrefix
+public class TupleIndexPrefixSimple extends TupleIndexWrapper implements TupleIndexPrefix
 {
 
     public TupleIndexPrefixSimple(TupleIndex index)
