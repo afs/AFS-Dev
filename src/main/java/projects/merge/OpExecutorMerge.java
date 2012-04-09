@@ -57,6 +57,8 @@ public class OpExecutorMerge extends OpExecutor
         super(execCxt) ;
     }
 
+    private static final boolean PRINT = false ; 
+    
     @Override
     protected QueryIterator execute(OpBGP opBGP, QueryIterator input)
     {
@@ -73,6 +75,8 @@ public class OpExecutorMerge extends OpExecutor
         NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
         Triple triple1 = triples.get(0) ;
         Triple triple2 = triples.get(1) ;
+        
+        
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
 
         Iterator<BindingNodeId> iter1 = mergeJoin(triple1, triple2, nodeTable, indexes) ;
@@ -106,19 +110,15 @@ public class OpExecutorMerge extends OpExecutor
     
     static Iterator<BindingNodeId> mergeJoin(Triple triple1, Triple triple2, NodeTable nodeTable, TupleIndex[] indexes)
     {
-        Tuple<NodeId> tuple1 = convert(nodeTable, triple1) ;
-        Tuple<NodeId> tuple2 = convert(nodeTable, triple2) ;
-        Tuple<Var> vars1 =  vars(triple1) ;
-        Tuple<Var> vars2 =  vars(triple2) ;
+        Tuple<Slot> tuple1 = MergeLib.convert(triple1, nodeTable) ;
+        Tuple<Slot> tuple2 = MergeLib.convert(triple2, nodeTable) ;
         
-        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
-        Iterator<BindingNodeId> iter1 = merge(action, tuple1, vars1, tuple2, vars2) ;
+        MergeActionIdxIdx action = MergeLib.calcMergeAction(tuple1, tuple2, indexes) ;
+        Iterator<BindingNodeId> iter1 = merge(action, tuple1, tuple2) ;
         return iter1 ; 
     }
 
-    private static Iterator<BindingNodeId> merge(MergeActionIdxIdx action, 
-                                                 Tuple<NodeId> tuple1, Tuple<Var> vars1, 
-                                                 Tuple<NodeId> tuple2, Tuple<Var> vars2)
+    private static Iterator<BindingNodeId> merge(MergeActionIdxIdx action, Tuple<Slot> triple1, Tuple<Slot> triple2)
     {
         int len1 = action.getIndexAccess1().getPrefixLen() ;
         int len2 = action.getIndexAccess2().getPrefixLen() ;
@@ -126,18 +126,23 @@ public class OpExecutorMerge extends OpExecutor
         TupleIndex tupleIndex1 = action.getIndexAccess1().getIndex() ;
         TupleIndex tupleIndex2 = action.getIndexAccess2().getIndex() ;
         
+        Tuple<NodeId> tuple1 = nodeIds(triple1) ;
+        Tuple<NodeId> tuple2 = nodeIds(triple2) ;
+        
         Iterator<Tuple<NodeId>> iter1 = tupleIndex1.find(tuple1) ;
-        if ( false )
+        if ( PRINT )
         {
             System.out.println("-- Left:") ;
+            System.out.println(triple1) ;
             Iter.print(iter1) ;
             iter1 = tupleIndex1.find(tuple1) ;
         }
         
         Iterator<Tuple<NodeId>> iter2 = tupleIndex2.find(tuple2) ;
-        if ( false )
+        if ( PRINT )
         {
             System.out.println("-- Right:") ;
+            System.out.println(triple2) ;
             Iter.print(iter2) ;
             iter2 = tupleIndex2.find(tuple2) ;
             System.out.println("----") ;
@@ -176,7 +181,7 @@ public class OpExecutorMerge extends OpExecutor
                 long v = v1 ;
                 row1 = advance(v, tupleIndex1, len1, iter1, tmp1, row1) ;
                 row2 = advance(v, tupleIndex2, len2, iter2, tmp2, row2) ;
-                join(results, action.getVar(), vars1, tmp1, vars2, tmp2) ;
+                join(results, action.getVar(), triple1, tmp1, triple2, tmp2) ;
             }
             else if ( v1 > v2 )
             {
@@ -189,6 +194,17 @@ public class OpExecutorMerge extends OpExecutor
             }
         }
         return results.iterator() ;
+    }
+
+    static Tuple<NodeId> nodeIds(Tuple<Slot> slots)
+    {
+        int N = slots.size() ;
+        NodeId n[] = new NodeId[N] ;
+        for ( int i = 0 ;  i < N ; i++ )
+        {
+            n[i] = slots.get(i).id ;
+        }
+        return Tuple.create(n) ;
     }
 
     private static Tuple<NodeId> advance(long v, TupleIndex tupleIndex , int len , Iterator<Tuple<NodeId>> iter, List<Tuple<NodeId>> acc, Tuple<NodeId> row)
@@ -208,14 +224,16 @@ public class OpExecutorMerge extends OpExecutor
     }
 
     private static void join(List<BindingNodeId> results, Var joinVar, 
-                             Tuple<Var> vars1 , List<Tuple<NodeId>> tmp1, 
-                             Tuple<Var> vars2 , List<Tuple<NodeId>> tmp2)
+                             Tuple<Slot> vars1 , List<Tuple<NodeId>> tmp1, 
+                             Tuple<Slot> vars2 , List<Tuple<NodeId>> tmp2)
     {
-        if ( false ) System.out.println("join left="+tmp1.size()+" right="+tmp2.size()) ;
+        if ( PRINT )
+            System.out.println("join left="+tmp1.size()+" right="+tmp2.size()) ;
         for ( Tuple<NodeId> row1 : tmp1 )
             for ( Tuple<NodeId> row2 : tmp2 )
             {
-                if ( false ) System.out.println("Join: "+row1+" "+row2) ;
+                if ( PRINT )
+                    System.out.println("Join: "+row1+" "+row2) ;
                 BindingNodeId b = new BindingNodeId((Binding)null) ;
                 b = bind(b, joinVar, row1, vars1) ;
                 if ( b == null )
@@ -223,50 +241,38 @@ public class OpExecutorMerge extends OpExecutor
                 b = bind(b, joinVar, row2, vars2) ;
                 if ( b == null )
                     continue ;
-                if ( false ) System.out.println("Bind => "+b) ;
+                if ( PRINT )
+                    System.out.println("Bind => "+b) ;
                 results.add(b) ;
             }
         tmp1.clear() ;
         tmp2.clear() ;
     }
 
-    static BindingNodeId bind(BindingNodeId b, Var joinVar, Tuple<NodeId> row, Tuple<Var> vars)
+    static BindingNodeId bind(BindingNodeId b, Var joinVar, Tuple<NodeId> row, Tuple<Slot> vars)
     {
         // Tuples from indexes are in natural order.
-        if ( false ) System.out.println("Bind: "+vars+" "+row) ;
+        if ( PRINT ) 
+            System.out.println("Bind: "+vars+" "+row) ;
     
         for ( int i = 0 ; i < vars.size() ; i++ )
         {
-            Var v = vars.get(i) ;
-            if ( v == null )
+            Slot slot = vars.get(i) ; 
+            if ( ! slot.isVar() )
                 continue ;
             NodeId id = row.get(i) ;
-            NodeId id2 = b.get(v) ;
-            if ( id2 != null && ( id2.getId() != id.getId() ) ) 
-                return null ; 
-            b.put(v, id) ;
+            NodeId id2 = b.get(slot.var) ;
+            if ( id2 != null )
+            {
+                // already bound ... test compatibility.
+                if ( id2.getId() == id.getId() )
+                    continue ;
+                return null ;
+            }
+            b.put(slot.var, id) ;
         }
         return b ;
     }
-
-    static Tuple<NodeId> convert(NodeTable nodeTable, Triple triple)
-    {
-        return convert(nodeTable, triple.getSubject(), triple.getPredicate(), triple.getObject()) ; 
-    }
-    
-    // XXX TupleLib.
-    static Tuple<NodeId> convert(NodeTable nodeTable, Node...nodes)
-    {
-        NodeId n[] = new NodeId[nodes.length] ;
-        for (int i = 0; i < nodes.length; i++)
-        {
-            NodeId id = idForNode(nodeTable, nodes[i]) ;
-            if (NodeId.isDoesNotExist(id)) return null ;
-            n[i] = id ;
-        }
-        return Tuple.create(n) ;
-    }
-    
     
     // See NodeTupleTableConcrete - common code?
     // See NodeTupleTableConcrete.findAsNodeIds

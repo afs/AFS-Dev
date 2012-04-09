@@ -52,6 +52,8 @@ public class MergeActionIdxIdx
         return var ;
     }
 
+    public int getPrefixLen()    { return indexAccess1.getPrefixLen() + indexAccess2.getPrefixLen() ; }
+    
     @Override
     public String toString()
     {

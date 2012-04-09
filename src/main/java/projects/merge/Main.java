@@ -58,7 +58,8 @@ public class Main
     public static void main(String ... argv)
     {
         // TODO
-        //   tests
+        //   Tests
+        //   repackage - physical operators.
         //   "Explain" functionality.
         
         // Setup
@@ -97,16 +98,18 @@ public class Main
         dsg.getDefaultGraph().getBulkUpdateHandler().add(g) ;
         // This is the triple access
         
-        if ( true )
+        if ( false )
         {
             TupleIndex[] indexes1 = { PSO } ; 
             Triple triple = SSE.parseTriple("(?x <p> ?x)") ;   //  SPO/?p => no action found. OSP/?x -> wrong.
-            MergeActionVarIdx action = MergeLib.calcMergeAction(Var.alloc("x"), triple, indexes1) ;
+            
+            Tuple<Slot> triple1 = MergeLib.convert(triple, nodeTable) ;
+            MergeActionVarIdx action = MergeLib.calcMergeAction(Var.alloc("x"), triple1, indexes1) ;
+            
             System.out.println(action) ;
             TupleIndex index = action.getIndexAccess().getIndex() ;
             
-            Tuple<NodeId> tuple = OpExecutorMerge.convert(nodeTable, triple) ;
-            Tuple<Var> vars =  OpExecutorMerge.vars(triple) ;
+            Tuple<NodeId> tuple = OpExecutorMerge.nodeIds(triple1) ;
 
             Iterator<Tuple<NodeId>> iter = index.find(tuple) ;
             List<BindingNodeId> r = new ArrayList<>() ;
@@ -116,7 +119,7 @@ public class Main
                 Tuple<NodeId> row = iter.next() ;
                 // Library ise.
                 BindingNodeId b = new BindingNodeId((Binding)null) ;
-                b = OpExecutorMerge.bind(b, null, row, vars) ;
+                b = OpExecutorMerge.bind(b, null, row, triple1) ;
                 if ( b != null )
                     r.add(b) ;
             }

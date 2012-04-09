@@ -22,13 +22,17 @@ import org.openjena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
+import com.hp.hpl.jena.sparql.core.Quad ;
 import com.hp.hpl.jena.sparql.core.Var ;
+import com.hp.hpl.jena.tdb.TDBException ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
+import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
+import com.hp.hpl.jena.tdb.store.NodeId ;
 
 public class MergeLib
 {
 
-    public static MergeActionIdxIdx calcMergeAction(Triple triple1, Triple triple2, TupleIndex[] indexes)
+    public static MergeActionIdxIdx calcMergeAction(Tuple<Slot> triple1, Tuple<Slot> triple2, TupleIndex[] indexes)
     {
         IndexAccess[] access1 = access(triple1, indexes) ;
         IndexAccess[] access2 = access(triple2, indexes) ;
@@ -44,6 +48,7 @@ public class MergeLib
             for ( IndexAccess a2 : access2 )
             {
                 if ( a2 == null ) continue ;
+                //System.out.println("Consider: "+a1+" // "+a2) ;
                 if ( a1.getVar().equals(a2.getVar()))
                 {
                     MergeActionIdxIdx action2 = new MergeActionIdxIdx(a1,a2) ;
@@ -54,8 +59,8 @@ public class MergeLib
                     {
                         //System.out.println("Choose: "+action+" // "+action2) ;
                         // Choose one with most prefixing.
-                        int len1 = action.getIndexAccess1().getPrefixLen()+action.getIndexAccess2().getPrefixLen() ;
-                        int len2 = action2.getIndexAccess1().getPrefixLen()+action2.getIndexAccess2().getPrefixLen() ;
+                        int len1 = action.getPrefixLen() ;
+                        int len2 = action2.getPrefixLen() ;
                         if ( len2 == len1 )
                         {
                             // Example: same var uses more than once in a triple.
@@ -74,7 +79,7 @@ public class MergeLib
         return action ;
     }
     
-    public static MergeActionVarIdx calcMergeAction(Var var, Triple triple, TupleIndex[] indexes)
+    public static MergeActionVarIdx calcMergeAction(Var var, Tuple<Slot> triple, TupleIndex[] indexes)
     {
         IndexAccess[] access = access(triple, indexes) ;
         MergeActionVarIdx iacc = null ;
@@ -95,10 +100,9 @@ public class MergeLib
         return iacc ;
     }
 
-    private static IndexAccess[] access(Triple _triple, TupleIndex[] indexes)
+    private static IndexAccess[] access(Tuple<Slot> triple, TupleIndex[] indexes)
     {
         IndexAccess[] accesses = new IndexAccess[indexes.length] ;
-        Tuple<Node> triple = tripleAsTuple(_triple) ;
         int i = 0 ;
         for ( TupleIndex idx : indexes )
         {
@@ -109,23 +113,83 @@ public class MergeLib
         return accesses ;
     }
 
-    private static IndexAccess access(Tuple<Node> triple, TupleIndex idx)
+    private static IndexAccess access(Tuple<Slot> triple, TupleIndex idx)
     {
-        Tuple<Node> t = idx.getColumnMap().map(triple) ;
+        Tuple<Slot> t = idx.getColumnMap().map(triple) ;
         for ( int i = 0 ; i < triple.size() ; i++ )
         {
-            Node n = t.get(i) ;
-            if ( Var.isVar(n) )
-                return new IndexAccess(idx, i, Var.alloc(n)) ;
+            Slot n = t.get(i) ;
+            if ( n.isVar() )
+                return new IndexAccess(idx, i, n.var) ;
         }
         return null ;
     }
+//
+//    private static Tuple<Node> tripleAsTuple(Triple triple)
+//    {
+//        return Tuple.create(triple.getSubject(),
+//                            triple.getPredicate(),
+//                            triple.getObject()) ;
+//    }
 
-    private static Tuple<Node> tripleAsTuple(Triple triple)
+    static Tuple<Slot> convert(Triple triple, NodeTable nodeTable)
     {
-        return Tuple.create(triple.getSubject(),
-                            triple.getPredicate(),
-                            triple.getObject()) ;
+        return convert(triple, nodeTable, false) ;
+    }
+    
+    static Tuple<Slot> convert(Triple triple, NodeTable nodeTable, boolean allocate)
+    {
+        Slot[] slots = new Slot[3] ;
+        slots[0] = convert(triple.getSubject(), nodeTable, allocate) ;
+        if ( slots[0].id == NodeId.NodeDoesNotExist )
+            return null ;
+        slots[1] = convert(triple.getPredicate(), nodeTable, allocate) ;
+        if ( slots[1].id == NodeId.NodeDoesNotExist )
+            return null ;
+        slots[2] = convert(triple.getObject(), nodeTable, allocate) ;
+        if ( slots[2].id ==  NodeId.NodeDoesNotExist )
+            return null ;
+        return Tuple.create(slots) ;
+    }
+
+    static Slot convert(Node node, NodeTable nodeTable, boolean allocate)
+    {
+        if ( Var.isVar(node) )
+            return new Slot(Var.alloc(node)) ;
+        if ( allocate )
+            return new Slot(nodeTable.getAllocateNodeId(node)) ;
+        else
+            return new Slot(nodeTable.getNodeIdForNode(node)) ;
+    }
+    
+    static Node convert(Slot slot, NodeTable nodeTable)
+    {
+        if ( slot.isVar() )
+            return slot.var ;
+        return nodeTable.getNodeForNodeId(slot.id) ;
+    }
+
+    static Triple convertToTriple(Tuple<Slot> tuple, NodeTable nodeTable)
+    {
+        if ( tuple.size() != 3 )
+            throw new TDBException("Tuple is not of length 3 : "+tuple) ;
+        
+        return Triple.create(convert(tuple.get(0), nodeTable), 
+                             convert(tuple.get(1), nodeTable),
+                             convert(tuple.get(2), nodeTable)
+                             ) ;
+    }
+
+    static Quad convertToQuad(Tuple<Slot> tuple, NodeTable nodeTable)
+    {
+        if ( tuple.size() != 4 )
+            throw new TDBException("Tuple is not of length 4 : "+tuple) ;
+        
+        return Quad.create(convert(tuple.get(0), nodeTable), 
+                           convert(tuple.get(1), nodeTable),
+                           convert(tuple.get(2), nodeTable),
+                           convert(tuple.get(3), nodeTable)
+                           ) ;
     }
 
 }
