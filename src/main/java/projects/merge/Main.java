@@ -96,10 +96,10 @@ public class Main
             ) ;
         Graph g = SSE.parseGraph($) ;
         dsg.getDefaultGraph().getBulkUpdateHandler().add(g) ;
-        // This is the triple access
-        
+
         if ( false )
         {
+            // Single index access
             TupleIndex[] indexes1 = { PSO } ; 
             Triple triple = SSE.parseTriple("(?x <p> ?x)") ;   //  SPO/?p => no action found. OSP/?x -> wrong.
             

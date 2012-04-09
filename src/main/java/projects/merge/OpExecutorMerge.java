@@ -73,48 +73,26 @@ public class OpExecutorMerge extends OpExecutor
         DatasetGraphTDB dsg = (DatasetGraphTDB)(execCxt.getDataset()) ;
         
         NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
-        Triple triple1 = triples.get(0) ;
-        Triple triple2 = triples.get(1) ;
-        
-        
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
 
-        Iterator<BindingNodeId> iter1 = mergeJoin(triple1, triple2, nodeTable, indexes) ;
+        Triple triple1 = triples.get(0) ;
+        Triple triple2 = triples.get(1) ;
+
+        Tuple<Slot> tuple1 = MergeLib.convert(triple1, nodeTable) ;
+        Tuple<Slot> tuple2 = MergeLib.convert(triple2, nodeTable) ;
+        
+        Iterator<BindingNodeId> iter1 = mergeJoin(tuple1, tuple2, indexes) ;
+        
+        // More triples.
+        
         Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
         return new QueryIterPlainWrapper(iter2, execCxt) ;
     }
     
-    // (real) default graph only for now.
-    public Iterator<BindingNodeId> execute(OpBGP opBGP, DatasetGraphTDB dsg)
+    static Iterator<BindingNodeId> mergeJoin(Tuple<Slot> triple1, Tuple<Slot> triple2, TupleIndex[] indexes)
     {
-        BasicPattern bgp = opBGP.getPattern() ;
-        List<Triple> triples = bgp.getList() ;
-        
-        if (triples.size() == 0 )
-        {}
-        if (triples.size() == 1 )
-        {}
-        //if ( constant )
-        
-        
-        
-        NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
-        Triple triple1 = triples.get(0) ;
-        Triple triple2 = triples.get(1) ;
-        TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
-
-        Iterator<BindingNodeId> iter1 = mergeJoin(triple1, triple2, nodeTable, indexes) ;
-        Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
-        return null ;
-    }
-    
-    static Iterator<BindingNodeId> mergeJoin(Triple triple1, Triple triple2, NodeTable nodeTable, TupleIndex[] indexes)
-    {
-        Tuple<Slot> tuple1 = MergeLib.convert(triple1, nodeTable) ;
-        Tuple<Slot> tuple2 = MergeLib.convert(triple2, nodeTable) ;
-        
-        MergeActionIdxIdx action = MergeLib.calcMergeAction(tuple1, tuple2, indexes) ;
-        Iterator<BindingNodeId> iter1 = merge(action, tuple1, tuple2) ;
+        MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
+        Iterator<BindingNodeId> iter1 = merge(action, triple1, triple2) ;
         return iter1 ; 
     }
 
