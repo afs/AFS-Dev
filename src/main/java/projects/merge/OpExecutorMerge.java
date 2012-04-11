@@ -23,6 +23,8 @@ import java.util.Iterator ;
 import java.util.List ;
 
 import org.openjena.atlas.iterator.Iter ;
+import org.openjena.atlas.iterator.Transform ;
+import org.openjena.atlas.lib.InternalErrorException ;
 import org.openjena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.graph.Node ;
@@ -38,6 +40,7 @@ import com.hp.hpl.jena.sparql.engine.main.OpExecutor ;
 import com.hp.hpl.jena.sparql.engine.main.OpExecutorFactory ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
+import com.hp.hpl.jena.tdb.nodetable.NodeTupleTable ;
 import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
 import com.hp.hpl.jena.tdb.solver.SolverLib ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
@@ -66,13 +69,21 @@ public class OpExecutorMerge extends OpExecutor
         List<Triple> triples = bgp.getList() ;
         
         if (triples.size() == 0 )
-        {}
-        if (triples.size() == 1 )
-        {}
-        
+            return input ; 
+            
         DatasetGraphTDB dsg = (DatasetGraphTDB)(execCxt.getDataset()) ;
-        
         NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
+        
+        if (triples.size() == 1 )
+        {
+            // Convoluted?
+            Triple triple = triples.get(0) ;
+            final Tuple<Slot> tuple = MergeLib.convert(triple, nodeTable) ;
+            Iterator<BindingNodeId> iter1 = access(tuple, dsg.getTripleTable().getNodeTupleTable()) ;
+            Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
+            return new QueryIterPlainWrapper(iter2, execCxt) ;
+        }
+        
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
 
         Triple triple1 = triples.get(0) ;
@@ -87,6 +98,23 @@ public class OpExecutorMerge extends OpExecutor
         
         Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
         return new QueryIterPlainWrapper(iter2, execCxt) ;
+    }
+    
+    /** Access a NodeTupleTable, get back a stream of BindingNodeId */
+    static Iterator<BindingNodeId> access(final Tuple<Slot> tuple, NodeTupleTable ntt)
+    {
+        if ( ntt.getTupleTable().getTupleLen() != tuple.size() )
+            throw new InternalErrorException("Not aligned: "+tuple+" expected="+ntt.getTupleTable().getTupleLen()) ;
+        
+        Tuple<NodeId> tupleAccess = nodeIds(tuple) ;
+        Iterator<Tuple<NodeId>> iter1 = ntt.find(tupleAccess) ;
+        Iterator<BindingNodeId> iter2 = Iter.map(iter1, new Transform<Tuple<NodeId>, BindingNodeId>(){
+            @Override
+            public BindingNodeId convert(Tuple<NodeId> item)
+            {
+                return AccessOps.bind(item, tuple) ; 
+            }}) ;
+        return iter2 ; 
     }
     
     static Iterator<BindingNodeId> mergeJoin(Tuple<Slot> triple1, Tuple<Slot> triple2, TupleIndex[] indexes)

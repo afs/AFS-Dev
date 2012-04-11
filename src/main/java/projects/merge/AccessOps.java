@@ -23,6 +23,7 @@ import java.util.Iterator ;
 import java.util.List ;
 
 import org.openjena.atlas.iterator.Iter ;
+import org.openjena.atlas.lib.InternalErrorException ;
 import org.openjena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.sparql.core.Var ;
@@ -183,12 +184,20 @@ public class AccessOps
         tmp2.clear() ;
     }
 
-    private static BindingNodeId bind(BindingNodeId b, Var joinVar, Tuple<NodeId> row, Tuple<Slot> vars)
+    static BindingNodeId bind(Tuple<NodeId> row, Tuple<Slot> vars)
+    {
+        return bind(new BindingNodeId(), row, vars) ;
+    }
+    
+    static BindingNodeId bind(BindingNodeId b, Tuple<NodeId> row, Tuple<Slot> vars)
     {
         // Tuples from indexes are in natural order.
         if ( PRINT ) 
             System.out.println("Bind: "+vars+" "+row) ;
-    
+
+        if ( row.size() != vars.size() )
+            throw new InternalErrorException("Not aligned: "+row+" "+vars) ;
+        
         for ( int i = 0 ; i < vars.size() ; i++ )
         {
             Slot slot = vars.get(i) ; 

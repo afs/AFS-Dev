@@ -66,29 +66,29 @@ public class Main
         // Setup
         Log.setLog4j() ;
         
+        if ( false )
         {
-        List<BindingNodeId> x1 = Support.parseTableNodeId("(table",
-                                                          "  (row (?a 1) (?b 1))", 
-                                                          "  (row (?a 1) (?b 2))", 
-                                                          ")"
-                                               ) ;
-        List<BindingNodeId> x2 = Support.parseTableNodeId("(table",
-                                                          "  (row (?a 1) (?c 4))", 
-                                                          "  (row (?a 4) (?c 1))", 
-                                                          ")"
-                                               ) ;
-        
-        Var key = Var.alloc("a") ;
-        List<BindingNodeId> r = Iter.toList(AccessOps.mergeJoin(x1.iterator(), x2.iterator(), key)) ;
-        
-        System.out.println() ;
-        for ( BindingNodeId b : r )
-            System.out.println(b) ;
-        System.out.println() ;
-        System.out.println("DONE") ;
-        System.exit(0) ;
+            List<BindingNodeId> x1 = Support.parseTableNodeId("(table",
+                                                              "  (row (?a 1) (?b 1))", 
+                                                              "  (row (?a 1) (?b 2))", 
+                                                              ")"
+                ) ;
+            List<BindingNodeId> x2 = Support.parseTableNodeId("(table",
+                                                              "  (row (?a 1) (?c 4))", 
+                                                              "  (row (?a 4) (?c 1))", 
+                                                              ")"
+                ) ;
+
+            Var key = Var.alloc("a") ;
+            List<BindingNodeId> r = Iter.toList(AccessOps.mergeJoin(x1.iterator(), x2.iterator(), key)) ;
+
+            System.out.println() ;
+            for ( BindingNodeId b : r )
+                System.out.println(b) ;
+            System.out.println() ;
+            System.out.println("DONE") ;
+            System.exit(0) ;
         }
-        
         
         // Fake the dataset.
         
@@ -164,8 +164,9 @@ public class Main
                                                         dsg,
                                                         OpExecutorMerge.factory
                                                         ) ;
-        //Op op = SSE.parseOp("(bgp (?s <p> ?o) (?s <q> ?v))") ;
-        Op op = SSE.parseOp("(bgp (?s1 <p> ?o) (<s1> <q> ?o))") ;
+        Op op = SSE.parseOp("(bgp (?s <p> ?o) (?s <q> ?v))") ;
+        //Op op = SSE.parseOp("(bgp (?s1 <p> ?o) (<s1> <q> ?o))") ;
+        //Op op = SSE.parseOp("(bgp (<s> <p> ?o))") ;
         
         QueryIterator qIter = QC.execute(op, QueryIterRoot.create(execCxt), execCxt) ;
         
