@@ -36,7 +36,7 @@ public class AccessOps
     }
     
     // Should these be "actions"?
-    // Shoudkl actions include mapping to variables?
+    // Should actions include mapping to variables?
     
     // Need to indicate the join key.
     public static Iterator<BindingNodeId> hashJoin(Tuple<Slot> triple1, Tuple<Slot> triple2, TupleIndex[] indexes)

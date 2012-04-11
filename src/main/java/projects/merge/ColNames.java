@@ -19,8 +19,8 @@
 package projects.merge;
 
 // Preferred.
-enum ColNames { S("S"), P("P"), O("O"), G("G") ;
+public enum ColNames { S("S"), P("P"), O("O"), G("G") ;
     private String col ;
-    ColNames(String col) { this.col = col ; }
+    private ColNames(String col) { this.col = col ; }
     @Override public String toString() { return col ;}  
 }
