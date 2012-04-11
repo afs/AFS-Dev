@@ -18,16 +18,22 @@
 
 package projects.merge;
 
+import java.util.Iterator ;
+import java.util.List ;
+
 import org.junit.Test ;
+import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.junit.BaseTest ;
 import org.openjena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.graph.Triple ;
+import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 import com.hp.hpl.jena.tdb.StoreConnection ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
+import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 import com.hp.hpl.jena.tdb.sys.SetupTDB ;
@@ -79,6 +85,32 @@ public class TestMergeJoin extends BaseTest
         assertEquals(index1, i1) ;
         assertEquals(index2, i2) ;
     }
-
+    
+    static List<BindingNodeId> table0 = Support.parseTableNodeId("(table)") ;
+    static List<BindingNodeId> table1 = Support.parseTableNodeId("(table",
+                                                                 "   (row (?a 1) (?b 2))",
+                                                                 "   (row (?a 1) (?b 3))",
+                                                                 ")") ;
+    
+    static List<BindingNodeId> table2 = Support.parseTableNodeId("(table",
+                                                                 "   (row (?a 0) (?d 8))",
+                                                                 "   (row (?a 1) (?c 9))",
+                                                                 ")") ;
+    static List<BindingNodeId> table3 = Support.parseTableNodeId("(table",
+                                                                 "   (row (?a 1) (?c 9) (?b 2))",
+                                                                 "   (row (?a 1) (?c 9) (?b 3))",
+                                                                 ")") ;
+    
+    @Test public void merge_01() { testMerge(Var.alloc("a"), table1, table2, table3) ; }
+    
+    private static void testMerge(Var key, List<BindingNodeId> table1, List<BindingNodeId> table2, List<BindingNodeId> table3)
+    {
+        Iterator<BindingNodeId> iter =  AccessOps.mergeJoin(table1.iterator(), table2.iterator(), key) ;
+        List<BindingNodeId> results = Iter.toList(iter) ;
+        assertTrue(Support.equals(table3, results)) ;
+    }
+    
+    
+    
 }
 

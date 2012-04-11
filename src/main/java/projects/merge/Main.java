@@ -23,6 +23,7 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
+import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.lib.StrUtils ;
 import org.openjena.atlas.lib.Tuple ;
 import org.openjena.atlas.logging.Log ;
@@ -64,6 +65,31 @@ public class Main
         
         // Setup
         Log.setLog4j() ;
+        
+        {
+        List<BindingNodeId> x1 = Support.parseTableNodeId("(table",
+                                                          "  (row (?a 1) (?b 1))", 
+                                                          "  (row (?a 1) (?b 2))", 
+                                                          ")"
+                                               ) ;
+        List<BindingNodeId> x2 = Support.parseTableNodeId("(table",
+                                                          "  (row (?a 1) (?c 4))", 
+                                                          "  (row (?a 4) (?c 1))", 
+                                                          ")"
+                                               ) ;
+        
+        Var key = Var.alloc("a") ;
+        List<BindingNodeId> r = Iter.toList(AccessOps.mergeJoin(x1.iterator(), x2.iterator(), key)) ;
+        
+        System.out.println() ;
+        for ( BindingNodeId b : r )
+            System.out.println(b) ;
+        System.out.println() ;
+        System.out.println("DONE") ;
+        System.exit(0) ;
+        }
+        
+        
         // Fake the dataset.
         
         DatasetGraphTDB dsg = StoreConnection.make(Location.mem()).getBaseDataset() ;

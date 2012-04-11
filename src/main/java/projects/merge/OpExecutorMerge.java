@@ -154,22 +154,22 @@ public class OpExecutorMerge extends OpExecutor
             long v1 = join1.getId() ;
             long v2 = join2.getId() ;
             
-            if ( v1 == v2 )
-            {
-                long v = v1 ;
-                row1 = advance(v, tupleIndex1, len1, iter1, tmp1, row1) ;
-                row2 = advance(v, tupleIndex2, len2, iter2, tmp2, row2) ;
-                join(results, action.getVar(), triple1, tmp1, triple2, tmp2) ;
-            }
-            else if ( v1 > v2 )
+            if ( v1 > v2 )
             {
                 row2 = null ;
+                continue ;
             }
-            else
+            if ( v1 < v2 )
             {
-                // v1 < v2
                 row1 = null ;
+                continue ;
             }
+            
+            // if ( v1 == v2 )
+            long v = v1 ;
+            row1 = advance(v, tupleIndex1, len1, iter1, tmp1, row1) ;
+            row2 = advance(v, tupleIndex2, len2, iter2, tmp2, row2) ;
+            join(results, action.getVar(), triple1, tmp1, triple2, tmp2) ;
         }
         return results.iterator() ;
     }
