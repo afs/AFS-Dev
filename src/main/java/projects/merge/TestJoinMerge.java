@@ -38,7 +38,7 @@ import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 import com.hp.hpl.jena.tdb.sys.SetupTDB ;
 
-public class TestMergeJoin extends BaseTest
+public class TestJoinMerge extends BaseTest
 {
     static Location loc = Location.mem() ;
     static DatasetGraphTDB dsg = StoreConnection.make(loc).getBaseDataset() ;
@@ -101,7 +101,11 @@ public class TestMergeJoin extends BaseTest
                                                                  "   (row (?a 1) (?c 9) (?b 3))",
                                                                  ")") ;
     
-    @Test public void merge_01() { testMerge(Var.alloc("a"), table1, table2, table3) ; }
+
+    @Test public void merge_00() { testMerge(Var.alloc("a"), table0, table2, table0) ; }
+    @Test public void merge_01() { testMerge(Var.alloc("a"), table1, table0, table0) ; }
+
+    @Test public void merge_05() { testMerge(Var.alloc("a"), table1, table2, table3) ; }
     
     private static void testMerge(Var key, List<BindingNodeId> table1, List<BindingNodeId> table2, List<BindingNodeId> table3)
     {

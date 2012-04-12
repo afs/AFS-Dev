@@ -66,6 +66,9 @@ public class Main
         // Setup
         Log.setLog4j() ;
         
+        hashJoin() ; System.exit(0) ;
+
+        
         if ( false )
         {
             List<BindingNodeId> x1 = Support.parseTableNodeId("(table",
@@ -176,5 +179,66 @@ public class Main
         ResultSetFormatter.out(rs) ;
 
         System.out.println("DONE") ;
+    }
+    
+    static boolean PRINT = true ;
+
+    static public void hashJoin()
+    {
+        Var key = Var.alloc("a") ;
+        
+        //hashJoin(iter1, iter2, key) ;
+        
+        List<BindingNodeId> x1 = Support.parseTableNodeId("(table",
+                                                          "  (row (?a 1) (?b 1))", 
+                                                          "  (row (?a 1) (?b 2))", 
+                                                          ")"
+            ) ;
+        List<BindingNodeId> x2 = Support.parseTableNodeId("(table",
+                                                          "  (row (?a 1) (?c 4))", 
+                                                          "  (row (?a 4) (?c 1))", 
+                                                          ")"
+            ) ;
+        
+        Iterator<BindingNodeId> iter1 = x1.iterator() ;
+        Iterator<BindingNodeId> iter2 = x2.iterator() ;
+        
+        
+        
+        if ( PRINT )
+        {
+            List<BindingNodeId> x = Iter.toList(iter1) ;
+            System.out.println("-- Left:") ;
+            Iter.print(x.iterator()) ;
+            iter1 = x.iterator() ;
+        }
+        
+        if ( PRINT )
+        {
+            List<BindingNodeId> x = Iter.toList(iter2) ;
+            System.out.println("-- Right:") ;
+            Iter.print(x.iterator()) ;
+            iter2 = x.iterator() ;
+        }
+        
+        if ( PRINT )
+            System.out.println("--") ;
+        
+        {
+            Iterator<BindingNodeId> r = AccessOps.hashJoin(iter1, iter2, key) ;
+            for ( ; r.hasNext() ; )
+            {
+                BindingNodeId b = r.next() ;
+                System.out.println(b) ;    
+            }
+        }
+        System.out.println() ;
+        Iterator<BindingNodeId> r2 = AccessOps.hashJoin(x2.iterator(), x1.iterator(), key) ;
+        for ( ; r2.hasNext() ; )
+        {
+            BindingNodeId b = r2.next() ;
+            System.out.println(b) ;    
+        }
+
     }
 }

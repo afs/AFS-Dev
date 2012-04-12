@@ -19,11 +19,13 @@
 package projects.merge;
 
 import java.util.ArrayList ;
+import java.util.Collection ;
 import java.util.Iterator ;
 import java.util.List ;
 
 import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.lib.InternalErrorException ;
+import org.openjena.atlas.lib.MultiMap ;
 import org.openjena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.sparql.core.Var ;
@@ -65,7 +67,7 @@ public class AccessOps
         return null ;
     }
     
-    // --------
+    // -------- Merge join
 
     // This could be the primitive for mergeJoin -- it churns BindingNodeIds - can that be fixed? 
     // Need to indicate the sortedness coming out.
@@ -184,6 +186,13 @@ public class AccessOps
         tmp2.clear() ;
     }
 
+    // To be moved in from main.
+    
+//    public static BindingNodeId join(BindingNodeId row1, BindingNodeId row2)
+//    {
+//    }
+    
+
     static BindingNodeId bind(Tuple<NodeId> row, Tuple<Slot> vars)
     {
         return bind(new BindingNodeId(), row, vars) ;
@@ -216,5 +225,87 @@ public class AccessOps
         }
         return b ;
     }
+
+    // -------- Hash join
+    
+    static NodeId dummyNodeId = NodeId.NodeIdAny ;
+    
+    public static Iterator<BindingNodeId> hashJoin(Iterator<BindingNodeId> iter1, Iterator<BindingNodeId> iter2, Var key)
+    {
+        // Assume left smaller than right.
+        
+        if ( PRINT )
+            System.out.println("Phase 1") ;
+        // Phase 1.
+        MultiMap<NodeId, BindingNodeId> buckets = MultiMap.createMapList() ;
+        
+        for ( ; iter1.hasNext() ; )
+        {
+            BindingNodeId b1 = iter1.next() ;
+            NodeId n = b1.get(key) ;
+            if ( n == null )
+                n = dummyNodeId ;
+            buckets.put(n, b1) ;
+        }
+        iter1 = null ;
+        if ( PRINT )
+        {
+            System.out.println(buckets) ;
+            
+        }
+        
+        if ( PRINT )
+            System.out.println("Phase 2") ;
+        // Phase 2.
+        List<BindingNodeId> results = new ArrayList<>() ;
+        for ( ; iter2.hasNext() ; )
+        {
+            BindingNodeId b2 = iter2.next() ;
+            NodeId n = b2.get(key) ;
+            if ( n == null )
+                n = dummyNodeId ;
+            Collection<BindingNodeId> sameKey = buckets.get(n) ;
+            if ( sameKey == null )
+                continue ;
+            for ( BindingNodeId b1 : sameKey )
+            {
+                BindingNodeId r = join(b1, b2, key) ;
+                if ( r != null )
+                    results.add(r) ;
+            }
+        }
+        
+        return results.iterator() ;
+    }
+
+    // Common code somewhere?
+    public static BindingNodeId join(BindingNodeId row1, BindingNodeId row2, Var key)
+    {
+        // row1 may be reused.
+        // row2 is unique.
+        // Could copy row into row2.
+        
+        BindingNodeId b = new BindingNodeId() ;
+        b.putAll(row1) ;
+
+        Iterator<Var> vars2 =  row2.iterator() ;
+
+        for ( ; vars2.hasNext() ; )
+        {
+            Var v = vars2.next() ;
+            NodeId n1 =  row1.get(v) ;
+            NodeId n2 = row2.get(v) ;
+            if ( n1 == null )
+            {
+                b.put(v,n2) ;
+                continue ;
+            }
+            // Compatible?
+            if ( ! n1.equals(n2) )
+                return null ;
+        }
+        return b ;
+    }
+
 }
 
