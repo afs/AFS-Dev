@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package projects.merge;
+package projects.join2;
 
 import java.util.ArrayList ;
 import java.util.Iterator ;

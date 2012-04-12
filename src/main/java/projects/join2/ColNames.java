@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package projects.merge;
+package projects.join2;
 
 // Preferred.
 public enum ColNames { S("S"), P("P"), O("O"), G("G") ;

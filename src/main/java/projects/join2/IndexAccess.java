@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package projects.merge;
+package projects.join2;
 
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;

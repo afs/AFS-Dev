@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,20 +16,35 @@
  * limitations under the License.
  */
 
-package projects.merge;
+package projects.join2;
 
 import com.hp.hpl.jena.sparql.core.Var ;
 
-public class MergeActionVarIdx
+public class MergeActionIdxIdx
 {
-
+    private IndexAccess indexAccess1 ;
+    private IndexAccess indexAccess2 ;
     private Var var ;
-    private IndexAccess indexAccess ;
     
-    public MergeActionVarIdx(Var var, IndexAccess indexAccess)
+    public MergeActionIdxIdx(IndexAccess indexAccess1, IndexAccess indexAccess2)
     {
-        this.var = var ;
-        this.indexAccess = indexAccess ;
+        super() ;
+        this.indexAccess1 = indexAccess1 ;
+        this.indexAccess2 = indexAccess2 ;
+        if ( ! indexAccess1.getVar().equals(indexAccess2.getVar()) )
+            // May relax this and allow (?x = ?y AS ?z) 
+            throw new InternalError("IndexAcceses in a merge must be joining the same variable") ; 
+        this.var = indexAccess1.getVar() ;
+    }
+
+    public IndexAccess getIndexAccess1()
+    {
+        return indexAccess1 ;
+    }
+
+    public IndexAccess getIndexAccess2()
+    {
+        return indexAccess2 ;
     }
 
     public Var getVar()
@@ -37,21 +52,20 @@ public class MergeActionVarIdx
         return var ;
     }
 
-    public IndexAccess getIndexAccess()
-    {
-        return indexAccess ;
-    }
-
+    public int getPrefixLen()    { return indexAccess1.getPrefixLen() + indexAccess2.getPrefixLen() ; }
+    
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder() ;
         builder.append("Merge [") ;
-        builder.append(var) ;
+        builder.append(indexAccess1) ;
         builder.append(",") ;
-        builder.append(indexAccess) ;
+        builder.append(indexAccess2) ;
+//        builder.append(",") ;
+//        builder.append(var) ;
         builder.append("]") ;
         return builder.toString() ;
     }
+   
 }
-
