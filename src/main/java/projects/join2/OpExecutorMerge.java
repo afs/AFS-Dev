@@ -144,6 +144,8 @@ public class OpExecutorMerge extends OpExecutor
             iter1 = tupleIndex1.find(tuple1) ;
         }
         
+        // Can start tuple2 further in using first index1 row.
+        
         Iterator<Tuple<NodeId>> iter2 = tupleIndex2.find(tuple2) ;
         if ( PRINT )
         {

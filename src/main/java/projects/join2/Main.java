@@ -59,6 +59,9 @@ public class Main
     public static void main(String ... argv)
     {
         // TODO
+        //   Merge - read first index, jump to start of second.
+        //      ?x :p ?v . ?x :q ?w . 
+        //      Can start :q scan P-- from P(firstS)
         //   Tests
         //   repackage - physical operators.
         //   "Explain" functionality.
