@@ -146,16 +146,12 @@ public class CSVParser
                     if ( t.type == EOF)
                         return ;
                     continue loop ;
-            }
-
-            // Immediate COMMA is an empty term.
-            switch (t.type )
-            {
                 case STRING:
                 case QSTRING:
                     line.add(t.image) ;
                     break ;
                 case COMMA:
+                    // Immediate COMMA is an empty term.
                     line.add("") ;
                     continue loop ;
                 default:

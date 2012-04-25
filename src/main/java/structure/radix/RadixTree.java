@@ -27,7 +27,7 @@ public interface RadixTree
     public boolean contains(byte[] key) ;
 
     /** Find by key.
-     *  Return some default if not found (neds if values can be null 
+     *  Return some default if not found. 
      */
     public byte[] find(byte[] key, byte[] dft) ;
 
