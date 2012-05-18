@@ -18,40 +18,28 @@
 
 package projects.join2;
 
-import java.util.ArrayList ;
-import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
 import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.lib.StrUtils ;
-import org.openjena.atlas.lib.Tuple ;
 import org.openjena.atlas.logging.Log ;
+import projects.tools.IndexLib ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.query.ResultSet ;
-import com.hp.hpl.jena.query.ResultSetFactory ;
-import com.hp.hpl.jena.query.ResultSetFormatter ;
+import com.hp.hpl.jena.query.ARQ ;
+import com.hp.hpl.jena.query.Query ;
+import com.hp.hpl.jena.query.QueryFactory ;
+import com.hp.hpl.jena.sparql.algebra.Algebra ;
 import com.hp.hpl.jena.sparql.algebra.Op ;
-import com.hp.hpl.jena.sparql.algebra.OpVars ;
 import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.engine.ExecutionContext ;
 import com.hp.hpl.jena.sparql.engine.QueryIterator ;
 import com.hp.hpl.jena.sparql.engine.binding.Binding ;
-import com.hp.hpl.jena.sparql.engine.iterator.QueryIterPlainWrapper ;
-import com.hp.hpl.jena.sparql.engine.iterator.QueryIterRoot ;
 import com.hp.hpl.jena.sparql.engine.main.QC ;
-import com.hp.hpl.jena.sparql.sse.SSE ;
-import com.hp.hpl.jena.tdb.StoreConnection ;
-import com.hp.hpl.jena.tdb.TDB ;
+import com.hp.hpl.jena.sparql.util.QueryExecUtils ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
-import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
 import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
-import com.hp.hpl.jena.tdb.solver.SolverLib ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
-import com.hp.hpl.jena.tdb.store.NodeId ;
+import com.hp.hpl.jena.tdb.sys.Names ;
 import com.hp.hpl.jena.tdb.sys.SetupTDB ;
 
 public class Main
@@ -69,119 +57,39 @@ public class Main
         // Setup
         Log.setLog4j() ;
         
-        hashJoin() ; System.exit(0) ;
-
+        Location loc = new Location("DB") ;
+        DatasetGraphTDB dsg = SetupTDB.buildDataset(loc) ;
         
-        if ( false )
-        {
-            List<BindingNodeId> x1 = Support.parseTableNodeId("(table",
-                                                              "  (row (?a 1) (?b 1))", 
-                                                              "  (row (?a 1) (?b 2))", 
-                                                              ")"
-                ) ;
-            List<BindingNodeId> x2 = Support.parseTableNodeId("(table",
-                                                              "  (row (?a 1) (?c 4))", 
-                                                              "  (row (?a 4) (?c 1))", 
-                                                              ")"
-                ) ;
-
-            Var key = Var.alloc("a") ;
-            List<BindingNodeId> r = Iter.toList(AccessOps.mergeJoin(x1.iterator(), x2.iterator(), key)) ;
-
-            System.out.println() ;
-            for ( BindingNodeId b : r )
-                System.out.println(b) ;
-            System.out.println() ;
-            System.out.println("DONE") ;
-            System.exit(0) ;
-        }
         
-        // Fake the dataset.
-        
-        DatasetGraphTDB dsg = StoreConnection.make(Location.mem()).getBaseDataset() ;
-        // -- Fix up
-        Location loc = Location.mem() ;
-        TupleIndex PSO = SetupTDB.makeTupleIndex(loc, "SPO", "PSO", "PSO", 3*NodeId.SIZE) ;
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
+        TupleIndex indexPSO = IndexLib.connect(loc, Names.primaryIndexTriples, "PSO") ;
+        // Stamp on OSP
+        indexes[2] = indexPSO ; 
+        // Wire in.
+        QC.setFactory(ARQ.getContext(), OpExecutorMerge.factory) ;
         
-        TupleIndex SPO = indexes[0] ;
-        TupleIndex POS = indexes[1] ;
-        TupleIndex OSP = indexes[2] ;
+        Query query = QueryFactory.read("Q.rq") ;
+        Op op = Algebra.compile(query) ;
+        //op = Algebra.toQuadForm(op) ;
+        //op = Algebra.optimize(op) ;
+        System.out.println(op) ;
         
-        indexes[2] = PSO ;
-        
-        NodeTable nodeTable = dsg.getTripleTable().getNodeTupleTable().getNodeTable() ;
-
-        
-        //System.out.println("== Data") ;
-        // -- Data 
-        String $ = StrUtils.strjoinNL(
-            "(graph",                                      
-            "  (<s>   <p>  '1')",
-            "  (<s1>  <p>  '3')",
-            "  (<s1>  <p>  '4')",
-            "  (<s>   <q>  '5')",
-            "  (<s1>  <q>  '6')" ,
-            "  (<s>   <p>  '6')" ,
-            "  (<s>   <p>  <s>)" ,
-            ")" 
-            ) ;
-        Graph g = SSE.parseGraph($) ;
-        dsg.getDefaultGraph().getBulkUpdateHandler().add(g) ;
+        QueryExecUtils.execute(op, dsg) ;
 
         if ( false )
         {
-            // Single index access
-            TupleIndex[] indexes1 = { PSO } ; 
-            Triple triple = SSE.parseTriple("(?x <p> ?x)") ;   //  SPO/?p => no action found. OSP/?x -> wrong.
-            
-            Tuple<Slot> triple1 = MergeLib.convert(triple, nodeTable) ;
-            MergeActionVarIdx action = MergeLib.calcMergeAction(Var.alloc("x"), triple1, indexes1) ;
-            
-            System.out.println(action) ;
-            TupleIndex index = action.getIndexAccess().getIndex() ;
-            
-            Tuple<NodeId> tuple = OpExecutorMerge.nodeIds(triple1) ;
-
-            Iterator<Tuple<NodeId>> iter = index.find(tuple) ;
-            List<BindingNodeId> r = new ArrayList<>() ;
-            
-            for ( ; iter.hasNext() ; )
+            QueryIterator qIter = Algebra.exec(op, dsg) ;
+            for ( ; qIter.hasNext() ; )
             {
-                Tuple<NodeId> row = iter.next() ;
-                // Library ise.
-                BindingNodeId b = new BindingNodeId((Binding)null) ;
-                b = OpExecutorMerge.bind(b, null, row, triple1) ;
-                if ( b != null )
-                    r.add(b) ;
+                Binding b = qIter.next() ;
+                System.out.println(b) ;
             }
-            Iterator<Binding> iter2 = SolverLib.convertToNodes(r.iterator(), nodeTable) ;
-            QueryIterator qIter = new QueryIterPlainWrapper(iter2) ;
-            List<String> varNames = Arrays.asList("x") ;
-            ResultSet rs = ResultSetFactory.create(qIter, varNames) ;
-            ResultSetFormatter.out(rs) ;
-            System.out.println("DONE") ;
-            System.exit(0) ;
         }
-
-        // -- Execute
-        ExecutionContext execCxt = new ExecutionContext(TDB.getContext(),
-                                                        dsg.getDefaultGraph(),
-                                                        dsg,
-                                                        OpExecutorMerge.factory
-                                                        ) ;
-        Op op = SSE.parseOp("(bgp (?s <p> ?o) (?s <q> ?v))") ;
-        //Op op = SSE.parseOp("(bgp (?s1 <p> ?o) (<s1> <q> ?o))") ;
-        //Op op = SSE.parseOp("(bgp (<s> <p> ?o))") ;
         
-        QueryIterator qIter = QC.execute(op, QueryIterRoot.create(execCxt), execCxt) ;
-        
-        // -- Results.
-        List<String> varNames = Var.varNames(OpVars.patternVars(op)) ; 
-        ResultSet rs = ResultSetFactory.create(qIter, varNames) ;
-        ResultSetFormatter.out(rs) ;
-
         System.out.println("DONE") ;
+        System.exit(0) ;
+        
+        hashJoin() ; System.exit(0) ;
     }
     
     static boolean PRINT = true ;

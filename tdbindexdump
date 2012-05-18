@@ -1,0 +1,7 @@
+#!/bin/bash
+
+. ./cmd
+
+PROG="$(basename $0)"
+
+java $JVM_ARGS -cp "$CP" projects.tools.$PROG "$@"

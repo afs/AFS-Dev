@@ -26,27 +26,32 @@ import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.iterator.Transform ;
 import org.openjena.atlas.lib.InternalErrorException ;
 import org.openjena.atlas.lib.Tuple ;
+import org.openjena.atlas.logging.Log ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.algebra.op.OpBGP ;
+import com.hp.hpl.jena.sparql.algebra.op.OpQuadPattern ;
 import com.hp.hpl.jena.sparql.core.BasicPattern ;
+import com.hp.hpl.jena.sparql.core.Quad ;
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.engine.ExecutionContext ;
 import com.hp.hpl.jena.sparql.engine.QueryIterator ;
 import com.hp.hpl.jena.sparql.engine.binding.Binding ;
 import com.hp.hpl.jena.sparql.engine.iterator.QueryIterPlainWrapper ;
+import com.hp.hpl.jena.sparql.engine.iterator.QueryIterRoot ;
 import com.hp.hpl.jena.sparql.engine.main.OpExecutor ;
 import com.hp.hpl.jena.sparql.engine.main.OpExecutorFactory ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTupleTable ;
 import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
+import com.hp.hpl.jena.tdb.solver.OpExecutorTDB ;
 import com.hp.hpl.jena.tdb.solver.SolverLib ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 
-public class OpExecutorMerge extends OpExecutor
+public class OpExecutorMerge extends OpExecutorTDB
 {
     static OpExecutorFactory factory = new OpExecutorFactory() {
         @Override
@@ -65,6 +70,14 @@ public class OpExecutorMerge extends OpExecutor
     @Override
     protected QueryIterator execute(OpBGP opBGP, QueryIterator input)
     {
+        if ( isRootInput(input) )
+            input.close() ;
+        else
+        {
+            Log.warn(this, "input iterator is not the root - no mergeJoin done") ;
+            return super.execute(opBGP, input) ;
+        }
+        
         BasicPattern bgp = opBGP.getPattern() ;
         List<Triple> triples = bgp.getList() ;
         
@@ -97,7 +110,32 @@ public class OpExecutorMerge extends OpExecutor
         // More triples.
         
         Iterator<Binding> iter2 = SolverLib.convertToNodes(iter1, nodeTable) ;
-        return new QueryIterPlainWrapper(iter2, execCxt) ;
+        QueryIterator result = new QueryIterPlainWrapper(iter2, execCxt) ;  
+        
+        if ( triples.size() == 2 )
+            return result ;
+            
+        // We did 2 - do rest.
+        BasicPattern bgp2 = new BasicPattern(bgp) ;
+        bgp2.getList().remove(0) ;
+        bgp2.getList().remove(0) ;
+        OpBGP opBgpSub = new OpBGP(bgp) ;
+        return super.execute(new OpBGP(bgp2), result) ; 
+    }
+    
+    @Override
+    protected QueryIterator execute(OpQuadPattern opQuad, QueryIterator input)
+    {
+        if ( Quad.isDefaultGraph(opQuad.getGraphNode()) )
+        {
+            return execute(new OpBGP(opQuad.getBasicPattern()), input) ;
+        }
+        return super.execute(opQuad, input) ;
+    }
+    
+    private static boolean isRootInput(QueryIterator input)
+    {
+        return ( input instanceof QueryIterRoot ) ;
     }
     
     /** Access a NodeTupleTable, get back a stream of BindingNodeId */
@@ -126,6 +164,8 @@ public class OpExecutorMerge extends OpExecutor
 
     private static Iterator<BindingNodeId> merge(MergeActionIdxIdx action, Tuple<Slot> triple1, Tuple<Slot> triple2)
     {
+        System.out.println(action) ;
+        
         int len1 = action.getIndexAccess1().getPrefixLen() ;
         int len2 = action.getIndexAccess2().getPrefixLen() ;
         

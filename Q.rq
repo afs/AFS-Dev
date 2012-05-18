@@ -1,0 +1,12 @@
+PREFIX : <http://example/>
+
+SELECT ?s ?x ?z ?z2
+{
+##   ?s :p ?x .
+   ?s :p :2 .
+   ?s :q ?z .
+   FILTER(?z = :2)
+   ?s :q ?z2 .
+#   FILTER(?x = ?z)
+}
+
