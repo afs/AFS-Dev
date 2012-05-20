@@ -24,6 +24,7 @@ import java.util.List ;
 import org.openjena.atlas.iterator.Iter ;
 import org.openjena.atlas.logging.Log ;
 import projects.tools.IndexLib ;
+import projects.tools.TDBConfiguration ;
 
 import com.hp.hpl.jena.query.ARQ ;
 import com.hp.hpl.jena.query.Query ;
@@ -58,13 +59,26 @@ public class Main
         Log.setLog4j() ;
         
         Location loc = new Location("DB") ;
-        DatasetGraphTDB dsg = SetupTDB.buildDataset(loc) ;
         
+        TDBConfiguration desc = TDBConfiguration.create(loc) ;
+        System.out.println(desc) ;
+        System.exit(0) ;
+        
+        
+        DatasetGraphTDB dsg = SetupTDB.buildDataset(loc) ;
         
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
         TupleIndex indexPSO = IndexLib.connect(loc, Names.primaryIndexTriples, "PSO") ;
+        TupleIndex indexGPSO = IndexLib.connect(loc, Names.primaryIndexQuads, "GPSO") ;
+        TupleIndex indexPSOG = IndexLib.connect(loc, Names.primaryIndexQuads, "PSOG") ;
+        
         // Stamp on OSP
-        indexes[2] = indexPSO ; 
+        replace(indexes, "OSP", indexPSO ) ;
+        
+        indexes = dsg.getQuadTable().getNodeTupleTable().getTupleTable().getIndexes() ;
+        replace(indexes, "GOSP", indexGPSO ) ;
+        replace(indexes, "OSPG", indexPSOG ) ;
+        
         // Wire in.
         QC.setFactory(ARQ.getContext(), OpExecutorMerge.factory) ;
         
@@ -92,6 +106,23 @@ public class Main
         hashJoin() ; System.exit(0) ;
     }
     
+    
+    
+
+    private static void replace(TupleIndex[] indexes, String name, TupleIndex newIndex)
+    {
+        for ( int i = 0 ; i < indexes.length ; i++ )
+        {
+            TupleIndex idx = indexes[i] ;
+            if ( idx.getName().equals(name) )
+            {
+                indexes[i] = newIndex ;
+                return ;
+            }
+        }
+        System.err.println("Not found: index: "+name) ;
+    }
+
     static boolean PRINT = true ;
 
     static public void hashJoin()
