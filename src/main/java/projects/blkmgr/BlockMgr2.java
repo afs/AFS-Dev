@@ -240,6 +240,10 @@ public class BlockMgr2 implements BlockMgr
     {}
 
     @Override
+    public void syncForce()
+    {}
+
+    @Override
     public void beginUpdate()
     {}
 

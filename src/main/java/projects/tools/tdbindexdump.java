@@ -55,6 +55,10 @@ public class tdbindexdump extends CmdTDB
     @Override
     protected void exec()
     {
+        Location location = super.getLocation() ;
+        if ( location == null )
+            throw new CmdException("No location") ;
+
         List<String> args = super.getPositional() ;
 
         if ( args.size() == 0 || args.size() > 1 )
@@ -73,7 +77,6 @@ public class tdbindexdump extends CmdTDB
 
         
         index = index.toUpperCase() ;
-        Location location = super.getLocation() ;
         TupleIndex tupleIndex = SetupTDB.makeTupleIndex(location, primaryIndex, index, index, keyLen) ;
         
         TupleIndexRecord tupleIndexRecord = (TupleIndexRecord)tupleIndex ;
