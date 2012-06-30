@@ -58,7 +58,13 @@ public class BlockMgr2 implements BlockMgr
     /*
      * Adds:
      *   Free chain management on-disk
-     *   Root blocks.
+     *   Multiple block managers per file
+     *      Moveable Root blocks.
+     *   
+     * Other
+     *   Virtualization / indirection.
+     *   Variable size blocks.
+     *   Compression (to one of a few fixed sizes?)
      */
     
     FileChannel file ;
