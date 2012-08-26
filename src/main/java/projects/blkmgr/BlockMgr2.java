@@ -54,19 +54,6 @@ public class BlockMgr2 implements BlockMgr
     
     private static int BlockSize = 8 * 1024 ;
     
-    
-    /*
-     * Adds:
-     *   Free chain management on-disk
-     *   Multiple block managers per file
-     *      Moveable Root blocks.
-     *   
-     * Other
-     *   Virtualization / indirection.
-     *   Variable size blocks.
-     *   Compression (to one of a few fixed sizes?)
-     */
-    
     FileChannel file ;
     int freeChain = -1 ;
     
