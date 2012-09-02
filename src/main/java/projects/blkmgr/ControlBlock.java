@@ -24,8 +24,7 @@ import java.util.List ;
 
 import org.openjena.atlas.lib.Pair ;
 import org.openjena.atlas.lib.StrUtils ;
-
-import com.hp.hpl.jena.tdb.base.block.BlockException ;
+import org.openjena.atlas.logging.Log ;
 
 public class ControlBlock
 {
@@ -34,7 +33,9 @@ public class ControlBlock
         ControlParams params = new ControlParams() ;
         params.freeChain = 10 ;
         params.sequence = 20 ;
-        params.roots.add(Pair.create("foo", 100L)) ;
+        params.roots.add(Pair.create("foo", -1L)) ;
+        params.roots.add(Pair.create("",    200L)) ;
+        params.roots.add(Pair.create("bar", 300L)) ;
         
         ByteBuffer bb = ByteBuffer.allocate(1000) ;
         
@@ -78,36 +79,23 @@ public class ControlBlock
     static ControlParams parse(ByteBuffer bb)
     {
         ControlParams params = new ControlParams() ;
-        int idx = 0 ;
         bb.position(0) ;
         
         params.freeChain = bb.getLong() ;
-        idx += SizeofLong ;
-        
         params.sequence = bb.getLong() ;
-        idx += SizeofLong ;
         
-        while (bb.position() < bb.limit() )
+        while (true)
         {
-            if ( idx != bb.position() )
-                throw new BlockException("Misaligned") ;
-
             int len = bb.getInt() ;
-            idx += SizeofInt ;
-            if ( len < 0 )
-                break ;
-            
+            if ( len < 0 ) break ;
             byte[] b = new byte[len] ;
             bb.get(b) ;
-            idx += len ;
             String key = StrUtils.fromUTF8bytes(b) ;
-            
-            Long rootId =  bb.getLong() ;
-            idx += SizeofLong ;
-            
+            Long rootId = bb.getLong() ;
+            if ( params.roots.contains(key) )
+                Log.warn(ControlBlock.class, "Duplicate key for roots map") ;
             params.roots.add(Pair.create(key, rootId)) ;
         }
-        
         return params ;
     }
     
