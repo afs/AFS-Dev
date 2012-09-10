@@ -23,14 +23,27 @@ public class PROJECT_Blocks
     /*
      * Adds:
      *   Free chain management on-disk
+     *   Allocated file length. 
      *   Multiple block managers per file
      *      Moveable Root blocks.
      *   
      * Other
-     *   Virtualization / indirection. (use case?)
+     *   Virtualization / indirection.
      *   Variable size blocks.
      *   Compression (to one of a few fixed sizes?)
+     * 
+     * Target:
+     *   Transactional block layer capable of supporting log-structured indexes.
+     *   => Add the begin-writer/commit or abort/end 
+     *   => compaction interface (so virtual -> real mapping needed?)
+     *   => Easier for variable size blocks.   
      */
+    
+    // BlockAllocator.
+    //   .writerBegin
+    //   .writerCommit
+    //   .writerAbort
+    //   .writerEnd
     
     /* Decision 1: 
      * Global number of blocks or pre index+indirection
