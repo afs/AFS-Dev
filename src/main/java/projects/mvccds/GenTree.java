@@ -25,30 +25,24 @@ public class GenTree<T extends Comparable<T>>
 {
     public TNode<T> root = null ; 
     
-    public TNode<T> oldRoot = null ;
+    static int genCounter = 0 ;
+    int generation = genCounter++ ;
+    boolean inUpdate = true ;
     
-    int generation = 0 ;
-    boolean inUpdate = false ;
-    
-    public void beginUpdate()
+    public GenTree<T> beginUpdate()
     {
-        generation++ ;
-        inUpdate = true ;
-        oldRoot = root ;
+        return new GenTree<>(root) ;
     }
 
-    public GenTree<T> commitUpdate()
+    public void commitUpdate()
     {
         inUpdate = false ;
-        oldRoot = null ;
-        return new GenTree<>(root) ;
     }
 
     public GenTree<T> abortUpdate()
     {
         // Reset allocator return null ;
         inUpdate = false ;
-        root = oldRoot ;
         return new GenTree<>(root) ;
     }
     
@@ -78,7 +72,9 @@ public class GenTree<T extends Comparable<T>>
         {
             if ( node.left == null )
             {
-                node.left = TNode.alloc(newRecord, node, generation) ;
+                TNode<T> n = ripple(node, generation) ;
+                n.left = TNode.alloc(newRecord, node, generation) ;
+                // [Ripple]
                 return null ;
             }
             return insert(node.left, newRecord, duplicates, generation) ;
@@ -90,7 +86,9 @@ public class GenTree<T extends Comparable<T>>
         // x > 0 
         if ( node.right == null )
         {
-            node.right = TNode.alloc(newRecord, node, generation) ;
+            TNode<T> n = ripple(node, generation) ;
+            n.right = TNode.alloc(newRecord, node, generation) ;
+            // [Ripple]
             return null ;
         }
         
@@ -98,6 +96,14 @@ public class GenTree<T extends Comparable<T>>
     }
 
     
+    private TNode<T> ripple(TNode<T> node, int generation2)
+    {
+        // Ripple up the tree.
+        // A simple "return node" is mutable tree (change in place)
+        // Add args for new left, new right, etc than this is the call to alloc -> make slots final.
+        return node ;
+    }
+
     public void dump()
     {
         if ( root == null )

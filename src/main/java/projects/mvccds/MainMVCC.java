@@ -25,17 +25,17 @@ public class MainMVCC
         String[] x1 = { "BBB", "CCC", } ;
         String[] x2 = { "AAA", "DDD" } ;
         GenTree<String> tree = new GenTree<>() ;
-        tree.beginUpdate() ;
+        // Create updatable?
+        tree = tree.beginUpdate() ;
         for(String s : x1 )
             tree.add(s) ;
-        tree = tree.commitUpdate() ;
+        tree.commitUpdate() ;
         
-        tree.beginUpdate() ;
+        GenTree<String> tree2 = tree.beginUpdate() ;
         for(String s : x2 )
-            tree.add(s) ;
-        tree = tree.commitUpdate() ;
+            tree2.add(s) ;
+        tree2.commitUpdate() ;
 
-        GenTree<String> tree2 = tree.commitUpdate() ;
         System.out.println("Old") ;
         dump(tree) ;
         System.out.println("new") ;
