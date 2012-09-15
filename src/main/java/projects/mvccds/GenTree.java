@@ -31,7 +31,11 @@ public class GenTree<T extends Comparable<T>>
     
     public GenTree<T> beginUpdate()
     {
-        return new GenTree<>(root) ;
+        TNode<T> newRoot = root ;
+        if ( newRoot != null )
+            // Yuk - knows constructor does genCounter++ ; 
+            newRoot = TNode.clone(newRoot, null, generation+1) ;
+        return new GenTree<>(newRoot) ;
     }
 
     public void commitUpdate()
@@ -66,6 +70,7 @@ public class GenTree<T extends Comparable<T>>
     // Unbalanced insert - return the record if the record already present, else null if new.
     private T insert(TNode<T> node, T newRecord, boolean duplicates, int generation)
     {
+        System.out.println("insert: "+node) ;
         int x = node.record.compareTo(newRecord) ;
         
         if ( x > 0 )
@@ -74,7 +79,7 @@ public class GenTree<T extends Comparable<T>>
             {
                 TNode<T> n = ripple(node, generation) ;
                 n.left = TNode.alloc(newRecord, node, generation) ;
-                // [Ripple]
+                updateParent(n) ;
                 return null ;
             }
             return insert(node.left, newRecord, duplicates, generation) ;
@@ -88,20 +93,42 @@ public class GenTree<T extends Comparable<T>>
         {
             TNode<T> n = ripple(node, generation) ;
             n.right = TNode.alloc(newRecord, node, generation) ;
-            // [Ripple]
+            updateParent(n) ;
             return null ;
         }
         
         return insert(node.right, newRecord, duplicates, generation) ;
     }
 
-    
-    private TNode<T> ripple(TNode<T> node, int generation2)
+    private void updateParent(TNode<T> node)
     {
+        if ( node == null || node.parent == null ) 
+            return ;
+        TNode<T> p = node.parent ;
+        if ( p.left == node ) p.left = node ;
+        if ( p.right == node ) p.right = node ;
+    }
+    
+    private TNode<T> ripple(TNode<T> node, int generation)
+    {
+        if ( node.generationNumber == generation )
+            // Already current generation
+            return node ;
+
+        // Do parent first.
+        TNode<T> p = node.parent ;
+        if ( p != null )
+            p = ripple(p, generation) ;
+        
+        TNode<T> n = TNode.clone(node, p, generation) ;
+        updateParent(n) ;
+        if ( n != node )
+            updateParent(n) ;
+        
         // Ripple up the tree.
         // A simple "return node" is mutable tree (change in place)
         // Add args for new left, new right, etc than this is the call to alloc -> make slots final.
-        return node ;
+        return n ;
     }
 
     public void dump()

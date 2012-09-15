@@ -31,13 +31,21 @@ public class MainMVCC
             tree.add(s) ;
         tree.commitUpdate() ;
         
-        GenTree<String> tree2 = tree.beginUpdate() ;
-        for(String s : x2 )
-            tree2.add(s) ;
-        tree2.commitUpdate() ;
-
         System.out.println("Old") ;
         dump(tree) ;
+        System.out.println("--------") ;
+        GenTree<String> tree2 = tree.beginUpdate() ;
+        for(String s : x2 )
+        {
+            System.out.println(">> Insert: "+s) ;
+            dump(tree2) ;
+            tree2.add(s) ;
+            System.out.println("<< Insert: "+s) ;
+            dump(tree2) ;
+            System.out.println() ;
+        }
+        tree2.commitUpdate() ;
+
         System.out.println("new") ;
         dump(tree2) ;
     }
@@ -45,7 +53,6 @@ public class MainMVCC
     private static void dump(GenTree<String> tree)
     {
         tree.dump() ;
-        System.out.println() ;
         tree.dumpFull() ;
     }
     

@@ -50,6 +50,11 @@ public class TNode<R extends Comparable<R>> //implements Printable
         return new TNode<>(record, parent, generation) ; 
     }
     
+    static <R extends Comparable<R>> TNode<R> clone(TNode<R> node, TNode<R> parent, int generation)
+    {
+        return new TNode<>(node.record, parent, node.left, node.right, generation) ;
+    }
+    
     private TNode(R record, TNode<R> parent, int generation)
     {
         this(record, parent, null, null, generation) ;
