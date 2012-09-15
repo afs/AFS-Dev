@@ -226,13 +226,13 @@ public class TreeNode<R extends Comparable<R>> implements Printable
         out.incIndent() ;
         out.println() ;
         if ( left != null )
-            left.output(out) ;
+            left.outputNested(out) ;
         else
             out.print("undef") ;
         out.println();
 
         if ( right != null )
-            right.output(out) ;
+            right.outputNested(out) ;
         else
             out.print("undef") ;
         out.print(')') ;
