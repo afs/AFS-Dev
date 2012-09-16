@@ -23,7 +23,7 @@ public class MainMVCC
     public static void main(String ... args)
     {
         String[] x1 = { "BBB", "CCC", } ;
-        String[] x2 = { "AAA", "DDD" } ;
+        String[] x2 = { "AAA", "ZZZ", "DDD", "XXX" } ;
         GenTree<String> tree = new GenTree<>() ;
         // Create updatable?
         tree = tree.beginUpdate() ;
@@ -52,7 +52,7 @@ public class MainMVCC
 
     private static void dump(GenTree<String> tree)
     {
-        tree.dump() ;
+        tree.records() ;
         tree.dumpFull() ;
     }
     

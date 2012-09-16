@@ -19,6 +19,7 @@
 package projects.mvccds;
 
 import org.openjena.atlas.io.IndentedWriter ;
+import org.openjena.atlas.iterator.Iter ;
 
 /** Simple binary tree */
 public class GenTree<T extends Comparable<T>>
@@ -61,83 +62,77 @@ public class GenTree<T extends Comparable<T>>
             root = TNode.alloc(record, null, generation) ;
             return ;
         }
-        insert(root, record, false, generation) ;
+        insert(root, null, record, false, generation) ;
     }
     
 //    public T insert(TNode<T> node, T newRecord, int generation)
 //    { return insert(node, newRecord, true, gener) ; }
-    
     // Unbalanced insert - return the record if the record already present, else null if new.
-    private T insert(TNode<T> node, T newRecord, boolean duplicates, int generation)
+    
+    private T insert(TNode<T> node, TNode<T> parent, T newRecord, boolean duplicates, int generation)
     {
         System.out.println("insert: "+node) ;
-        int x = node.record.compareTo(newRecord) ;
+        // clone
+        // parent
+        // Assumes an update will happen.
+        
+        TNode<T> n = fixup(node, parent, generation) ;
+        
+        int x = n.record.compareTo(newRecord) ;
         
         if ( x > 0 )
         {
-            if ( node.left == null )
+            if ( n.left == null )
             {
-                TNode<T> n = ripple(node, generation) ;
-                n.left = TNode.alloc(newRecord, node, generation) ;
-                updateParent(n) ;
+                n.left = TNode.alloc(newRecord, n, generation) ;
                 return null ;
             }
-            return insert(node.left, newRecord, duplicates, generation) ;
+            return insert(n.left, n, newRecord, duplicates, generation) ;
         }
         
         if ( x == 0 && ! duplicates )
-            return node.record ;
+            return n.record ;
 
         // x > 0 
-        if ( node.right == null )
+        if ( n.right == null )
         {
-            TNode<T> n = ripple(node, generation) ;
-            n.right = TNode.alloc(newRecord, node, generation) ;
-            updateParent(n) ;
+            n.right = TNode.alloc(newRecord, n, generation) ;
             return null ;
         }
         
-        return insert(node.right, newRecord, duplicates, generation) ;
+        return insert(n.right, n, newRecord, duplicates, generation) ;
     }
 
-    private void updateParent(TNode<T> node)
+    private void updateParent(TNode<T> oldNode, TNode<T> p, TNode<T> newNode)
     {
-        if ( node == null || node.parent == null ) 
+        if ( oldNode == null || p == null ) 
             return ;
-        TNode<T> p = node.parent ;
-        if ( p.left == node ) p.left = node ;
-        if ( p.right == node ) p.right = node ;
+        if ( p.left == oldNode )
+            p.left = newNode ;
+        else if ( p.right == oldNode ) 
+            p.right = newNode ;
     }
     
-    private TNode<T> ripple(TNode<T> node, int generation)
+    private TNode<T> fixup(TNode<T> node, TNode<T> parent, int generation)
     {
         if ( node.generationNumber == generation )
             // Already current generation
             return node ;
-
-        // Do parent first.
-        TNode<T> p = node.parent ;
-        if ( p != null )
-            p = ripple(p, generation) ;
-        
-        TNode<T> n = TNode.clone(node, p, generation) ;
-        updateParent(n) ;
-        if ( n != node )
-            updateParent(n) ;
-        
-        // Ripple up the tree.
-        // A simple "return node" is mutable tree (change in place)
-        // Add args for new left, new right, etc than this is the call to alloc -> make slots final.
+        TNode<T> n = TNode.clone(node, parent, generation) ;
+        updateParent(node, parent, n) ;
         return n ;
     }
 
-    public void dump()
+    public void records()
     {
         if ( root == null )
         {
             System.out.println("<empty>") ;
             return ;
         }
+        
+        String x = Iter.asString(root.records().iterator()) ;
+        System.out.println(x) ;
         output(IndentedWriter.stdout, root) ;
         IndentedWriter.stdout.println() ;
         IndentedWriter.stdout.flush() ;
