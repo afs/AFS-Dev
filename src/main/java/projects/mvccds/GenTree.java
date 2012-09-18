@@ -20,58 +20,89 @@ package projects.mvccds;
 
 import org.openjena.atlas.io.IndentedWriter ;
 import org.openjena.atlas.iterator.Iter ;
+import org.slf4j.Logger ;
+import org.slf4j.LoggerFactory ;
 
 /** Simple binary tree */
 public class GenTree<T extends Comparable<T>>
 {
-    public TNode<T> root = null ; 
+    // Mutable
+    // checks : root generation = tree generation.
     
-    static int genCounter = 0 ;
-    int generation = genCounter++ ;
-    boolean inUpdate = true ;
+    public  static boolean DEBUG = false ;
+    private static Logger log = LoggerFactory.getLogger(GenTree.class) ;
+
+    private TNode<T> root = null ; 
+    private boolean readOnly = false ;
+    private int generation ;
+    private boolean inUpdate = false ;
+    private TNode<T> oldRoot ;
+    
+    public static <T extends Comparable<T>> GenTree<T> create()
+    { return new GenTree<T>(null, 0) ; }
+    
+    // And mark read only?
+    public static <T extends Comparable<T>> GenTree<T> duplicate(GenTree<T> tree)
+    { 
+        GenTree<T> tree2 = new GenTree<>(tree.root, tree.generation) ;
+        tree2.readOnly = true ;
+        return tree2 ;
+    }
     
     public GenTree<T> beginUpdate()
     {
+        if ( readOnly )
+            throw new RuntimeException("Readonly") ;
+
+        oldRoot = root ;
+        generation += 1 ;
+        inUpdate = true ;
         TNode<T> newRoot = root ;
         if ( newRoot != null )
-            // Yuk - knows constructor does genCounter++ ; 
-            newRoot = TNode.clone(newRoot, null, generation+1) ;
-        return new GenTree<>(newRoot) ;
+            root = TNode.clone(root, generation) ;
+        return this ;
     }
 
-    public void commitUpdate()
+    public GenTree<T> commitUpdate()
     {
         inUpdate = false ;
+        oldRoot = null ;
+        return this ;
     }
 
     public GenTree<T> abortUpdate()
     {
         // Reset allocator return null ;
         inUpdate = false ;
-        return new GenTree<>(root) ;
+        root = oldRoot ;
+        oldRoot = null ;
+        return this ;
     }
     
-    
-    GenTree() { this.root = null ; }
-    private GenTree(TNode<T> root) { this.root = root ; }
+    private GenTree(TNode<T> root, int generation)
+    {
+        this.generation = generation ;
+        this.root = root ;
+        this.oldRoot = null ;
+    }
 
     public void add(T record)
     {
+        
+        if ( ! inUpdate )
+            throw new RuntimeException("Attempt to add outside of update boundaries") ;
+        
         if ( root == null )
         {
-            root = TNode.alloc(record, null, generation) ;
+            root = TNode.alloc(record, generation) ;
             return ;
         }
+        
         insert(root, null, record, false, generation) ;
     }
-    
-//    public T insert(TNode<T> node, T newRecord, int generation)
-//    { return insert(node, newRecord, true, gener) ; }
-    // Unbalanced insert - return the record if the record already present, else null if new.
-    
     private T insert(TNode<T> node, TNode<T> parent, T newRecord, boolean duplicates, int generation)
     {
-        System.out.println("insert: "+node) ;
+        log("insert: %s", node) ;
         // clone
         // parent
         // Assumes an update will happen.
@@ -84,7 +115,7 @@ public class GenTree<T extends Comparable<T>>
         {
             if ( n.left == null )
             {
-                n.left = TNode.alloc(newRecord, n, generation) ;
+                n.left = TNode.alloc(newRecord, generation) ;
                 return null ;
             }
             return insert(n.left, n, newRecord, duplicates, generation) ;
@@ -96,7 +127,7 @@ public class GenTree<T extends Comparable<T>>
         // x > 0 
         if ( n.right == null )
         {
-            n.right = TNode.alloc(newRecord, n, generation) ;
+            n.right = TNode.alloc(newRecord, generation) ;
             return null ;
         }
         
@@ -115,10 +146,10 @@ public class GenTree<T extends Comparable<T>>
     
     private TNode<T> fixup(TNode<T> node, TNode<T> parent, int generation)
     {
-        if ( node.generationNumber == generation )
+        if ( node.generation == generation )
             // Already current generation
             return node ;
-        TNode<T> n = TNode.clone(node, parent, generation) ;
+        TNode<T> n = TNode.clone(node, generation) ;
         updateParent(node, parent, n) ;
         return n ;
     }
@@ -133,12 +164,16 @@ public class GenTree<T extends Comparable<T>>
         
         String x = Iter.asString(root.records().iterator()) ;
         System.out.println(x) ;
+    }
+    
+    public void dumpFlat()
+    {
         output(IndentedWriter.stdout, root) ;
         IndentedWriter.stdout.println() ;
         IndentedWriter.stdout.flush() ;
     }
     
-    public void dumpFull()
+    public void dump()
     {
         if ( root == null )
         {
@@ -149,12 +184,19 @@ public class GenTree<T extends Comparable<T>>
         IndentedWriter.stdout.flush() ;
     }
     
+    public void log(String fmt, Object ... args)
+    {
+        if ( DEBUG && log.isDebugEnabled() )
+            log.debug(String.format(fmt, args)) ;
+    }
+    
     public void outputNested(IndentedWriter out, TNode<T> node)
     {
         
         if ( node.left == null && node.right == null )
         {
             node.output(out) ;
+            out.println() ;
             return ;
         }
         
@@ -162,21 +204,19 @@ public class GenTree<T extends Comparable<T>>
         
         //out.print('(') ;
         node.output(out) ;
-        out.incIndent() ;
+        out.incIndent(4) ;
         out.println() ;
         if ( node.left != null )
             outputNested(out, node.left) ;
         else
-            out.print("undef") ;
-        out.println();
+            out.println("undef") ;
 
         if ( node.right != null )
             outputNested(out, node.right) ;
         else
-            out.print("undef") ;
+            out.println("undef") ;
         //out.print(')') ;
-        out.println();
-        out.decIndent() ;
+        out.decIndent(4) ;
     }
     
     public void output(IndentedWriter out, TNode<T> node)

@@ -21,7 +21,15 @@ package projects.mvccds;
 public class PROJECT_mvcc
 {
     /* Multi-version concurrency control data structures
-     * Start simple - binary tree wiuth a separe node manager.
+     * Start simple - binary tree with a separate node manager.
      */
+    // Trees are write once?
+    //   A placeholder class
+    // GenTree - Immutable
+    // GetTree - Mutable
+    //   Or is just the root enough?
+    // Consistency checks
+    // Testing
+    // GC and node alloc. 
 }
 

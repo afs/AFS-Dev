@@ -18,42 +18,80 @@
 
 package projects.mvccds;
 
+import org.openjena.atlas.logging.Log ;
+
 public class MainMVCC
 {
+    static { Log.setLog4j() ; }
+    
+    public static GenTree<String> add(GenTree<String> tree, String ...elts)
+    {
+        GenTree<String> tree2 = tree.beginUpdate() ;
+        for(String s : elts )
+            tree2.add(s) ;
+        tree2.commitUpdate() ;
+        return tree2 ;
+    }
+    
     public static void main(String ... args)
     {
-        String[] x1 = { "BBB", "CCC", } ;
-        String[] x2 = { "AAA", "ZZZ", "DDD", "XXX" } ;
-        GenTree<String> tree = new GenTree<>() ;
-        // Create updatable?
-        tree = tree.beginUpdate() ;
-        for(String s : x1 )
-            tree.add(s) ;
-        tree.commitUpdate() ;
+        Log.enable(GenTree.class) ;
         
-        System.out.println("Old") ;
-        dump(tree) ;
-        System.out.println("--------") ;
+        String[] x1 = { "BBB", "DDD", } ;
+        String[] x2 = { "A", "AAA", "ZZZ", "CCC", "XXX" } ;
+        String[] x3 = { "5", "0", "2", "9"} ;
+        //String[] x4 = { "ABC", "DEF", "ZZZZ", "111" } ;
+        String[] x4 = { "ABC" } ;
+        GenTree<String> tree = GenTree.create() ;
+
+        tree = add(tree, x1) ;
+        System.out.println("** Input") ;
+        //tree.dump() ;
+        tree.records() ;
+        
+        //GenTree.DEBUG = true ;
+        
         GenTree<String> tree2 = tree.beginUpdate() ;
         for(String s : x2 )
         {
-            System.out.println(">> Insert: "+s) ;
-            dump(tree2) ;
+            // if 
+            //System.out.println(">> Insert: "+s) ;
+            //dump(tree2) ;
             tree2.add(s) ;
-            System.out.println("<< Insert: "+s) ;
-            dump(tree2) ;
-            System.out.println() ;
+            //System.out.println("<< Insert: "+s) ;
+            //dump(tree2) ;
+            //System.out.println() ;
         }
-        tree2.commitUpdate() ;
-
-        System.out.println("new") ;
-        dump(tree2) ;
-    }
+        tree2 = tree2.commitUpdate() ;
+        //tree2.dump() ;
+        System.out.println("** Update 1") ;
+        tree2.records() ;
+        
+        tree2 = tree2.beginUpdate() ;
+        for ( String s : x3 )
+            tree2.add(s) ;
+        tree2 = tree2.abortUpdate() ;
+        System.out.println("** Abort") ;
+        tree2.records() ;
+        
+        //GenTree.DEBUG = true ;
+        GenTree<String> tree2a = GenTree.duplicate(tree2) ;
+        GenTree<String> tree3 = tree2.beginUpdate() ;
+        for ( String s : x4 )
+            tree3.add(s) ;
+        tree3 = tree3.commitUpdate() ;
+        System.out.println("** Update 2") ;
+        tree3.records() ;
+        System.out.println("** Pre-update 2") ;
+        tree2a.records() ;
+        System.out.println() ;
+        tree3.dump() ;
+      }
 
     private static void dump(GenTree<String> tree)
     {
         tree.records() ;
-        tree.dumpFull() ;
+        tree.dump() ;
     }
     
 }

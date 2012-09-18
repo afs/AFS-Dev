@@ -33,37 +33,37 @@ import structure.tree.TreeException ;
 public class TNode<R extends Comparable<R>> //implements Printable
 {
     static AtomicInteger counter = new AtomicInteger(0) ; 
-    final int generationNumber ;
+    final int generation ;
     final int id = counter.incrementAndGet() ;                  // Debug.
-    final TNode<R> parent ;
+    // Ideally final but currently we make parent then child so
+    // need to set down pointer in parent after the event.
     TNode<R> left ;
     TNode<R> right ;
     R record ;
     
-    static <R extends Comparable<R>> TNode<R> alloc(R record, TNode<R> parent, TNode<R> left, TNode<R> right, int generation)
+    static <R extends Comparable<R>> TNode<R> alloc(R record, TNode<R> left, TNode<R> right, int generation)
     {
-        return new TNode<>(record, parent, left, right, generation) ; 
+        return new TNode<>(record, left, right, generation) ; 
     }
     
-    static <R extends Comparable<R>> TNode<R> alloc(R record, TNode<R> parent, int generation)
+    static <R extends Comparable<R>> TNode<R> alloc(R record, int generation)
     {
-        return new TNode<>(record, parent, generation) ; 
+        return new TNode<>(record, generation) ; 
     }
     
-    static <R extends Comparable<R>> TNode<R> clone(TNode<R> node, TNode<R> parent, int generation)
+    static <R extends Comparable<R>> TNode<R> clone(TNode<R> node, int generation)
     {
-        return new TNode<>(node.record, parent, node.left, node.right, generation) ;
+        return new TNode<>(node.record, node.left, node.right, generation) ;
     }
     
-    private TNode(R record, TNode<R> parent, int generation)
+    private TNode(R record, int generation)
     {
-        this(record, parent, null, null, generation) ;
+        this(record, null, null, generation) ;
     }
     
-    private TNode(R record, TNode<R> parent, TNode<R> left, TNode<R> right, int generation)
+    private TNode(R record, TNode<R> left, TNode<R> right, int generation)
     {
-        this.generationNumber = generation ;
-        this.parent = parent ;
+        this.generation = generation ;
         this.record = record ;
         this.left = left ;
         this.right = right ;
@@ -121,8 +121,8 @@ public class TNode<R extends Comparable<R>> //implements Printable
 
     public void output(IndentedWriter out)
     {
-        out.printf("(id=%-2d, G:%02d) [P:%s L:%s R:%s] -- %s", id, generationNumber, 
-                   idStr(parent), idStr(left), idStr(right), record ) ;
+        out.printf("(id=%-2d, G:%02d) [L:%s R:%s] -- %s", id, generation, 
+                   idStr(left), idStr(right), record ) ;
     }
     
     private static <R extends Comparable<R>> String idStr(TNode<R> node)
