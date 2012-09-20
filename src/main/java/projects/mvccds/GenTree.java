@@ -18,6 +18,9 @@
 
 package projects.mvccds;
 
+import java.util.ArrayList ;
+import java.util.List ;
+
 import org.openjena.atlas.io.IndentedWriter ;
 import org.openjena.atlas.iterator.Iter ;
 import org.slf4j.Logger ;
@@ -29,6 +32,8 @@ public class GenTree<T extends Comparable<T>>
     // Mutable
     // checks : root generation = tree generation.
     
+    private final TNodeAllocator<T> allocator ;
+    
     public  static boolean DEBUG = false ;
     private static Logger log = LoggerFactory.getLogger(GenTree.class) ;
 
@@ -38,13 +43,13 @@ public class GenTree<T extends Comparable<T>>
     private boolean inUpdate = false ;
     private TNode<T> oldRoot ;
     
-    public static <T extends Comparable<T>> GenTree<T> create()
-    { return new GenTree<T>(null, 0) ; }
+    public static <T extends Comparable<T>> GenTree<T> create(TNodeAllocator<T> allocator)
+    { return new GenTree<T>(null, 0, allocator) ; }
     
     // And mark read only?
     public static <T extends Comparable<T>> GenTree<T> duplicate(GenTree<T> tree)
     { 
-        GenTree<T> tree2 = new GenTree<>(tree.root, tree.generation) ;
+        GenTree<T> tree2 = new GenTree<>(tree.root, tree.generation, tree.allocator) ;
         tree2.readOnly = true ;
         return tree2 ;
     }
@@ -59,7 +64,7 @@ public class GenTree<T extends Comparable<T>>
         inUpdate = true ;
         TNode<T> newRoot = root ;
         if ( newRoot != null )
-            root = TNode.clone(root, generation) ;
+            root = allocator.cloneRoot(root, generation) ;
         return this ;
     }
 
@@ -79,8 +84,9 @@ public class GenTree<T extends Comparable<T>>
         return this ;
     }
     
-    private GenTree(TNode<T> root, int generation)
+    private GenTree(TNode<T> root, int generation, TNodeAllocator<T> allocator)
     {
+        this.allocator = allocator ;
         this.generation = generation ;
         this.root = root ;
         this.oldRoot = null ;
@@ -94,7 +100,7 @@ public class GenTree<T extends Comparable<T>>
         
         if ( root == null )
         {
-            root = TNode.alloc(record, generation) ;
+            root = allocator.alloc(record, generation) ;
             return ;
         }
         
@@ -102,46 +108,53 @@ public class GenTree<T extends Comparable<T>>
     }
     private T insert(TNode<T> node, TNode<T> parent, T newRecord, boolean duplicates, int generation)
     {
-        log("insert: %s", node) ;
-        // clone
-        // parent
-        // Assumes an update will happen.
-        
-        TNode<T> n = fixup(node, parent, generation) ;
-        
-        int x = n.record.compareTo(newRecord) ;
-        
-        if ( x > 0 )
+        for(;;)
         {
-            if ( n.left == null )
+            log("insert: %s", node) ;
+            // Assumes an update will happen.
+            TNode<T> n = fixup(node, parent, generation) ;
+
+            int x = n.record.compareTo(newRecord) ;
+
+            if ( x > 0 )
             {
-                n.left = TNode.alloc(newRecord, generation) ;
+                if ( n.isNullLeft() )
+                {
+                    n.left = allocator.alloc(newRecord, generation).id ;
+                    return null ;
+                }
+                parent = n ;
+                node = fetch(n.left) ;
+                continue ;
+                // Tail recursion,
+                // return insert(n.left, n, newRecord, duplicates, generation) ;
+            }
+
+            if ( x == 0 && ! duplicates )
+                return n.record ;
+
+            // x > 0 
+            if ( n.isNullRight() )
+            {
+                n.right = allocator.alloc(newRecord, generation).id ;
                 return null ;
             }
-            return insert(n.left, n, newRecord, duplicates, generation) ;
+            parent = n ;
+            node = fetch(n.right) ;
+            continue ;
+            // return insert(n.right, n, newRecord, duplicates, generation) ;
         }
-        
-        if ( x == 0 && ! duplicates )
-            return n.record ;
 
-        // x > 0 
-        if ( n.right == null )
-        {
-            n.right = TNode.alloc(newRecord, generation) ;
-            return null ;
-        }
-        
-        return insert(n.right, n, newRecord, duplicates, generation) ;
     }
-
+    
     private void updateParent(TNode<T> oldNode, TNode<T> p, TNode<T> newNode)
     {
         if ( oldNode == null || p == null ) 
             return ;
-        if ( p.left == oldNode )
-            p.left = newNode ;
-        else if ( p.right == oldNode ) 
-            p.right = newNode ;
+        if ( p.left == oldNode.id )
+            p.left = newNode.id ;
+        else if ( p.right == oldNode.id ) 
+            p.right = newNode.id ;
     }
     
     private TNode<T> fixup(TNode<T> node, TNode<T> parent, int generation)
@@ -149,7 +162,7 @@ public class GenTree<T extends Comparable<T>>
         if ( node.generation == generation )
             // Already current generation
             return node ;
-        TNode<T> n = TNode.clone(node, generation) ;
+        TNode<T> n = allocator.clone(node, generation) ;
         updateParent(node, parent, n) ;
         return n ;
     }
@@ -161,11 +174,21 @@ public class GenTree<T extends Comparable<T>>
             System.out.println("<empty>") ;
             return ;
         }
-        
-        String x = Iter.asString(root.records().iterator()) ;
+        List<T> list = new ArrayList<>() ;
+        records(list, root) ;
+        String x = Iter.asString(list.iterator()) ;
         System.out.println(x) ;
     }
     
+    private void records(List<T> x, TNode<T> node)
+    {
+        if ( ! node.isNullLeft() )
+            records(x, fetch(node.left)) ;
+        x.add(node.record) ;
+        if ( ! node.isNullRight() )
+            records(x, fetch(node.right)) ;
+    }
+
     public void dumpFlat()
     {
         output(IndentedWriter.stdout, root) ;
@@ -190,10 +213,11 @@ public class GenTree<T extends Comparable<T>>
             log.debug(String.format(fmt, args)) ;
     }
     
+    private TNode<T> fetch(long id) { return allocator.fetch(id) ; }
+    
     public void outputNested(IndentedWriter out, TNode<T> node)
     {
-        
-        if ( node.left == null && node.right == null )
+        if ( node.isNullLeft() && node.isNullRight() )
         {
             node.output(out) ;
             out.println() ;
@@ -206,13 +230,13 @@ public class GenTree<T extends Comparable<T>>
         node.output(out) ;
         out.incIndent(4) ;
         out.println() ;
-        if ( node.left != null )
-            outputNested(out, node.left) ;
+        if ( ! node.isNullLeft() )
+            outputNested(out, fetch(node.left)) ;
         else
             out.println("undef") ;
 
-        if ( node.right != null )
-            outputNested(out, node.right) ;
+        if ( ! node.isNullRight() )
+            outputNested(out, fetch(node.right)) ;
         else
             out.println("undef") ;
         //out.print(')') ;
@@ -221,7 +245,7 @@ public class GenTree<T extends Comparable<T>>
     
     public void output(IndentedWriter out, TNode<T> node)
     {
-        if ( node.left == null && node.right == null )
+        if ( node.isNullLeft() && node.isNullRight() )
         {
             out.print(node.record) ;
             return ;
@@ -229,15 +253,15 @@ public class GenTree<T extends Comparable<T>>
         
         out.print('(') ;
         out.print(node.record) ;
-        if ( node.left != null )
+        if ( ! node.isNullLeft() )
         {
             out.print(' ') ;
-            output(out, node.left) ;
+            output(out, fetch(node.left)) ;
         }
-        if ( node.right != null )
+        if ( ! node.isNullRight() )
         {
             out.print(' ') ;
-            output(out, node.right) ;
+            output(out, fetch(node.right)) ;
         }
         out.print(')') ;
     }

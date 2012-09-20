@@ -35,6 +35,8 @@ public class MainMVCC
     
     public static void main(String ... args)
     {
+        TNodeAllocator<String> allocator = new TNodeAllocator<>() ;
+        
         Log.enable(GenTree.class) ;
         
         String[] x1 = { "BBB", "DDD", } ;
@@ -42,7 +44,7 @@ public class MainMVCC
         String[] x3 = { "5", "0", "2", "9"} ;
         //String[] x4 = { "ABC", "DEF", "ZZZZ", "111" } ;
         String[] x4 = { "ABC" } ;
-        GenTree<String> tree = GenTree.create() ;
+        GenTree<String> tree = GenTree.create(allocator) ;
 
         tree = add(tree, x1) ;
         System.out.println("** Input") ;

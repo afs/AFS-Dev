@@ -18,11 +18,6 @@
 
 package projects.mvccds;
 
-import java.util.ArrayList ;
-import java.util.Iterator ;
-import java.util.List ;
-import java.util.concurrent.atomic.AtomicInteger ;
-
 import org.openjena.atlas.io.IndentedLineBuffer ;
 import org.openjena.atlas.io.IndentedWriter ;
 import structure.tree.TreeException ;
@@ -32,78 +27,35 @@ import structure.tree.TreeException ;
 
 public class TNode<R extends Comparable<R>> //implements Printable
 {
-    static AtomicInteger counter = new AtomicInteger(0) ; 
-    final int generation ;
-    final int id = counter.incrementAndGet() ;                  // Debug.
+    int generation ;
+    final long id ;
     // Ideally final but currently we make parent then child so
     // need to set down pointer in parent after the event.
-    TNode<R> left ;
-    TNode<R> right ;
+    long left ;
+    long right ;
     R record ;
     
-    static <R extends Comparable<R>> TNode<R> alloc(R record, TNode<R> left, TNode<R> right, int generation)
+    TNode(long id)
     {
-        return new TNode<>(record, left, right, generation) ; 
+        this(id, null, -1, -1, -99) ;
     }
     
-    static <R extends Comparable<R>> TNode<R> alloc(R record, int generation)
+    TNode(long id, R record, int generation)
     {
-        return new TNode<>(record, generation) ; 
+        this(id, record, -1, -1, generation) ;
     }
     
-    static <R extends Comparable<R>> TNode<R> clone(TNode<R> node, int generation)
+    TNode(long id, R record, long left, long right, int generation)
     {
-        return new TNode<>(node.record, node.left, node.right, generation) ;
-    }
-    
-    private TNode(R record, int generation)
-    {
-        this(record, null, null, generation) ;
-    }
-    
-    private TNode(R record, TNode<R> left, TNode<R> right, int generation)
-    {
+        this.id = id ;
         this.generation = generation ;
         this.record = record ;
         this.left = left ;
         this.right = right ;
     }
     
-    
-    // Naming: rotateRight means move the left child up to the root and the root to the right
-    // The left is the pivot 
-    // == shift right
-    // == clockwise
-    // This is the wikipedia naming but that does not extend to the double rotations. 
-    // Different books have different namings, based on the location of the pivot (which would be a left rotate)
-    // But when we talk about double rotations, the pivotLeft terminolgy works better.
-    // pivotLeft (= case left left) , pivotLeftRight, 
-    
-    
-    // Not in this class
-    public Iterator<R> records(R min, R max)
-    { 
-        return null ;
-    }
-    
-    //public Iterator<R> records()
-    
-    public List<R> records()
-    {
-        List<R> x = new ArrayList<R>() ;
-        records(x) ;
-        return x ; // .iterator() ;
-    }
-    
-    public void records(List<R> x)
-    {
-        if ( left != null )
-            left.records(x) ;
-        x.add(record) ;
-        if ( right != null )
-            right.records(x) ;
-
-    }
+    public boolean isNullLeft() { return left < 0 ; }
+    public boolean isNullRight() { return right < 0 ; }
 
     @Override
     public String toString()
@@ -125,9 +77,9 @@ public class TNode<R extends Comparable<R>> //implements Printable
                    idStr(left), idStr(right), record ) ;
     }
     
-    private static <R extends Comparable<R>> String idStr(TNode<R> node)
+    private static <R extends Comparable<R>> String idStr(long node)
     {
-        if ( node == null ) return "null" ;
-        return String.format("%d", node.id) ;
+        if ( node < 0 ) return "null" ;
+        return String.format("%d", node) ;
     }
 }
