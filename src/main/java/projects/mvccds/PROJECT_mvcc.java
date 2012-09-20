@@ -23,11 +23,8 @@ public class PROJECT_mvcc
     /* Multi-version concurrency control data structures
      * Start simple - binary tree with a separate node manager.
      */
-    // GenTree - Immutable
-    // GetTree - Mutable
-    //   Or is just the root enough?
     // Consistency checks
-    // Loog begin-commit/abort.
+    // Log begin-commit/abort.
     // Testing
-    // GC and node alloc. 
+    // GC 
 }
