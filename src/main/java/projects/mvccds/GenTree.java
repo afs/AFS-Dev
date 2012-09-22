@@ -106,6 +106,7 @@ public class GenTree<T extends Comparable<T>>
         
         insert(root, null, record, false, generation) ;
     }
+    
     private T insert(TNode<T> node, TNode<T> parent, T newRecord, boolean duplicates, int generation)
     {
         for(;;)
