@@ -18,21 +18,27 @@
 
 package projects.blkmgr.virtual;
 
+import java.nio.ByteBuffer ;
 import java.util.ArrayList ;
 import java.util.List ;
+
+import static com.hp.hpl.jena.tdb.sys.SystemTDB.* ;
 
 import storage.StorageException ;
 
 public class VBlockIndexMem implements VirtualBlockIndex
 {
     // See Indirection.
+    private static final int N = 100 ;
+    private ByteBuffer buffer = ByteBuffer.allocate(N*(SizeOfLong+SizeOfInt)) ;
     
-    // CRUDE
+    // CRUDE / TEMPORARY
     private List<DiskBlock> blocks = new ArrayList<>() ;
     
     @Override
-    public long alloc(long location, long length)
+    public long alloc(long length)
     {
+        long location = 0 ; //****
         DiskBlock blk = new DiskBlock(location, length) ;
         // Scan (!) for nulls.
         for ( int i = 0 ; i < blocks.size() ; i++ )

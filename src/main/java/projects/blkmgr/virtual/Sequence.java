@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package storage;
+package projects.blkmgr.virtual;
 
 /** An allocator of long values*/
 public interface Sequence

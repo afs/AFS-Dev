@@ -20,44 +20,7 @@ package projects.blkmgr.virtual ;
 
 public interface VirtualBlockIndex
 {
-    public class DiskBlock
-    {
-        /* public long vIdx; */
-        public final long location ;
-        public final long length ;
-
-        public DiskBlock(long location, long length)
-        {
-            super() ;
-            this.location = location ;
-            this.length = length ;
-        }
-
-        // Valu equality.
-        @Override
-        public int hashCode()
-        {
-            final int prime = 31 ;
-            int result = 1 ;
-            result = prime * result + (int)(length ^ (length >>> 32)) ;
-            result = prime * result + (int)(location ^ (location >>> 32)) ;
-            return result ;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj) return true ;
-            if (obj == null) return false ;
-            if (getClass() != obj.getClass()) return false ;
-            DiskBlock other = (DiskBlock)obj ;
-            if (length != other.length) return false ;
-            if (location != other.location) return false ;
-            return true ;
-        }
-    }
-
-    public long alloc(long location, long length) ;
+    public long alloc(long length) ;
 
     public DiskBlock get(long vIndex) ;
 

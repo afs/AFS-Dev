@@ -29,7 +29,7 @@ import org.openjena.atlas.lib.Bytes ;
 import org.openjena.atlas.lib.RandomLib ;
 import org.openjena.atlas.logging.Log ;
 
-/** Randomly generate keys to add and delete (shuffled) using a RaidxTree - check for consistency. Repeat */ 
+/** Randomly generate keys to add and delete (shuffled) using a RadixTree - check for consistency. Repeat */ 
 public class RadixRun
 {
     public static void main(String ...argv)

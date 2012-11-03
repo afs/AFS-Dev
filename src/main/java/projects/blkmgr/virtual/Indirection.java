@@ -16,15 +16,18 @@
  * limitations under the License.
  */
 
-package storage;
+package projects.blkmgr.virtual;
 
 import java.nio.LongBuffer ;
+
 
 import com.hp.hpl.jena.tdb.base.StorageException ;
 
 /* Maps long to long */
 public class Indirection 
 {
+    // Need to map long to (long, long)
+    
     private Sequence seq ; 
     private LongBuffer buffer = LongBuffer.allocate(1000) ;
     

@@ -29,7 +29,7 @@ public class PROJECT_Blocks
      *   
      * Other
      *   Virtualization / indirection.
-     *   Variable size blocks.
+     *   Variable size blocks. int -> (location=long, size=long)
      *   Compression (to one of a few fixed sizes?)
      * 
      * Target:

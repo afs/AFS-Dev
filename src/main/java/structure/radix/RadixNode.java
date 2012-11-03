@@ -30,7 +30,7 @@ import org.openjena.atlas.logging.Log ;
 
 import com.hp.hpl.jena.util.iterator.ArrayIterator ;
 
-public final class RadixNode //extends PrintableBase implements Printable 
+public final class RadixNode 
 {
     //TODO Clean and refactor to allow for different implementations
     // Nibble mode: array by nibble.
