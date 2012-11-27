@@ -30,8 +30,8 @@ import java.util.List ;
 
 import lib.CSVParser.TokenIterator ;
 import org.junit.Test ;
-import org.openjena.atlas.junit.BaseTest ;
-import org.openjena.atlas.lib.Sink ;
+import org.apache.jena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.lib.Sink ;
 
 public class TestCSVParser extends BaseTest
 {

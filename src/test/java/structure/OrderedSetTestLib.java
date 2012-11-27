@@ -18,15 +18,15 @@
 
 package structure;
 
-import org.openjena.atlas.iterator.Iter;
+import org.apache.jena.atlas.iterator.Iter;
 
 import java.util.*;
 
 import static org.junit.Assert.* ;
 
-import org.openjena.atlas.test.ExecGenerator;
-import org.openjena.atlas.test.Gen;
-import org.openjena.atlas.test.RepeatExecution;
+import org.apache.jena.atlas.test.ExecGenerator;
+import org.apache.jena.atlas.test.Gen;
+import org.apache.jena.atlas.test.RepeatExecution;
 
 public class OrderedSetTestLib
 {

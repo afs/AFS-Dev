@@ -18,10 +18,10 @@
 
 package structure.runner;
 
-import static org.openjena.atlas.lib.RandomLib.random ;
-import static org.openjena.atlas.test.Gen.permute ;
-import static org.openjena.atlas.test.Gen.rand ;
-import static org.openjena.atlas.test.Gen.strings ;
+import static org.apache.jena.atlas.lib.RandomLib.random ;
+import static org.apache.jena.atlas.test.Gen.permute ;
+import static org.apache.jena.atlas.test.Gen.rand ;
+import static org.apache.jena.atlas.test.Gen.strings ;
 import static structure.skiplist.SkipListTestBase.create ;
 import static structure.skiplist.SkipListTestBase.delete ;
 
@@ -30,9 +30,9 @@ import java.util.ArrayList ;
 import java.util.Arrays ;
 import java.util.List ;
 
-import org.openjena.atlas.logging.Log ;
-import org.openjena.atlas.test.ExecGenerator ;
-import org.openjena.atlas.test.RepeatExecution ;
+import org.apache.jena.atlas.logging.Log ;
+import org.apache.jena.atlas.test.ExecGenerator ;
+import org.apache.jena.atlas.test.RepeatExecution ;
 import structure.avl.AVL ;
 import structure.skiplist.SkipList ;
 import structure.skiplist.SkipListTestBase ;

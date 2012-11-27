@@ -23,8 +23,8 @@ import java.nio.charset.CharacterCodingException ;
 import java.nio.charset.CharsetDecoder ;
 import java.util.Arrays ;
 
-import org.openjena.atlas.lib.Chars ;
-import org.openjena.atlas.lib.StrUtils ;
+import org.apache.jena.atlas.lib.Chars ;
+import org.apache.jena.atlas.lib.StrUtils ;
 
 public abstract class StringUTF8
 {

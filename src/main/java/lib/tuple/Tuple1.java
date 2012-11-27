@@ -18,7 +18,7 @@
 
 package lib.tuple;
 
-import org.openjena.atlas.lib.Lib;
+import org.apache.jena.atlas.lib.Lib;
 
 public class Tuple1<T> extends ZTuple<T>
 {

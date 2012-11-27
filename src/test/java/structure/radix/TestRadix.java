@@ -23,9 +23,9 @@ import java.util.Iterator ;
 import java.util.List ;
 import static structure.radix.Str.str ; 
 import org.junit.Test ;
-import org.openjena.atlas.AtlasException ;
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.AtlasException ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.junit.BaseTest ;
 
 public class TestRadix extends BaseTest
 {

@@ -23,8 +23,8 @@ import java.util.Iterator ;
 
 import com.hp.hpl.jena.tdb.base.record.Record ;
 
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.iterator.Transform ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.iterator.Transform ;
 
 public class RLib
 {

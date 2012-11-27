@@ -21,7 +21,7 @@ package structure;
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.openjena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.junit.BaseTest ;
 
 public abstract class OrderedSetTestBase extends BaseTest
 {

@@ -22,9 +22,9 @@ import java.nio.ByteBuffer ;
 import java.util.ArrayList ;
 import java.util.List ;
 
-import org.openjena.atlas.lib.Pair ;
-import org.openjena.atlas.lib.StrUtils ;
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.lib.Pair ;
+import org.apache.jena.atlas.lib.StrUtils ;
+import org.apache.jena.atlas.logging.Log ;
 
 public class ControlBlock
 {

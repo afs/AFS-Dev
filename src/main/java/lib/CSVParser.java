@@ -28,13 +28,13 @@ import java.io.InputStream ;
 import java.util.ArrayList ;
 import java.util.List ;
 
-import org.openjena.atlas.io.IO ;
-import org.openjena.atlas.io.PeekReader ;
-import org.openjena.atlas.iterator.IteratorSlotted ;
-import org.openjena.atlas.iterator.PeekIterator ;
-import org.openjena.atlas.lib.Lib ;
-import org.openjena.atlas.lib.Sink ;
-import org.openjena.atlas.lib.StrUtils ;
+import org.apache.jena.atlas.io.IO ;
+import org.apache.jena.atlas.io.PeekReader ;
+import org.apache.jena.atlas.iterator.IteratorSlotted ;
+import org.apache.jena.atlas.iterator.PeekIterator ;
+import org.apache.jena.atlas.lib.Lib ;
+import org.apache.jena.atlas.lib.Sink ;
+import org.apache.jena.atlas.lib.StrUtils ;
 // Scala?
 public class CSVParser
 {

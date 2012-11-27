@@ -26,8 +26,8 @@ import java.util.List;
 
 import structure.tree.TreeException;
 
-import org.openjena.atlas.io.IndentedWriter;
-import org.openjena.atlas.io.Printable;
+import org.apache.jena.atlas.io.IndentedWriter;
+import org.apache.jena.atlas.io.Printable;
 
 final class AvlNode<T extends Comparable<? super T>> implements Printable
 {

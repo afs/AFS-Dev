@@ -21,9 +21,9 @@ package structure.ttree;
 import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.iterator.IteratorArray ;
-import org.openjena.atlas.lib.Alg ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.iterator.IteratorArray ;
+import org.apache.jena.atlas.lib.Alg ;
 
 public class TTreeIterator<T extends Comparable<? super T>> implements Iterator<T>
 {

@@ -23,11 +23,11 @@ import static java.lang.String.format ;
 import java.util.Iterator ;
 import java.util.Random ;
 
-import org.openjena.atlas.io.IndentedLineBuffer ;
-import org.openjena.atlas.io.IndentedWriter ;
-import org.openjena.atlas.io.Printable ;
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.lib.RandomLib ;
+import org.apache.jena.atlas.io.IndentedLineBuffer ;
+import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.io.Printable ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.lib.RandomLib ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 

@@ -20,7 +20,7 @@ package storage.string;
 
 import java.nio.ByteBuffer ;
 
-import org.openjena.atlas.lib.StrUtils ;
+import org.apache.jena.atlas.lib.StrUtils ;
 
 public class StrUTF8Main
 {

@@ -24,11 +24,11 @@ import static structure.ttree.TTree.error ;
 import java.util.List ;
 
 import lib.ArrayOps ;
-import org.openjena.atlas.io.IndentedWriter ;
-import org.openjena.atlas.io.PrintUtils ;
-import org.openjena.atlas.io.Printable ;
-import org.openjena.atlas.lib.Alg ;
-import org.openjena.atlas.lib.Lib ;
+import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.io.PrintUtils ;
+import org.apache.jena.atlas.io.Printable ;
+import org.apache.jena.atlas.lib.Alg ;
+import org.apache.jena.atlas.lib.Lib ;
 
 final
 class TTreeNode<T extends Comparable<? super T>> implements Printable

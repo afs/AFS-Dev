@@ -23,10 +23,10 @@ import java.util.Collection ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.lib.InternalErrorException ;
-import org.openjena.atlas.lib.MultiMap ;
-import org.openjena.atlas.lib.Tuple ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.lib.InternalErrorException ;
+import org.apache.jena.atlas.lib.MultiMap ;
+import org.apache.jena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.engine.binding.Binding ;

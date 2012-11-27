@@ -21,8 +21,8 @@ package projects.join2;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.logging.Log ;
 import projects.tools.IndexLib ;
 import projects.tools.TDBConfiguration ;
 

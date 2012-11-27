@@ -17,12 +17,12 @@
  */
 
 package structure.exthash;
-import static org.openjena.atlas.lib.ListUtils.asList;
-import static org.openjena.atlas.lib.ListUtils.unique;
-import static org.openjena.atlas.lib.RandomLib.random;
-import static org.openjena.atlas.test.Gen.permute;
-import static org.openjena.atlas.test.Gen.rand;
-import static org.openjena.atlas.test.Gen.strings;
+import static org.apache.jena.atlas.lib.ListUtils.asList;
+import static org.apache.jena.atlas.lib.ListUtils.unique;
+import static org.apache.jena.atlas.lib.RandomLib.random;
+import static org.apache.jena.atlas.test.Gen.permute;
+import static org.apache.jena.atlas.test.Gen.rand;
+import static org.apache.jena.atlas.test.Gen.strings;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -31,8 +31,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.List;
 
-import org.openjena.atlas.test.ExecGenerator;
-import org.openjena.atlas.test.RepeatExecution;
+import org.apache.jena.atlas.test.ExecGenerator;
+import org.apache.jena.atlas.test.RepeatExecution;
 
 public class ExtHashMemTestBase
 {

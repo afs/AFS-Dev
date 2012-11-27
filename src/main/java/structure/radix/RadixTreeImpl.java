@@ -21,12 +21,12 @@ package structure.radix;
 import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 
-import org.openjena.atlas.AtlasException ;
-import org.openjena.atlas.io.IndentedWriter ;
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.iterator.Transform ;
-import org.openjena.atlas.lib.Bytes ;
-import org.openjena.atlas.lib.Chars ;
+import org.apache.jena.atlas.AtlasException ;
+import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.iterator.Transform ;
+import org.apache.jena.atlas.lib.Bytes ;
+import org.apache.jena.atlas.lib.Chars ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 /* http://en.wikipedia.org/wiki/Radix_tree */
@@ -671,7 +671,7 @@ public final class RadixTreeImpl implements RadixTree
             return ;
         }
         
-        org.openjena.atlas.iterator.Action<RadixEntry> a = new org.openjena.atlas.iterator.Action<RadixEntry>(){
+        org.apache.jena.atlas.iterator.Action<RadixEntry> a = new org.apache.jena.atlas.iterator.Action<RadixEntry>(){
             @Override
             public void apply(RadixEntry item)
             {

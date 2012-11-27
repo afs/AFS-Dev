@@ -22,11 +22,11 @@ import java.util.Arrays ;
 import java.util.HashSet ;
 import java.util.Set ;
 
-import org.openjena.atlas.io.IndentedWriter ;
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.iterator.Transform ;
-import org.openjena.atlas.lib.Bytes ;
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.iterator.Transform ;
+import org.apache.jena.atlas.lib.Bytes ;
+import org.apache.jena.atlas.logging.Log ;
 
 import com.hp.hpl.jena.util.iterator.ArrayIterator ;
 

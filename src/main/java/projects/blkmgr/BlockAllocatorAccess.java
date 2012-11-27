@@ -25,7 +25,7 @@ import java.util.HashMap ;
 import java.util.Map ;
 import java.util.concurrent.atomic.AtomicLong ;
 
-import org.openjena.atlas.lib.Chars ;
+import org.apache.jena.atlas.lib.Chars ;
 
 import com.hp.hpl.jena.tdb.base.block.Block ;
 import com.hp.hpl.jena.tdb.base.block.BlockException ;

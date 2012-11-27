@@ -18,8 +18,8 @@
 
 package structure;
 
-import static org.openjena.atlas.lib.RandomLib.random;
-import org.openjena.atlas.test.ExecGenerator;
+import static org.apache.jena.atlas.lib.RandomLib.random;
+import org.apache.jena.atlas.test.ExecGenerator;
 
 class OrderedSetTest implements ExecGenerator
 {

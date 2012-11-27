@@ -18,7 +18,7 @@
 
 package structure;
 
-import org.openjena.atlas.io.Printable;
+import org.apache.jena.atlas.io.Printable;
 
 import java.util.Iterator;
 import java.util.List;

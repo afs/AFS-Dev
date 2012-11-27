@@ -22,8 +22,8 @@ import java.util.Iterator ;
 import java.util.List ;
 
 import org.junit.Test ;
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.junit.BaseTest ;
 
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.tdb.solver.BindingNodeId ;

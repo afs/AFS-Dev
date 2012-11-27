@@ -18,16 +18,16 @@
 
 package structure.exthash;
 
-import static org.openjena.atlas.lib.Alg.decodeIndex;
+import static org.apache.jena.atlas.lib.Alg.decodeIndex;
 import static java.lang.String.format;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.binarySearch;
-import org.openjena.atlas.io.IndentedLineBuffer;
-import org.openjena.atlas.io.IndentedWriter;
+import org.apache.jena.atlas.io.IndentedLineBuffer;
+import org.apache.jena.atlas.io.IndentedWriter;
 
 import java.util.Arrays;
 
-import org.openjena.atlas.lib.BitsLong;
+import org.apache.jena.atlas.lib.BitsLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

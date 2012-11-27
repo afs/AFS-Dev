@@ -26,8 +26,8 @@ import java.util.ArrayList ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.openjena.atlas.io.IO ;
-import org.openjena.atlas.lib.NotImplemented ;
+import org.apache.jena.atlas.io.IO ;
+import org.apache.jena.atlas.lib.NotImplemented ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 

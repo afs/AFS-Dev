@@ -22,8 +22,8 @@ import java.io.PrintStream ;
 import java.nio.ByteBuffer ;
 import java.util.Arrays ;
 
-import org.openjena.atlas.lib.ByteBufferLib ;
-import org.openjena.atlas.lib.InternalErrorException ;
+import org.apache.jena.atlas.lib.ByteBufferLib ;
+import org.apache.jena.atlas.lib.InternalErrorException ;
 
 import com.hp.hpl.jena.tdb.base.record.Record ;
 import com.hp.hpl.jena.tdb.sys.SystemTDB ;

@@ -26,8 +26,8 @@ import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 
-import org.openjena.atlas.AtlasException ;
-import org.openjena.atlas.lib.Bytes ;
+import org.apache.jena.atlas.AtlasException ;
+import org.apache.jena.atlas.lib.Bytes ;
 
 class RadixIterator implements Iterator<RadixEntry>
 {

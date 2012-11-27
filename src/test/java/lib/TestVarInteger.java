@@ -21,8 +21,8 @@ package lib ;
 import java.nio.ByteBuffer ;
 
 import org.junit.Test ;
-import org.openjena.atlas.junit.BaseTest ;
-import org.openjena.atlas.lib.ByteBufferLib ;
+import org.apache.jena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.lib.ByteBufferLib ;
 
 public class TestVarInteger extends BaseTest
 {

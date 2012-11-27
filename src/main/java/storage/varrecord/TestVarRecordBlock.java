@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
 import com.hp.hpl.jena.tdb.base.record.Record;
 
 import org.junit.Test;
-import org.openjena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.junit.BaseTest ;
 
 public class TestVarRecordBlock extends BaseTest
 {

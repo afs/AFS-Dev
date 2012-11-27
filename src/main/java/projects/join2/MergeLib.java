@@ -18,7 +18,7 @@
 
 package projects.join2;
 
-import org.openjena.atlas.lib.Tuple ;
+import org.apache.jena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;

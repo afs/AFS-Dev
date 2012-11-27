@@ -18,8 +18,8 @@
 
 package projects.mvccds;
 
-import org.openjena.atlas.io.IndentedLineBuffer ;
-import org.openjena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.io.IndentedLineBuffer ;
+import org.apache.jena.atlas.io.IndentedWriter ;
 
 
 /** Simple binary tree nodes, including operations that apply to all trees */  

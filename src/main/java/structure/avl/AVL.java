@@ -19,18 +19,18 @@
 package structure.avl;
 
 import static java.lang.String.format ;
-import static org.openjena.atlas.io.IndentedWriter.stderr ;
-import static org.openjena.atlas.io.IndentedWriter.stdout ;
+import static org.apache.jena.atlas.io.IndentedWriter.stderr ;
+import static org.apache.jena.atlas.io.IndentedWriter.stdout ;
 import static structure.avl.AvlNode.label ;
 
 import java.util.ArrayList ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.openjena.atlas.io.IndentedWriter ;
-import org.openjena.atlas.io.PrintUtils ;
-import org.openjena.atlas.io.Printable ;
-import org.openjena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.io.PrintUtils ;
+import org.apache.jena.atlas.io.Printable ;
+import org.apache.jena.atlas.iterator.Iter ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 import structure.OrderedSet ;

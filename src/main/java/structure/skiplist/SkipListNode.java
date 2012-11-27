@@ -19,9 +19,9 @@
 package structure.skiplist;
 
 import static java.lang.String.format ;
-import org.openjena.atlas.io.IndentedLineBuffer ;
-import org.openjena.atlas.io.IndentedWriter ;
-import org.openjena.atlas.io.Printable ;
+import org.apache.jena.atlas.io.IndentedLineBuffer ;
+import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.io.Printable ;
 
 final
 public class SkipListNode <R extends Comparable<? super R>> implements Printable

@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openjena.atlas.iterator.IteratorArray;
-import org.openjena.atlas.lib.Bytes;
+import org.apache.jena.atlas.iterator.IteratorArray;
+import org.apache.jena.atlas.lib.Bytes;
 
 /** Utilities for working with arrays including especially for working with a slice in a larger array. 
  *  This avoids the need to copy/move data outside the slice. 

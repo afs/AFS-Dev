@@ -22,8 +22,8 @@ import static structure.radix.Str.str ;
 import java.util.Arrays ;
 import java.util.Iterator ;
 
-import org.openjena.atlas.lib.Bytes ;
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.lib.Bytes ;
+import org.apache.jena.atlas.logging.Log ;
 
 public class MainRadix
 {

@@ -25,7 +25,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import structure.exthash.ExtHashMem;
-import org.openjena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.junit.BaseTest ;
 
 public class TestExtHashMem extends BaseTest
 {

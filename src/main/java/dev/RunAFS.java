@@ -20,8 +20,8 @@ package dev;
 
 import java.util.Iterator ;
 
-import org.openjena.atlas.lib.Pair ;
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.lib.Pair ;
+import org.apache.jena.atlas.logging.Log ;
 import org.openjena.riot.RiotLoader ;
 
 import com.hp.hpl.jena.graph.Node ;

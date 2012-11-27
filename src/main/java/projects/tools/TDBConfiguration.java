@@ -26,9 +26,9 @@ import java.util.* ;
 import java.util.regex.Matcher ;
 import java.util.regex.Pattern ;
 
-import org.openjena.atlas.lib.FileOps ;
-import org.openjena.atlas.lib.Pair ;
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.lib.FileOps ;
+import org.apache.jena.atlas.lib.Pair ;
+import org.apache.jena.atlas.logging.Log ;
 
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.setup.SystemParams ;

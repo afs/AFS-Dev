@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.junit.Test;
 import structure.skiplist.SkipList;
-import org.openjena.atlas.junit.BaseTest ;
+import org.apache.jena.atlas.junit.BaseTest ;
 
 
 public class TestSkipList extends BaseTest

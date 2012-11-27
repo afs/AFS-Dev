@@ -20,8 +20,8 @@ package projects.join2;
 
 import java.util.Iterator ;
 
-import org.openjena.atlas.lib.ColumnMap ;
-import org.openjena.atlas.lib.Tuple ;
+import org.apache.jena.atlas.lib.ColumnMap ;
+import org.apache.jena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.store.NodeId ;

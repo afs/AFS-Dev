@@ -21,7 +21,7 @@ package lib ;
 import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 
-import org.openjena.atlas.AtlasException ;
+import org.apache.jena.atlas.AtlasException ;
 
 
 /** An expanding byte array.

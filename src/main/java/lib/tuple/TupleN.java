@@ -20,7 +20,7 @@ package lib.tuple;
 
 import java.util.Arrays ;
 
-import org.openjena.atlas.lib.Lib ;
+import org.apache.jena.atlas.lib.Lib ;
 
 public final class TupleN<T> extends ZTuple<T>
 {

@@ -24,8 +24,8 @@ import com.google.common.cache.CacheBuilder ;
 import com.google.common.cache.RemovalListener ;
 import com.google.common.cache.RemovalNotification ;
 
-import org.openjena.atlas.lib.ActionKeyValue ;
-import org.openjena.atlas.lib.Cache ;
+import org.apache.jena.atlas.lib.ActionKeyValue ;
+import org.apache.jena.atlas.lib.Cache ;
 
 final
 public class CacheGuava<K,V> implements Cache<K, V>

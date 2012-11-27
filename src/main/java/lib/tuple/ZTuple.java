@@ -21,9 +21,9 @@ package lib.tuple;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openjena.atlas.lib.ColumnMap;
-import org.openjena.atlas.lib.Lib;
-import org.openjena.atlas.lib.NotImplemented;
+import org.apache.jena.atlas.lib.ColumnMap;
+import org.apache.jena.atlas.lib.Lib;
+import org.apache.jena.atlas.lib.NotImplemented;
 
 /** Tuples - use less space by specific implementations for 
  *  various sizes.  Saves the array overhead of 3 slots.  

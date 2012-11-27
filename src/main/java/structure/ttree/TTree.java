@@ -18,7 +18,7 @@
 
 package structure.ttree;
 
-import static org.openjena.atlas.io.IndentedWriter.stdout ;
+import static org.apache.jena.atlas.io.IndentedWriter.stdout ;
 import static structure.ttree.TTreeNode.label ;
 
 import java.util.ArrayList ;
@@ -27,9 +27,9 @@ import java.util.List ;
 
 import lib.ArrayOps ;
 
-import org.openjena.atlas.io.IndentedWriter ;
-import org.openjena.atlas.io.PrintUtils ;
-import org.openjena.atlas.io.Printable ;
+import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.atlas.io.PrintUtils ;
+import org.apache.jena.atlas.io.Printable ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 import structure.OrderedSet ;

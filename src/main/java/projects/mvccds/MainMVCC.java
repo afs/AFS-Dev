@@ -18,7 +18,7 @@
 
 package projects.mvccds;
 
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.logging.Log ;
 
 public class MainMVCC
 {

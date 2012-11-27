@@ -21,7 +21,7 @@ package lib ;
 import java.nio.ByteBuffer ;
 import java.util.Arrays ;
 
-import org.openjena.atlas.lib.NotImplemented ;
+import org.apache.jena.atlas.lib.NotImplemented ;
 
 /** ZigZag integers: map signed numbers onto unsigned numbers
  *  that can then be @plainlink{VarInteger} encoded.

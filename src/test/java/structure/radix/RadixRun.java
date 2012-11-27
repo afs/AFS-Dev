@@ -23,11 +23,11 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.List ;
 
-import org.openjena.atlas.AtlasException ;
-import org.openjena.atlas.iterator.Iter ;
-import org.openjena.atlas.lib.Bytes ;
-import org.openjena.atlas.lib.RandomLib ;
-import org.openjena.atlas.logging.Log ;
+import org.apache.jena.atlas.AtlasException ;
+import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.lib.Bytes ;
+import org.apache.jena.atlas.lib.RandomLib ;
+import org.apache.jena.atlas.logging.Log ;
 
 /** Randomly generate keys to add and delete (shuffled) using a RadixTree - check for consistency. Repeat */ 
 public class RadixRun
