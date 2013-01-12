@@ -23,9 +23,9 @@
 
   <properties>
     <this.root>${project.artifactId}-${project.version}</this.root>
-    <ver.jena>2.7.5-SNAPSHOT</ver.jena>
-    <ver.arq>2.9.5-SNAPSHOT</ver.arq>
-    <ver.tdb>0.9.5-SNAPSHOT</ver.tdb>
+    <ver.jena>2.10.0-SNAPSHOT</ver.jena>
+    <ver.arq>2.10.0-SNAPSHOT</ver.arq>
+    <ver.tdb>0.10.0-SNAPSHOT</ver.tdb>
     <ver.iri>0.9.5-SNAPSHOT</ver.iri>
     <ver.junit>[4.9,)</ver.junit>
     <ver.slf4j>[1.6.4,)</ver.slf4j>
