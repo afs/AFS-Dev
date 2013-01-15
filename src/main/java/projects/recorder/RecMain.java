@@ -18,10 +18,21 @@
 
 package projects.recorder;
 
-import org.apache.jena.atlas.logging.Log ;
+import java.io.StringWriter ;
+import java.io.Writer ;
 
+import org.apache.jena.atlas.logging.Log ;
+import org.apache.jena.riot.tokens.Tokenizer ;
+import org.apache.jena.riot.tokens.TokenizerFactory ;
+import projects.recorder.tio.TokenInputStream ;
+import projects.recorder.tio.TokenInputStreamBase ;
+import projects.recorder.tio.TokenOutputStreamWriter ;
+
+import com.hp.hpl.jena.graph.Graph ;
+import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.sparql.core.DatasetGraph ;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory ;
+import com.hp.hpl.jena.sparql.core.DatasetGraphSimpleMem ;
 import com.hp.hpl.jena.sparql.core.Quad ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 
@@ -32,12 +43,43 @@ public class RecMain
     public static void main(String[] args)
     {
         DatasetGraph dsg = DatasetGraphFactory.createMem() ;
-        dsg = new DatasetGraphRecorder(dsg) ;
-        Quad q = SSE.parseQuad("(<g> <s> <p> <o>)") ;
+        dsg = new DatasetGraphSimpleMem() ;
+        
+        
+        StringWriter sw = new StringWriter() ;
+        Writer w = sw ; //new OutputStreamWriter(System.out) ;
+        
+        TokenOutputStreamWriter out = new TokenOutputStreamWriter(null, w) ;
+        out.setPrefixMapping("", "http://example/") ;
+        
+        dsg = new DatasetGraphRecorder(dsg, out) ;
+        Quad q = SSE.parseQuad("(:g <s> <p> <o>)") ;
         dsg.add(q) ;
         dsg.delete(q) ;
         dsg.delete(q) ;
-        System.out.println("DONE") ;
+        out.flush();
+        
+        Graph g = SSE.parseGraph("(graph (<s1> <p1> 1) (<s2> <p2> 2))") ;
+        dsg.addGraph(Node.createURI("graph"), g) ;
+        SSE.write(dsg) ;
+
+        System.out.print(sw.toString()) ;
+
+        Tokenizer t = TokenizerFactory.makeTokenizerString(sw.toString()) ;
+        TokenInputStream in = new TokenInputStreamBase(null, t) ;
+//        while(in.hasNext())
+//        {
+//            List<Token> line = in.next() ;
+//            System.out.println(line) ;
+//        }
+        
+        System.out.println() ;
+        
+        DatasetGraph dsg2 = DatasetGraphFactory.createMem() ;
+        DatasetGraphPlayer.play(in, dsg2) ;
+        SSE.write(dsg2) ;
+        
+        System.out.println("DONE") ; 
     }
 
 }

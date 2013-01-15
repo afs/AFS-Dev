@@ -24,6 +24,8 @@ import java.util.Iterator ;
 import java.util.List ;
 import java.util.NoSuchElementException ;
 
+import projects.recorder.tio.TokenOutputStream ;
+
 import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
@@ -37,10 +39,12 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
 {
     private boolean CheckFirst = true ;
     private boolean RecordNoAction = true ;
+    private TokenOutputStream out ;
     
-    public DatasetGraphRecorder(DatasetGraph dsg)
+    public DatasetGraphRecorder(DatasetGraph dsg, TokenOutputStream out)
     {
         super(dsg) ;
+        this.out = out ;
     }
 
     @Override public void add(Quad quad)
@@ -208,17 +212,29 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
     static final String SEP2 = "\n" ; 
     private void record(Action action, Node g, Node s, Node p, Node o)
     {
-        PrintStream out = System.out ; 
-        out.print(action.label) ;
-        out.print(SEP1) ;
-        print(out, g) ;
-        out.print(SEP1) ;
-        print(out, s) ;
-        out.print(SEP1) ;
-        print(out, p) ;
-        out.print(SEP1) ;
-        print(out, o) ;
-        out.print(SEP2) ;
+        if ( false )
+        {        
+            PrintStream out = System.out ; 
+            out.print(action.label) ;
+            out.print(SEP1) ;
+            print(out, g) ;
+            out.print(SEP1) ;
+            print(out, s) ;
+            out.print(SEP1) ;
+            print(out, p) ;
+            out.print(SEP1) ;
+            print(out, o) ;
+            out.print(SEP2) ;
+            return ;
+        }
+        
+        out.startTuple() ;
+        out.sendWord(action.label) ;
+        out.sendNode(g) ;
+        out.sendNode(s) ;
+        out.sendNode(p) ;
+        out.sendNode(o) ;
+        out.endTuple() ;
     }
     
     private void print(PrintStream out, Node x)
