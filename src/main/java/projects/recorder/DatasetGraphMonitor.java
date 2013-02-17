@@ -18,13 +18,10 @@
 
 package projects.recorder;
 
-import java.io.PrintStream ;
 import java.util.ArrayList ;
 import java.util.Iterator ;
 import java.util.List ;
 import java.util.NoSuchElementException ;
-
-import projects.recorder.tio.TokenOutputStream ;
 
 import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.graph.Node ;
@@ -32,19 +29,18 @@ import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.core.DatasetGraph ;
 import com.hp.hpl.jena.sparql.core.DatasetGraphWrapper ;
 import com.hp.hpl.jena.sparql.core.Quad ;
-import com.hp.hpl.jena.sparql.util.FmtUtils ;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
 
-public class DatasetGraphRecorder extends DatasetGraphWrapper
+public class DatasetGraphMonitor extends DatasetGraphWrapper
 {
     private boolean CheckFirst = true ;
     private boolean RecordNoAction = true ;
-    private TokenOutputStream out ;
+    private DatasetChanges changer ;
     
-    public DatasetGraphRecorder(DatasetGraph dsg, TokenOutputStream out)
+    public DatasetGraphMonitor(DatasetGraph dsg, DatasetChanges changer) 
     {
         super(dsg) ;
-        this.out = out ;
+        this.changer = changer ;
     }
 
     @Override public void add(Quad quad)
@@ -52,7 +48,7 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
         if ( CheckFirst && contains(quad) )
         {
             if ( RecordNoAction )
-                record(Action.NO_ADD, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
+                record(QuadAction.NO_ADD, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
             return ;
         }
         add$(quad) ;
@@ -63,7 +59,7 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
         if ( CheckFirst && contains(g,s,p,o) )
         {
             if ( RecordNoAction )
-                record(Action.NO_ADD,g,s,p,o) ; 
+                record(QuadAction.NO_ADD,g,s,p,o) ; 
             return ;
         }
         
@@ -73,13 +69,13 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
     private void add$(Node g, Node s, Node p, Node o)
     {
         super.add(g,s,p,o) ;
-        record(Action.ADD,g,s,p,o) ; 
+        record(QuadAction.ADD,g,s,p,o) ; 
     }
     
     private void add$(Quad quad)
     {
         super.add(quad) ;
-        record(Action.ADD, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
+        record(QuadAction.ADD, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
     }
 
     @Override public void delete(Quad quad)
@@ -87,7 +83,7 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
         if ( CheckFirst && ! contains(quad) )
         {
             if ( RecordNoAction )
-                record(Action.NO_DELETE, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
+                record(QuadAction.NO_DELETE, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
             return ;
         }
         delete$(quad) ;
@@ -98,7 +94,7 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
         if ( CheckFirst && ! contains(g,s,p,o) )
         {
             if ( RecordNoAction )
-                record(Action.NO_DELETE, g,s,p,o) ;
+                record(QuadAction.NO_DELETE, g,s,p,o) ;
             return ;
         }
         delete$(g,s,p,o) ;
@@ -107,13 +103,13 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
     private void delete$(Quad quad)
     {
         super.delete(quad) ;
-        record(Action.DELETE, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
+        record(QuadAction.DELETE, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
     }
     
     private void delete$(Node g, Node s, Node p, Node o)
     {
         super.delete(g,s,p,o) ;
-        record(Action.DELETE,g,s,p,o) ; 
+        record(QuadAction.DELETE,g,s,p,o) ; 
     }
     
 
@@ -203,44 +199,9 @@ public class DatasetGraphRecorder extends DatasetGraphWrapper
         deleteAny(gn, Node.ANY, Node.ANY, Node.ANY) ;
     }
     
-    static enum Action { ADD("A"), DELETE("D"), NO_ADD("#A"), NO_DELETE("#D") ;
-        final String label ;
-        Action(String label) { this.label = label ; }
-    
-    }
-    static final String SEP1 = ", " ;    // TAB is good. 
-    static final String SEP2 = "\n" ; 
-    private void record(Action action, Node g, Node s, Node p, Node o)
+    private void record(QuadAction action, Node g, Node s, Node p, Node o)
     {
-        if ( false )
-        {        
-            PrintStream out = System.out ; 
-            out.print(action.label) ;
-            out.print(SEP1) ;
-            print(out, g) ;
-            out.print(SEP1) ;
-            print(out, s) ;
-            out.print(SEP1) ;
-            print(out, p) ;
-            out.print(SEP1) ;
-            print(out, o) ;
-            out.print(SEP2) ;
-            return ;
-        }
-        
-        out.startTuple() ;
-        out.sendWord(action.label) ;
-        out.sendNode(g) ;
-        out.sendNode(s) ;
-        out.sendNode(p) ;
-        out.sendNode(o) ;
-        out.endTuple() ;
-    }
-    
-    private void print(PrintStream out, Node x)
-    {
-        String str = FmtUtils.stringForNode(x) ;
-        out.print(str) ;
+        changer.change(action, g, s, p, o) ;
     }
 }
 

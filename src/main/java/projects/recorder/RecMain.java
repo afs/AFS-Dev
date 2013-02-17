@@ -43,8 +43,8 @@ public class RecMain
     public static void main(String[] args)
     {
         DatasetGraph dsg = DatasetGraphFactory.createMem() ;
-        dsg = new DatasetGraphSimpleMem() ;
-        
+        if ( false )
+            dsg = new DatasetGraphSimpleMem() ;
         
         StringWriter sw = new StringWriter() ;
         Writer w = sw ; //new OutputStreamWriter(System.out) ;
@@ -52,7 +52,9 @@ public class RecMain
         TokenOutputStreamWriter out = new TokenOutputStreamWriter(null, w) ;
         out.setPrefixMapping("", "http://example/") ;
         
-        dsg = new DatasetGraphRecorder(dsg, out) ;
+        DatasetChanges changeLogger = new DatasetChangesTuples(out) ; 
+        dsg = new DatasetGraphMonitor(dsg, changeLogger) ;
+        
         Quad q = SSE.parseQuad("(:g <s> <p> <o>)") ;
         dsg.add(q) ;
         dsg.delete(q) ;

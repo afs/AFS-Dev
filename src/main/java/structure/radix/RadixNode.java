@@ -28,8 +28,6 @@ import org.apache.jena.atlas.iterator.Transform ;
 import org.apache.jena.atlas.lib.Bytes ;
 import org.apache.jena.atlas.logging.Log ;
 
-import com.hp.hpl.jena.util.iterator.ArrayIterator ;
-
 public final class RadixNode 
 {
     //TODO Clean and refactor to allow for different implementations
@@ -450,7 +448,7 @@ public final class RadixNode
             }
 
             if (idx >= N )
-                error(this, "Not a child of the parent %s : %s", Iter.map(new ArrayIterator<RadixNode>(parent.nodes), idOfNode), parent) ;
+                error(this, "Not a child of the parent %s : %s", Iter.map(Arrays.asList(parent.nodes), idOfNode), parent) ;
         }
 
         if ( isLeaf() )

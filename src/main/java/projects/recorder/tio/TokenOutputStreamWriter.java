@@ -26,6 +26,7 @@ import java.util.List ;
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.riot.RiotException ;
 import org.apache.jena.riot.system.PrefixMap ;
+import org.apache.jena.riot.system.PrefixMapFactory ;
 import org.apache.jena.riot.tokens.Token ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
@@ -53,7 +54,7 @@ public class TokenOutputStreamWriter implements TokenOutputStream
     private boolean inSection = false ;
     private List<Object> thisTuple = new ArrayList<Object> () ;
     
-    private PrefixMap pmap = new PrefixMap() ;
+    private PrefixMap pmap = PrefixMapFactory.create() ;
 
     private String label ;
     
