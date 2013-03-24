@@ -248,12 +248,12 @@ public class GenTree<T extends Comparable<T>>
     {
         if ( node.isNullLeft() && node.isNullRight() )
         {
-            out.print(node.record) ;
+            out.print(node.record.toString()) ;
             return ;
         }
         
         out.print('(') ;
-        out.print(node.record) ;
+        out.print(node.record.toString()) ;
         if ( ! node.isNullLeft() )
         {
             out.print(' ') ;

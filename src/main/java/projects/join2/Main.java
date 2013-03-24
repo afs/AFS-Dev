@@ -18,13 +18,15 @@
 
 package projects.join2;
 
+import com.hp.hpl.jena.tdb.transaction.* ;
+
 import java.util.Iterator ;
 import java.util.List ;
 
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.logging.Log ;
+import org.apache.jena.riot.RDFDataMgr ;
 import projects.tools.IndexLib ;
-import projects.tools.TDBConfiguration ;
 
 import com.hp.hpl.jena.query.ARQ ;
 import com.hp.hpl.jena.query.Query ;
@@ -36,15 +38,16 @@ import com.hp.hpl.jena.sparql.engine.QueryIterator ;
 import com.hp.hpl.jena.sparql.engine.binding.Binding ;
 import com.hp.hpl.jena.sparql.engine.main.QC ;
 import com.hp.hpl.jena.sparql.util.QueryExecUtils ;
-import com.hp.hpl.jena.tdb.base.file.Location ;
+import com.hp.hpl.jena.tdb.TDBFactory ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.sys.Names ;
-import com.hp.hpl.jena.tdb.sys.SetupTDB ;
 
 public class Main
 {
+    static { Log.setLog4j() ; }
+    
     public static void main(String ... argv)
     {
         // TODO
@@ -55,22 +58,13 @@ public class Main
         //   repackage - physical operators.
         //   "Explain" functionality.
         
-        // Setup
-        Log.setLog4j() ;
-        
-        Location loc = new Location("DB") ;
-        
-        TDBConfiguration desc = TDBConfiguration.create(loc) ;
-        System.out.println(desc) ;
-        System.exit(0) ;
-        
-        
-        DatasetGraphTDB dsg = SetupTDB.buildDataset(loc) ;
+        DatasetGraphTDB dsg = ((DatasetGraphTransaction)TDBFactory.createDatasetGraph()).getBaseDatasetGraph() ;
+        RDFDataMgr.read(dsg, "D.trig") ;
         
         TupleIndex[] indexes = dsg.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes() ;
-        TupleIndex indexPSO = IndexLib.connect(loc, Names.primaryIndexTriples, "PSO") ;
-        TupleIndex indexGPSO = IndexLib.connect(loc, Names.primaryIndexQuads, "GPSO") ;
-        TupleIndex indexPSOG = IndexLib.connect(loc, Names.primaryIndexQuads, "PSOG") ;
+        TupleIndex indexPSO = IndexLib.connect(dsg.getLocation(), Names.primaryIndexTriples, "PSO") ;
+        TupleIndex indexGPSO = IndexLib.connect(dsg.getLocation(), Names.primaryIndexQuads, "GPSO") ;
+        TupleIndex indexPSOG = IndexLib.connect(dsg.getLocation(), Names.primaryIndexQuads, "PSOG") ;
         
         // Stamp on OSP
         replace(indexes, "OSP", indexPSO ) ;

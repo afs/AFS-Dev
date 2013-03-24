@@ -29,7 +29,7 @@ import projects.recorder.tio.TokenInputStreamBase ;
 import projects.recorder.tio.TokenOutputStreamWriter ;
 
 import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.graph.Node ;
+import com.hp.hpl.jena.graph.NodeFactory ;
 import com.hp.hpl.jena.sparql.core.DatasetGraph ;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory ;
 import com.hp.hpl.jena.sparql.core.DatasetGraphSimpleMem ;
@@ -62,7 +62,7 @@ public class RecMain
         out.flush();
         
         Graph g = SSE.parseGraph("(graph (<s1> <p1> 1) (<s2> <p2> 2))") ;
-        dsg.addGraph(Node.createURI("graph"), g) ;
+        dsg.addGraph(NodeFactory.createURI("graph"), g) ;
         SSE.write(dsg) ;
 
         System.out.print(sw.toString()) ;

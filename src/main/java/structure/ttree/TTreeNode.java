@@ -284,7 +284,7 @@ class TTreeNode<T extends Comparable<? super T>> implements Printable
         for ( int i = 0 ; i < nodeSize ; i++ )
         {
             if ( i != 0 ) out.print(" ") ;
-            out.print(elements[i]) ;
+            out.print(elements[i].toString()) ;
         }
         out.print("]") ;
     }

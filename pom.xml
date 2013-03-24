@@ -23,10 +23,7 @@
 
   <properties>
     <this.root>${project.artifactId}-${project.version}</this.root>
-    <ver.jena>2.10.0-SNAPSHOT</ver.jena>
-    <ver.arq>2.10.0-SNAPSHOT</ver.arq>
-    <ver.tdb>0.10.0-SNAPSHOT</ver.tdb>
-    <ver.iri>0.9.5-SNAPSHOT</ver.iri>
+    <ver.jena>2.10.1-SNAPSHOT</ver.jena>
     <ver.junit>[4.9,)</ver.junit>
     <ver.slf4j>[1.6.4,)</ver.slf4j>
     <ver.log4j>[1.2.16,)</ver.log4j>
@@ -37,20 +34,15 @@
   
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-tdb</artifactId>
-      <version>${ver.tdb}</version>
+      <artifactId>apache-jena-libs</artifactId>
+      <version>${ver.jena}</version>
+      <type>pom</type>
     </dependency>
 
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
-      <version>${ver.arq}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-arq</artifactId>
-      <version>${ver.arq}</version>
+      <version>${ver.jena}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
@@ -58,23 +50,11 @@
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
-      <version>${ver.jena}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-core</artifactId>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
       <version>${ver.jena}</version>
       <scope>test</scope>
     </dependency>    
 
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-iri</artifactId>
-      <version>${ver.iri}</version>
-    </dependency>
-    
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>

@@ -144,7 +144,7 @@ final class AvlNode<T extends Comparable<? super T>> implements Printable
         if ( detailed )
             out.print(toString2()) ;
         else
-            out.print(this) ;
+            out.print(this.toString()) ;
         
         // Inline small things.
         // Improve to "if left and right leafves and not detailed"
@@ -183,7 +183,7 @@ final class AvlNode<T extends Comparable<? super T>> implements Printable
 //        }
 //
         out.print('(') ;
-        out.print(record) ;
+        out.print(record.toString()) ;
         out.print(' ') ;
         
         if ( left != null )

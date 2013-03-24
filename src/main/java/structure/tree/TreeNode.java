@@ -214,14 +214,14 @@ public class TreeNode<R extends Comparable<R>> implements Printable
     {
         if ( left == null && right == null )
         {
-            out.print(record) ;
+            out.print(record.toString()) ;
             return ;
         }
         
         // At least one of left and right.
         
         out.print('(') ;
-        out.print(record) ;
+        out.print(record.toString()) ;
         out.print(' ') ;
         out.incIndent() ;
         out.println() ;
@@ -244,12 +244,12 @@ public class TreeNode<R extends Comparable<R>> implements Printable
     {
         if ( left == null && right == null )
         {
-            out.print(record) ;
+            out.print(record.toString()) ;
             return ;
         }
         
         out.print('(') ;
-        out.print(record) ;
+        out.print(record.toString()) ;
         if ( left != null )
         {
             out.print(' ') ;
