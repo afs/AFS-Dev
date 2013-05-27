@@ -25,27 +25,9 @@ public class MainIso
 {
     static public void main(String ... args) throws Exception
     { 
-        String x1 = "(graph (<x> <p> _:a) (<z> <p> _:a))" ;  
-        String x2 = "(graph (<x> <p> _:b) (<z> <p> _:x))" ;
-        
-        IsoMatcher.DEBUG = false ; 
-        exec(x1, x1, true) ;
-        exec(x2, x2, true) ;
-        exec(x1, x2, false) ;
-        exec(x2, x1, false) ;
-        
-        x1 = "(graph (_:a <p> _:a))" ;
-        x2 = "(graph (_:b <p> _:b))" ;
-        exec(x1, x2, true) ;
-        
-        x1 = "(graph (_:a <p> _:a) (<s> <q> _:a))" ;
-        x2 = "(graph (_:b <p> _:b) (<s> <q> _:b))" ;
-        exec(x1, x2, true) ;
-
-        x1 = "(graph (_:a <p> _:a) (<s> <q> _:a))" ;
-        x2 = "(graph (_:b <p> _:b) (<s> <q> _:c))" ;
-        exec(x1, x2, false) ;
-
+        String x1 = "(graph (_:a _:a _:a))" ;
+        Graph g1 = SSE.parseGraph(x1) ;
+        SSE.write(g1) ;
         System.out.println("DONE") ;
     }
     

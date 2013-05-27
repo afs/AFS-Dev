@@ -34,7 +34,7 @@ import com.hp.hpl.jena.sparql.util.NodeUtils.EqualityTest ;
 /** Simple isomorphism testing */
 public class IsoMatcher
 {
-    static boolean DEBUG = true ;
+    static boolean DEBUG = false ;
     private final Graph        graph1 ;
     private final Graph        graph2 ;
     
