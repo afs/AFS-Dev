@@ -24,11 +24,11 @@ import java.util.Iterator ;
 import org.apache.jena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
+import com.hp.hpl.jena.tdb.index.TupleIndexWrapper ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 
 public class TupleIndexPrefixSimple extends TupleIndexWrapper implements TupleIndexPrefix
 {
-
     public TupleIndexPrefixSimple(TupleIndex index)
     {
         super(index) ;
