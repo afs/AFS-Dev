@@ -18,28 +18,36 @@
 
 package projects.iso ;
 
-import java.util.* ;
+import java.util.ArrayList ;
+import java.util.Collection ;
+import java.util.Iterator ;
+import java.util.List ;
 
-import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.lib.Pair ;
+import org.apache.jena.atlas.lib.Tuple ;
 
 import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
+import com.hp.hpl.jena.sparql.core.DatasetGraph ;
+import com.hp.hpl.jena.sparql.core.Quad ;
 import com.hp.hpl.jena.sparql.util.NodeUtils ;
 import com.hp.hpl.jena.sparql.util.NodeUtils.EqualityTest ;
 
 // Needs to be back tracking?
 
-/** Simple isomorphism testing */
+/** Simple isomorphism testing
+ * This code is simple and slow.
+ * For graphs, the Graph isomorphism code in Jena is much better (better tested, better performance)
+ * This code can work on any tuples of nodes. 
+ */
 public class IsoMatcher
 {
     static boolean DEBUG = false ;
-    private final Graph        graph1 ;
-    private final Graph        graph2 ;
+    private final List<Tuple<Node>>        tuples1 ;
+    private final List<Tuple<Node>>        tuples2 ;
     
-    private final Map<Node, Node>           mapping = new HashMap<>();
-    private final Queue<Pair<Node, Node>>   causes  = new LinkedList<>() ;  
+//    private final Map<Node, Node>           mapping = new HashMap<>();
+//    private final Queue<Pair<Node, Node>>   causes  = new LinkedList<>() ;  
     private final EqualityTest nodeTest ;
 
     static class Mapping
@@ -102,82 +110,111 @@ public class IsoMatcher
     
     static class Cause
     {
-        final Triple  triple ;
+        final Tuple<Node>  tuple ;
         final Mapping mapping ;
 
-        public Cause(Triple triple, Mapping mapping)
+        public Cause(Tuple<Node> tuple, Mapping mapping)
         {
             super() ;
-            this.triple = triple ;
+            this.tuple = tuple ;
             this.mapping = mapping ;
         }
     }
 
-
     public static boolean isomorphic(Graph g1, Graph g2)
     {
-        IsoMatcher matcher = new IsoMatcher(g1, g2, NodeUtils.sameTerm) ;
+        List<Tuple<Node>> x1 = tuplesTriples(g1.find(null, null, null)) ;
+        List<Tuple<Node>> x2 = tuplesTriples(g2.find(null, null, null)) ;
+        
+        IsoMatcher matcher = new IsoMatcher(x1, x2, NodeUtils.sameTerm) ;
         return matcher.match() ;
     }
 
-    private IsoMatcher(Graph g1, Graph g2, EqualityTest nodeTest)
+    public static boolean isomorphic(DatasetGraph dsg1, DatasetGraph dsg2)
     {
-        this.graph1 = g1 ;
-        this.graph2 = g2 ;
+        List<Tuple<Node>> x1 = tuplesQuads(dsg1.find()) ;
+        List<Tuple<Node>> x2 = tuplesQuads(dsg2.find()) ;
+        
+        IsoMatcher matcher = new IsoMatcher(x1, x2, NodeUtils.sameTerm) ;
+        return matcher.match() ;
+    }
+
+    private static List<Tuple<Node>> tuplesTriples(Iterator<Triple> iter) {
+        List<Tuple<Node>> tuples = new ArrayList<>() ;
+        for ( ; iter.hasNext() ; ) {
+            Triple t = iter.next() ;
+            Tuple<Node> tuple = Tuple.create(t.getSubject(), t.getPredicate(), t.getObject()) ;
+            tuples.add(tuple) ;
+        }
+        return tuples ;
+    }
+
+    private static List<Tuple<Node>> tuplesQuads(Iterator<Quad> iter) {
+        List<Tuple<Node>> tuples = new ArrayList<>() ;
+        for ( ; iter.hasNext() ; ) {
+            Quad q = iter.next() ;
+            Tuple<Node> tuple = Tuple.create(q.getGraph(), q.getSubject(), q.getPredicate(), q.getObject()) ;
+            tuples.add(tuple) ;
+        }
+        return tuples ;
+    }
+
+    private IsoMatcher(List<Tuple<Node>> g1, List<Tuple<Node>> g2, EqualityTest nodeTest)
+    {
+        this.tuples1 = g1 ;
+        this.tuples2 = g2 ;
         this.nodeTest = nodeTest ;
     }
 
-    public boolean match()
+    private boolean match()
     {
-        // Mutated.
-        List<Triple> g1 = Iter.toList(graph1.find(null, null, null)) ;
-        List<Triple> g2 = Iter.toList(graph2.find(null, null, null)) ;
-        return match(g1, g2, Mapping.rootMapping) ;
+        return match(tuples1, tuples2, Mapping.rootMapping) ;
     }
 
-    public boolean match(List<Triple> triples1, List<Triple> triples2, Mapping mapping)
+    private boolean match(List<Tuple<Node>> tuples1, List<Tuple<Node>> tuples2, Mapping mapping)
     {
         if ( DEBUG ) {
             System.out.println("match: ") ;
-            System.out.println("  "+triples1) ;
-            System.out.println("  "+triples2) ;
+            System.out.println("  "+tuples1) ;
+            System.out.println("  "+tuples2) ;
             System.out.println("  "+mapping) ; 
         }
-        if ( triples1.size() != triples2.size() )
+        if ( tuples1.size() != tuples2.size() )
             return false;
         
-        List<Triple> triples = new ArrayList<>(triples1) ;  // Copy, mutate
-        for ( Triple t1 : triples1 ) {
+        List<Tuple<Node>> tuples = new ArrayList<>(tuples1) ;  // Copy, mutate
+        for ( Tuple<Node> t1 : tuples1 ) {
             if ( DEBUG )
                 System.out.println("  t1 = "+t1) ;
-            triples.remove(t1) ;
-            List<Cause> causes = match(t1, triples2, mapping) ;
+            tuples.remove(t1) ;
+            List<Cause> causes = match(t1, tuples2, mapping) ;
             for ( Cause c : causes ) {
                 if ( DEBUG ) 
                     System.out.println("  Try: "+c.mapping) ;
                 // Try t1 -> t2
-                Triple t2 = c.triple ;
-                triples2.remove(t2) ;
-                if ( triples2.isEmpty() )
+                Tuple<Node> t2 = c.tuple ;
+                tuples2.remove(t2) ;
+                if ( tuples2.isEmpty() )
                     return true ;
-                if ( match(triples, triples2, c.mapping) ) {
+                if ( match(tuples, tuples2, c.mapping) ) {
                     if ( DEBUG ) 
                         System.out.println("Yes") ;
                     return true ;
                 }
                 if ( DEBUG ) 
                     System.out.println("No") ;
-                triples2.add(t2) ;
+                tuples2.add(t2) ;
             }
             return false ;
         }
-        return false ;
+        // The empty-empty case
+        return true ;
     }
 
-    private List<Cause> match(Triple t1, Collection<Triple> g2, Mapping mapping)
+    private List<Cause> match(Tuple<Node> t1, Collection<Tuple<Node>> g2, Mapping mapping)
     {
         List<Cause> matches = new ArrayList<>() ;
-        for (Triple t2 : g2)
+        for (Tuple<Node> t2 : g2)
         {
             // No - multiple bNodes.
             Mapping step = gen(t1, t2, mapping) ;
@@ -201,37 +238,22 @@ public class IsoMatcher
 //    }
 
     // Maybe several mappings!
-    private Mapping gen(Triple t1, Triple t2, Mapping _mapping)
+    private Mapping gen(Tuple<Node> t1, Tuple<Node> t2, Mapping _mapping)
     {
+        if ( t1.size() != t2.size() )
+            return null ;
+        
         Mapping mapping = _mapping ;
-        Node s2 = t2.getSubject() ;
-        Node p2 = t2.getPredicate() ;
-        Node o2 = t2.getObject() ;
-        
-        Node s1 = t1.getSubject() ;
-        if ( ! nodeTest.equal(s1, s2) )
-        {
-            mapping = gen(s1, s2, mapping) ;
-            if ( mapping == null )
-                return null ;
-        }
-        
-        Node p1 = t1.getPredicate() ;
-        if ( ! nodeTest.equal(p1, p2) )
-        {
-            mapping = gen(p1, p2, mapping) ;
-            if ( mapping == null )
-                return null ;
-        }
-        
-        
-        Node o1 = t1.getObject() ;
-        if ( ! nodeTest.equal(o1, o2) )
-        {
-            mapping = gen(o1, o2, mapping) ;
-            if ( mapping == null )
-                return null ;
-        }
+        for ( int i = 0 ; i < t1.size() ; i++ ) {
+            Node n1 = t1.get(i) ;
+            Node n2 = t2.get(i) ;
+            if ( ! nodeTest.equal(n1, n2) )
+            {
+                mapping = gen(n1, n2, mapping) ;
+                if ( mapping == null )
+                    return null ;
+            }
+        }            
         return mapping ;
     }
 
@@ -251,45 +273,4 @@ public class IsoMatcher
         return null ;
     }
     
-    private Node substitute(Node n, Mapping mapping) {
-        if ( ! n.isBlank() )
-            return n ;
-//        if ( mapping == null )
-//            return n ;
-        Node n2 = mapping.map(n) ;
-        if ( n2 == null )
-            return n ;
-        return n2 ;
-    }
-    
-    
-    // add must be bNode in ANY slots
-    public static List<Triple> findC(Collection<Triple> triples, Triple t)
-    {
-        if (t.isConcrete())
-        {
-            if (triples.contains(t))
-            {
-                List<Triple> matches = new ArrayList<Triple>() ;
-                matches.add(t) ;
-                return matches ;
-            }
-        }
-
-        Node s = t.getSubject() ;
-        Node p = t.getPredicate() ;
-        Node o = t.getObject() ;
-
-        if (!s.isConcrete()) s = Node.ANY ;
-        if (!p.isConcrete()) p = Node.ANY ;
-        if (!o.isConcrete()) o = Node.ANY ;
-
-        List<Triple> matches = new ArrayList<Triple>() ;
-        for (Triple t2 : triples)
-        {
-            if (t2.matches(s, p, o)) matches.add(t2) ;
-        }
-        return matches ;
-    }
-
 }
