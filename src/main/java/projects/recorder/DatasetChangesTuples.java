@@ -20,6 +20,9 @@ package projects.recorder;
 
 import java.io.PrintStream ;
 
+import org.apache.jena.riot.tokens.Token ;
+import org.apache.jena.riot.tokens.Tokenizer ;
+import org.apache.jena.riot.tokens.TokenizerFactory ;
 import projects.recorder.tio.TokenOutputStream ;
 
 import com.hp.hpl.jena.graph.Node ;
@@ -28,6 +31,9 @@ import com.hp.hpl.jena.sparql.util.FmtUtils ;
 /** Write changes to a tuples file */
 public class DatasetChangesTuples implements DatasetChanges
 {
+    // or generalise with a tuple-writer.
+    
+    
     private TokenOutputStream out ;
     
     public DatasetChangesTuples(TokenOutputStream out) { this.out = out; }
@@ -49,33 +55,41 @@ public class DatasetChangesTuples implements DatasetChanges
     static final String SEP1 = ", " ;    // TAB is good. 
     static final String SEP2 = "\n" ; 
     
+    private Node prev_g = null ;
+    private Node prev_s = null ;
+    private Node prev_p = null ;
+    private Node prev_o = null ;
+    
     private void record(QuadAction action, Node g, Node s, Node p, Node o)
     {
-        if ( false )
-        {        
-            PrintStream out = System.out ; 
-            out.print(action.label) ;
-            out.print(SEP1) ;
-            print(out, g) ;
-            out.print(SEP1) ;
-            print(out, s) ;
-            out.print(SEP1) ;
-            print(out, p) ;
-            out.print(SEP1) ;
-            print(out, o) ;
-            out.print(SEP2) ;
-            return ;
-        }
-        
         out.startTuple() ;
         out.sendWord(action.label) ;
-        out.sendNode(g) ;
-        out.sendNode(s) ;
-        out.sendNode(p) ;
-        out.sendNode(o) ;
+        send(g, prev_g) ;
+        send(s, prev_s) ;
+        send(p, prev_p) ;
+        send(o, prev_o) ;
+        prev_g = g ;
+        prev_s = s ;
+        prev_p = p ;
+        prev_o = o ;
         out.endTuple() ;
     }
     
+    static final Token REPEAT ;
+    static {
+        // Hack
+        Tokenizer t = TokenizerFactory.makeTokenizerString("R") ;
+        REPEAT = t.next() ;
+    }
+    
+    private void send(Node n, Node prev_n)
+    {
+        if ( n.equals(prev_n) )
+            out.sendToken(REPEAT) ;
+        else
+            out.sendNode(n) ;
+    }
+
     private void print(PrintStream out, Node x)
     {
         String str = FmtUtils.stringForNode(x) ;

@@ -65,6 +65,8 @@ public class RecMain
         dsg.addGraph(NodeFactory.createURI("graph"), g) ;
         SSE.write(dsg) ;
 
+        System.out.println() ;
+
         System.out.print(sw.toString()) ;
 
         Tokenizer t = TokenizerFactory.makeTokenizerString(sw.toString()) ;
@@ -80,7 +82,8 @@ public class RecMain
         DatasetGraph dsg2 = DatasetGraphFactory.createMem() ;
         DatasetGraphPlayer.play(in, dsg2) ;
         SSE.write(dsg2) ;
-        
+        System.out.println() ;
+
         System.out.println("DONE") ; 
     }
 

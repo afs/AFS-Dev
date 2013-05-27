@@ -28,10 +28,18 @@ import com.hp.hpl.jena.sparql.core.DatasetGraph ;
 
 public class DatasetGraphPlayer
 {
+    
     // Play tuples.
     
+    
+    private DatasetGraphPlayer() {}
+
     public static void play(TokenInputStream input, DatasetGraph dsg)
     {
+        Node prev_g = null ;
+        Node prev_s = null ;
+        Node prev_p = null ;
+        Node prev_o = null ;
         long count = 0 ; 
         while(input.hasNext())
         {
@@ -48,12 +56,31 @@ public class DatasetGraphPlayer
             String str = ctl.getImage() ;
             if ( str.startsWith("#") )
                 continue ;
-            Node g = line.get(1).asNode() ;
-            Node s = line.get(2).asNode() ;
-            Node p = line.get(3).asNode() ;
-            Node o = line.get(4).asNode() ;
+            Node g = getNode(line.get(1), prev_g, count) ;
+            Node s = getNode(line.get(2), prev_s, count) ;
+            Node p = getNode(line.get(3), prev_p, count) ;
+            Node o = getNode(line.get(4), prev_o, count) ;
+            
+            prev_g = g ;
+            prev_s = s ;
+            prev_p = p ;
+            prev_o = o ;
+
             dsg.add(g,s,p,o) ;
         }
+    }
+    
+    static final Token REPEAT = DatasetChangesTuples.REPEAT ;
+
+    private static Node getNode(Token token, Node prev, long count)
+    {
+        if ( token.equals(REPEAT) )
+        {
+            if ( prev == null )
+                error("[%d] No previous token to repeat with %s", count, REPEAT) ;
+            return prev ;
+        }
+        return token.asNode() ;
     }
 
     private static void error(String fmt, Object...args)

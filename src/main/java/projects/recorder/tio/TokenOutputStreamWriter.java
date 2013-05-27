@@ -279,6 +279,7 @@ public class TokenOutputStreamWriter implements TokenOutputStream
             case LPAREN:    case RPAREN:    // ()
             case LBRACKET:  case RBRACKET:  // []
                 
+            case EQUALS:                
             case PLUS:
             case MINUS:
             case STAR:
