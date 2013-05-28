@@ -139,6 +139,14 @@ public class IsoMatcher
         return matcher.match() ;
     }
 
+    public static boolean isomorphic(List<Tuple<Node>> x1, List<Tuple<Node>> x2) {
+        x1 = new ArrayList<>(x1) ;
+        x2 = new ArrayList<>(x2) ;
+        IsoMatcher matcher = new IsoMatcher(x1, x2, NodeUtils.sameTerm) ;
+        return matcher.match() ;
+    }
+
+
     private static List<Tuple<Node>> tuplesTriples(Iterator<Triple> iter) {
         List<Tuple<Node>> tuples = new ArrayList<>() ;
         for ( ; iter.hasNext() ; ) {
@@ -166,6 +174,7 @@ public class IsoMatcher
         this.nodeTest = nodeTest ;
     }
 
+    // May MUTATE tuples1 or tuples2 
     private boolean match()
     {
         return match(tuples1, tuples2, Mapping.rootMapping) ;
