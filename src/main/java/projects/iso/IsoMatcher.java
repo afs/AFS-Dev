@@ -42,6 +42,10 @@ import com.hp.hpl.jena.sparql.util.NodeUtils.EqualityTest ;
  */
 public class IsoMatcher
 {
+    // Possible speed ups 
+    //  A/ Phase 1 - do all non-bNode tuples. / Phase 2 : all tuples with a bNode 
+    //  B/ turn tuples2 into a map, keyed by (1) constants or (2) first term. 
+    
     static boolean DEBUG = false ;
     private final List<Tuple<Node>>        tuples1 ;
     private final List<Tuple<Node>>        tuples2 ;
