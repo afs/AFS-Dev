@@ -16,19 +16,18 @@
  * limitations under the License.
  */
 
-package projects.join2;
+package projects.join2.access;
 
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 
-public class Slot {
-    // ?? Include nodeTable so self contained "to node"
-    
-    
-    final NodeId id ;
-    final Var var ;
-    Slot(Var var) { this(var, NodeId.NodeIdAny) ; }
-    Slot(NodeId id) { this(null, id) ; }
+/** Abstraction of either a variable or a NodeId */
+public final class Slot {
+    // Consider making a Slot<T>
+    public final NodeId id ;
+    public final Var var ;
+    public Slot(Var var) { this(var, NodeId.NodeIdAny) ; }
+    public Slot(NodeId id) { this(null, id) ; }
     
     private Slot(Var var, NodeId id)
     {
@@ -36,8 +35,8 @@ public class Slot {
         this.var = var ;
     }
     
-    boolean isVar()     { return var != null ; }
-    boolean isNodeId()  { return var == null ; }
+    public boolean isVar()     { return var != null ; }
+    public boolean isNodeId()  { return var == null ; }
     @Override
     public String toString()
     {

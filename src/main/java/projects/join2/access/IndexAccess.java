@@ -16,16 +16,18 @@
  * limitations under the License.
  */
 
-package projects.join2;
+package projects.join2.access;
 
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.tdb.index.TupleIndex ;
 
+/** Access to a specific index with prefix (cols to skip) and a variable. */
 public class IndexAccess
 {
     // Special cases:
     // Two vars: ?x <p> ?x
     // Three vars: ?x ?x ?x
+    //    ==> have a filter on the access (index side?)  
     private TupleIndex index ;
     private int prefixLen ;
     private Var var ;

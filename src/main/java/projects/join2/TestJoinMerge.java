@@ -25,6 +25,7 @@ import org.junit.Test ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.junit.BaseTest ;
 import org.apache.jena.atlas.lib.Tuple ;
+import projects.join2.access.Slot ;
 
 import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.core.Var ;

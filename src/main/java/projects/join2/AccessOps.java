@@ -27,6 +27,7 @@ import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.InternalErrorException ;
 import org.apache.jena.atlas.lib.MultiMap ;
 import org.apache.jena.atlas.lib.Tuple ;
+import projects.join2.access.Slot ;
 
 import com.hp.hpl.jena.sparql.core.Var ;
 import com.hp.hpl.jena.sparql.engine.binding.Binding ;
@@ -34,7 +35,7 @@ import com.hp.hpl.jena.tdb.index.TupleIndex ;
 import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 
-/** Access operators - algebra operations on the TDB storage objects liek indexes and node tables.
+/** Access operators - algebra operations on the TDB storage objects like indexes and node tables.
  */
 public class AccessOps
 {
