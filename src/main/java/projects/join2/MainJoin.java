@@ -44,7 +44,7 @@ import com.hp.hpl.jena.tdb.solver.BindingNodeId ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.sys.Names ;
 
-public class Main
+public class MainJoin
 {
     static { Log.setLog4j() ; }
     

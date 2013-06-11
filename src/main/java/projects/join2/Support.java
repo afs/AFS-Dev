@@ -35,7 +35,7 @@ import com.hp.hpl.jena.tdb.store.NodeId ;
 
 public class Support
 {
-    /* parse to create dadat for tests for AccessOps. 
+    /* parse to create data for tests for AccessOps. 
      * (table
      *    (row (?x 1) (?y 2)) 
      *  )

@@ -18,6 +18,8 @@
 
 package projects.join2;
 
+import projects.join2.access.IndexAccess ;
+
 import com.hp.hpl.jena.sparql.core.Var ;
 
 public class MergeActionIdxIdx

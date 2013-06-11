@@ -19,8 +19,8 @@
 package projects.join2;
 
 // Preferred.
-public enum ColNames { S("S"), P("P"), O("O"), G("G") ;
-    private String col ;
-    private ColNames(String col) { this.col = col ; }
-    @Override public String toString() { return col ;}  
-}
+public enum ColNames { S, P, O, G }
+//    private String col ;
+//    private ColNames(String col) { this.col = col ; }
+//    @Override public String toString() { return col ;}  
+//}

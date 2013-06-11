@@ -19,6 +19,8 @@
 package projects.join2;
 
 import org.apache.jena.atlas.lib.Tuple ;
+import projects.join2.access.IndexAccess ;
+import projects.join2.access.Slot ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
