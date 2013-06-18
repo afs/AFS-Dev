@@ -61,8 +61,8 @@ public class MergeLib
                     {
                         //System.out.println("Choose: "+action+" // "+action2) ;
                         // Choose one with most prefixing.
-                        int len1 = action.getPrefixLen() ;
-                        int len2 = action2.getPrefixLen() ;
+                        int len1 = action.getPrefixCount() ;
+                        int len2 = action2.getPrefixCount() ;
                         if ( len2 == len1 )
                         {
                             // Example: same var uses more than once in a triple.

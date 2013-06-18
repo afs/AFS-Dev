@@ -23,29 +23,36 @@ import com.hp.hpl.jena.query.* ;
 import com.hp.hpl.jena.rdf.model.Model ;
 import com.hp.hpl.jena.rdf.model.ModelFactory ;
 import com.hp.hpl.jena.sparql.core.DatasetGraph ;
-import com.hp.hpl.jena.sparql.core.DatasetGraphFactory ;
 import com.hp.hpl.jena.sparql.core.GraphView ;
 import com.hp.hpl.jena.sparql.core.Quad ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 
 public class MainUDSG
 {
+    /* In OpExecutor?
+     * or in datasetgraph.find?
+     * Quadify or not quadify?
+     * ==> BGP in OpExecutor, check active graph. 
+     * 
+     */
+    
     public static void main(String[] args) {
-        DatasetGraph dsg = DatasetGraphFactory.createMem() ;
         //DatasetGraph dsg = TDBFactory.createDatasetGraph() ; // DatasetGraphFactory.createMem() ;
-        Dataset ds = DatasetFactory.create(dsg) ;
+        Dataset ds = DatasetFactory.createMem() ;
+        DatasetGraph dsg = ds.asDatasetGraph() ;
         Quad q = SSE.parseQuad("(<g> <s> <p> <o>)") ;
         dsg.add(q) ;
         
-        Graph g = GraphView.createNamedGraph(dsg, Quad.unionGraph) ;
-        Model m = ModelFactory.createModelForGraph(g) ;
-        
+        if (true) {
+            Graph g = GraphView.createNamedGraph(dsg, Quad.unionGraph) ;
+            Model m = ModelFactory.createModelForGraph(g) ;
+            ds.setDefaultModel(m) ;
+        }        
         //String qs = "SELECT * { GRAPH <"+Quad.unionGraph+"> { ?s ?p ?o } }" ;
         String qs = "SELECT * { ?s ?p ?o }" ;
         Query query = QueryFactory.create(qs) ;
-        QueryExecution qExec = QueryExecutionFactory.create(query, m) ;
+        QueryExecution qExec = QueryExecutionFactory.create(query, ds) ;
         ResultSet rs = qExec.execSelect() ;
         ResultSetFormatter.out(rs) ;
     }
 }
-

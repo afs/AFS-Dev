@@ -159,8 +159,8 @@ public class OpExecutorMerge extends OpExecutorTDB
     static Iterator<BindingNodeId> mergeJoin(Tuple<Slot> triple1, Tuple<Slot> triple2, TupleIndex[] indexes)
     {
         MergeActionIdxIdx action = MergeLib.calcMergeAction(triple1, triple2, indexes) ;
-        Iterator<BindingNodeId> iter1 = merge(action, triple1, triple2) ;
-        return iter1 ; 
+        Iterator<BindingNodeId> iter = merge(action, triple1, triple2) ;
+        return iter ; 
     }
 
     private static Iterator<BindingNodeId> merge(MergeActionIdxIdx action, Tuple<Slot> triple1, Tuple<Slot> triple2)

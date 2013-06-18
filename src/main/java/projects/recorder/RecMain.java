@@ -50,12 +50,12 @@ public class RecMain
         Writer w = sw ; //new OutputStreamWriter(System.out) ;
         
         TokenOutputStreamWriter out = new TokenOutputStreamWriter(null, w) ;
-        out.setPrefixMapping("", "http://example/") ;
+        //out.setPrefixMapping("", "http://example/") ;
         
         DatasetChanges changeLogger = new DatasetChangesTuples(out) ; 
         dsg = new DatasetGraphMonitor(dsg, changeLogger) ;
         
-        Quad q = SSE.parseQuad("(:g <s> <p> <o>)") ;
+        Quad q = SSE.parseQuad("(_ <s> <p> <o>)") ;
         dsg.add(q) ;
         dsg.delete(q) ;
         dsg.delete(q) ;

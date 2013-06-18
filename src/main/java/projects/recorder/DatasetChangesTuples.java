@@ -84,9 +84,9 @@ public class DatasetChangesTuples implements DatasetChanges
     
     private void send(Node n, Node prev_n)
     {
-        if ( n.equals(prev_n) )
-            out.sendToken(REPEAT) ;
-        else
+//        if ( n.equals(prev_n) )
+//            out.sendToken(REPEAT) ;
+//        else
             out.sendNode(n) ;
     }
 
