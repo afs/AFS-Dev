@@ -17,7 +17,8 @@
  */
 
 package structure.radix;
-import static structure.radix.Str.str;
+import static structure.radix.Str.str ;
+
 import java.util.ArrayList ;
 import java.util.Arrays ;
 import java.util.Iterator ;
@@ -27,15 +28,15 @@ import org.apache.jena.atlas.AtlasException ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.Bytes ;
 import org.apache.jena.atlas.lib.RandomLib ;
-import org.apache.jena.atlas.logging.Log ;
+import org.apache.jena.atlas.logging.LogCtl ;
 
 /** Randomly generate keys to add and delete (shuffled) using a RadixTree - check for consistency. Repeat */ 
 public class RadixRun
 {
     public static void main(String ...argv)
     { 
-        Log.setLog4j() ;
-        Log.enable(RadixTree.class) ;
+        LogCtl.setLog4j() ;
+        LogCtl.enable(RadixTree.class) ;
         //RadixTree.logging = false ;
         
         RadixTreeImpl.logging = false ;

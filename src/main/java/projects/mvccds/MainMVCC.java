@@ -18,11 +18,11 @@
 
 package projects.mvccds;
 
-import org.apache.jena.atlas.logging.Log ;
+import org.apache.jena.atlas.logging.LogCtl ;
 
 public class MainMVCC
 {
-    static { Log.setLog4j() ; }
+    static { LogCtl.setLog4j() ; }
     
     public static GenTree<String> add(GenTree<String> tree, String ...elts)
     {
@@ -37,7 +37,7 @@ public class MainMVCC
     {
         TNodeAllocator<String> allocator = new TNodeAllocator<>() ;
         
-        Log.enable(GenTree.class) ;
+        LogCtl.enable(GenTree.class) ;
         
         String[] x1 = { "BBB", "DDD", } ;
         String[] x2 = { "A", "AAA", "ZZZ", "CCC", "XXX" } ;

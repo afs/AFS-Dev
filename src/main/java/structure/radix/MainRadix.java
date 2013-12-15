@@ -23,7 +23,7 @@ import java.util.Arrays ;
 import java.util.Iterator ;
 
 import org.apache.jena.atlas.lib.Bytes ;
-import org.apache.jena.atlas.logging.Log ;
+import org.apache.jena.atlas.logging.LogCtl ;
 
 public class MainRadix
 {
@@ -51,11 +51,11 @@ public class MainRadix
 
     public static void main(String ...argv)
     { 
-        Log.setLog4j() ;
+        LogCtl.setLog4j() ;
         //runJUnit() ;
         RadixTreeImpl.checking = true ;
         RadixTreeImpl.logging = false ;
-        Log.enable("structure.radix") ;
+        LogCtl.enable("structure.radix") ;
         print = false ;
         
         if ( false )
@@ -132,7 +132,7 @@ public class MainRadix
             t.print() ;
             t.check() ;
 
-            Log.enable("structure.radix") ;
+            LogCtl.enable("structure.radix") ;
             for ( byte[] d : deleteOrder )
             {
                 t.delete(d) ;

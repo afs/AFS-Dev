@@ -21,7 +21,7 @@ package dev;
 import java.util.Iterator ;
 
 import org.apache.jena.atlas.lib.Pair ;
-import org.apache.jena.atlas.logging.Log ;
+import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
 
 import com.hp.hpl.jena.graph.Node ;
@@ -38,7 +38,7 @@ public class RunAFS
 {
     public static void main(String ...argv)
     {
-        Log.setLog4j() ;
+        LogCtl.setLog4j() ;
         DatasetBuilder builder = new DatasetBuilderBasic(new IndexBuilderRadix(), new RangeIndexBuilderRadix() ) ;
         DatasetGraphTDB dsg = builder.build(Location.mem(), null) ;
         

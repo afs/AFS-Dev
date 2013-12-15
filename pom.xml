@@ -23,8 +23,8 @@
 
   <properties>
     <this.root>${project.artifactId}-${project.version}</this.root>
-    <ver.jena>[2.10.2-SNAPSHOT,)</ver.jena>
-    <ver.junit>[4.9,)</ver.junit>
+    <ver.jena>[2.11.1-SNAPSHOT,)</ver.jena>
+    <ver.junit>[4.11,)</ver.junit>
     <ver.slf4j>[1.6.4,)</ver.slf4j>
     <ver.log4j>[1.2.16,)</ver.log4j>
 
