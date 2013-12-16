@@ -35,34 +35,28 @@ import org.apache.jena.atlas.iterator.PeekIterator ;
 import org.apache.jena.atlas.lib.Lib ;
 import org.apache.jena.atlas.lib.Sink ;
 import org.apache.jena.atlas.lib.StrUtils ;
-// Scala?
+
 public class CSVParser
 {
-    public static void main(String ... argv)
-    {
-        Sink<List<String>> sink = new Sink<List<String>>(){
+    public static void main(String... argv) {
+        Sink<List<String>> sink = new Sink<List<String>>() {
 
             @Override
-            public void close()
-            {}
+            public void close() {}
 
             @Override
-            public void send(List<String> item)
-            {
-                System.out.println(item.size()+": "+StrUtils.strjoin(",",item)) ;
+            public void send(List<String> item) {
+                System.out.println(item.size() + ": " + StrUtils.strjoin(",", item)) ;
             }
 
             @Override
-            public void flush()
-            {}} ;
-        
-        parse("X.csv", sink) ;
-        
-    }
+            public void flush() {}
+        } ;
 
+        parse("X.csv", sink) ;
+    }
     
-    public static void parse(String filename, Sink<List<String>> sink)
-    {
+    public static void parse(String filename, Sink<List<String>> sink) {
         InputStream _in = IO.openFile(filename) ;
         TokenIterator iter = new TokenIterator(_in) ;
         CSVParser parser = new CSVParser(iter) ;
@@ -80,24 +74,26 @@ public class CSVParser
     static class Token
     {
         final TokenType type ;
-        final String image ;
-        final long line ;
-        final long col ;
-        
-        public boolean same(Token obj)
-        {
-            if (this == obj) return true ;
-            if (obj == null) return false ;
-            if (type != obj.type) return false ;
+        final String    image ;
+        final long      line ;
+        final long      col ;
+
+        public boolean same(Token obj) {
+            if ( this == obj )
+                return true ;
+            if ( obj == null )
+                return false ;
+            if ( type != obj.type )
+                return false ;
             if ( type == COMMA || type == NL || type == EOF )
                 return true ;
-            
-            if (image == null && obj.image != null) return false ;
+
+            if ( image == null && obj.image != null )
+                return false ;
             return Lib.equal(this.image, obj.image) ;
         }
 
-        public Token(long line, long col, TokenType type, String image)
-        {
+        public Token(long line, long col, TokenType type, String image) {
             super() ;
             this.type = type ;
             this.image = image ;
@@ -106,96 +102,85 @@ public class CSVParser
         }
 
         @Override
-        public String toString()
-        {
-            switch (type)
-            {
-                case STRING: case QSTRING:
-                    return "Token ["+line+", "+col+"] " + type + " |" + image +"|" ;
-                default:
-                    return "Token ["+line+", "+col+"] " + type ;
+        public String toString() {
+            switch (type) {
+                case STRING :
+                case QSTRING :
+                    return "Token [" + line + ", " + col + "] " + type + " |" + image + "|" ;
+                default :
+                    return "Token [" + line + ", " + col + "] " + type ;
             }
         }
-       
-    }
+    }    
     
-    
-    public void parse(Sink<List<String>> sink)
-    {
+    public void parse(Sink<List<String>> sink) {
         // Optional checking on line length
-        
+
         // Header?
         PeekIterator<Token> pIter = new PeekIterator<>(iter) ;
 
         List<String> line = null ;
-        
-        loop: while(pIter.hasNext())
-        {
-            // Get rid of switches.  break problems.
+
+        loop : while (pIter.hasNext()) {
+            // Get rid of switches. break problems.
             Token t = pIter.next() ;
             if ( line == null )
                 line = new ArrayList<>(100) ;
-            switch(t.type)
-            {
-                case EOF: 
-                case NL:
+            switch (t.type) {
+                case EOF :
+                case NL :
                     // Blank line = one or none?
                     line.add("") ;
                     sink.send(line) ;
                     line = null ;
-                    if ( t.type == EOF)
+                    if ( t.type == EOF )
                         return ;
                     continue loop ;
-                case STRING:
-                case QSTRING:
+                case STRING :
+                case QSTRING :
                     line.add(t.image) ;
                     break ;
-                case COMMA:
+                case COMMA :
                     // Immediate COMMA is an empty term.
                     line.add("") ;
                     continue loop ;
-                default:
+                default :
                     exception("Syntax error: expected a string or comma.", t) ;
             }
             // Expect COMMA or NL
-            if  (!pIter.hasNext() )
-            {
+            if ( !pIter.hasNext() ) {
                 // Short line
                 sink.send(line) ;
                 return ;
             }
             Token t2 = pIter.peek() ;
-            switch(t2.type)
-            {
-                case COMMA:
+            switch (t2.type) {
+                case COMMA :
                     pIter.next() ;
-                    continue loop;
-                case NL:
-                case EOF:
-                {
+                    continue loop ;
+                case NL :
+                case EOF : {
                     sink.send(line) ;
                     pIter.next() ;
                     line = null ;
-                    if ( t.type == TokenType.EOF)
+                    if ( t.type == TokenType.EOF )
                         return ;
 
                     continue loop ;
                 }
-                default:
+                default :
                     exception("Syntax error: expect comma or end of line.", t) ;
             }
         }
     }
 
-    static void exception(String msg, Token t)
-    {
+    static void exception(String msg, Token t) {
         if ( t != null && t.line >= 0 && t.col > 0 )
             msg = String.format("[%s, %s] %s", t.line, t.col, msg) ;
         throw new CSVParseException(msg) ;
     }
-    
-    static void exception(String msg, long line, long col)
-    {
+
+    static void exception(String msg, long line, long col) {
         if ( line >= 0 && col > 0 )
             msg = String.format("[%s, %s] %s", line, col, msg) ;
         throw new CSVParseException(msg) ;
@@ -212,89 +197,75 @@ public class CSVParser
     static class TokenIterator extends IteratorSlotted<Token>
     {
         private PeekReader in ;
+
         // One EOF?
 
-        TokenIterator(InputStream input)
-        {
+        TokenIterator(InputStream input) {
             this.in = PeekReader.makeUTF8(input) ;
         }
-        
+
         @Override
-        protected Token moveToNext()
-        {
+        protected Token moveToNext() {
             int ch = in.peekChar() ;
-            if ( ch == '\r' )
-            {
+            if ( ch == '\r' ) {
                 in.readChar() ;
                 ch = in.peekChar() ;
                 if ( ch != '\n' )
                     return new Token(in.getLineNum(), in.getColNum(), NL, "\r") ;
                 // '\n' = drop through.
             }
-                
-            if ( ch == '\n' )
-            {
+
+            if ( ch == '\n' ) {
                 in.readChar() ;
                 return new Token(in.getLineNum(), in.getColNum(), NL, "\n") ;
             }
-            
-            if ( ch == ',')
-            {
+
+            if ( ch == ',' ) {
                 in.readChar() ;
                 return new Token(in.getLineNum(), in.getColNum(), COMMA, ",") ;
             }
-                
+
             long line = in.getLineNum() ;
             long col = in.getColNum() ;
-            
+
             // Not -1
             if ( ch == '"' || ch == '\'' )
                 return new Token(line, col, QSTRING, readQuotedString()) ;
             else
                 return new Token(line, col, STRING, readUnquotedString()) ;
         }
-        
-        
-        StringBuilder builder = new StringBuilder() ; 
-        
-        private String readQuotedString()
-        {
+
+        StringBuilder builder = new StringBuilder() ;
+
+        private String readQuotedString() {
             builder.setLength(0) ;
             int qCh = in.readChar() ;
             int ch = qCh ;
-            while(true)
-            {
+            while (true) {
                 ch = in.readChar() ;
                 if ( ch == -1 )
                     exception("Unterminated quoted string at end-of-file", in.getLineNum(), in.getColNum()) ;
                 // Newlines are allowed in quoted strings.
 //                if ( ch == '\r' || ch == '\n'  )
 //                    exception("Unterminated quoted string", in.getLineNum(), in.getColNum()) ;
-                if ( ch == qCh )
-                {
+                if ( ch == qCh ) {
                     int ch2 = in.peekChar() ;
                     if ( ch2 != qCh )
-                        break ; 
+                        break ;
                     // Escaped quote
                     in.readChar() ;
-                    // Fall through.//        while( iter.hasNext() )
-//                  {
-//                  Token t = iter.next() ;
-//                  System.out.println(t) ;
-//              }
+                    // Fall through.
                 }
                 builder.append((char)ch) ;
             }
             return builder.toString() ;
         }
 
-        private String readUnquotedString()
-        {
+        private String readUnquotedString() {
             builder.setLength(0) ;
-            while(true)
-            {
+            while (true) {
                 int ch = in.peekChar() ;
-                if ( ch == -1 || ch == '\r' || ch == '\n'  )
+                if ( ch == -1 || ch == '\r' || ch == '\n' )
                     break ;
                 if ( ch == ',' )
                     break ;
@@ -305,9 +276,8 @@ public class CSVParser
         }
 
         @Override
-        protected boolean hasMore()
-        {
-            return ! in.eof() && in.peekChar() != -1 ;
+        protected boolean hasMore() {
+            return !in.eof() && in.peekChar() != -1 ;
         }
     }
 }
