@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export CP=classes
+CP=$(jena_path)
+
+java -cp "$CP" dev.rdfs "$@"
