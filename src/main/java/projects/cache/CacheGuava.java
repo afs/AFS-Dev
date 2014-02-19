@@ -27,11 +27,12 @@ import com.google.common.cache.RemovalNotification ;
 import org.apache.jena.atlas.lib.ActionKeyValue ;
 import org.apache.jena.atlas.lib.Cache ;
 
+/** Wrapper around com.google.common.cache */
 final
 public class CacheGuava<K,V> implements Cache<K, V>
 {
-    ActionKeyValue<K, V> dropHandler ;
-    com.google.common.cache.Cache<K,V> cache ;
+    private ActionKeyValue<K, V> dropHandler ;
+    /*private*/ com.google.common.cache.Cache<K,V> cache ;
     
     public CacheGuava(int size)
     {
@@ -49,6 +50,7 @@ public class CacheGuava<K,V> implements Cache<K, V>
                             // .expireAfterAccess(30, TimeUnit.MINUTES)
                             .softValues() // ??
                             .removalListener(drop)
+                            .recordStats()
                             .build() ;
     }
     
