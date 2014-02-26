@@ -26,15 +26,23 @@ import com.google.common.base.Objects ;
 
 public class MainCache
 {
+    // Put new -> missCount increments
+    // "Put/replace" is a cache hit and calls drop handler.
+    // "Put same" is a cache drop.
+    // 
     public static void main(String[] args) {
-        Cache<String, String> cache = new CacheGuava<>(2) ;
+        Cache<String, String> cache = new CacheGuava<>(5) ;
         cache.setDropHandler(new DropHandler()) ;
-        cache.put("1", "A") ;
-        cache.get("1") ;
-        cache.get("2") ;
-        cache.put("2", "B") ;
-        cache.put("3", "C") ;
-        cache.put("4", "D") ;
+        String x = "A" ;
+        cache.put("1", x) ;
+        cache.put("1", x) ;
+        cache.put("1", x) ;
+//        cache.get("1") ;
+//        cache.get("2") ;
+//        cache.put("2", "B") ;
+//        cache.put("2", "X") ;
+//        cache.put("3", "C") ;
+//        cache.put("4", "D") ;
         com.google.common.cache.Cache<String, String> gcache = ((CacheGuava<String, String>)cache).cache ;
         com.google.common.cache.CacheStats _stats = gcache.stats() ;
         
@@ -42,13 +50,6 @@ public class MainCache
         
         stats.toString() ;
         System.out.println(stats.toString()) ;
-    }
-    
-    // Abstract away from Guava
-    static interface CacheStats {
-        public long getHitCount() ;
-        public long getMissCount() ;
-        public long getEvictionCount() ;
     }
     
     static CacheStats CacheStats$convert(com.google.common.cache.CacheStats _stats) {
