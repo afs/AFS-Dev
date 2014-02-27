@@ -161,7 +161,6 @@ public abstract class StringUTF8
                 e.printStackTrace();
                 return null ;
             }
-            
         }
         
         @Override
