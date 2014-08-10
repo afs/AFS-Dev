@@ -18,7 +18,7 @@
 
 package structure.ttree;
 
-import structure.tree.TreeException;
+import structure.TreeException ;
 
 public class TTreeException extends TreeException
 {

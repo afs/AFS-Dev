@@ -16,27 +16,12 @@
  * limitations under the License.
  */
 
-package structure.tree;
+package structure;
 
 public class TreeException extends RuntimeException
 {
-    public TreeException()
-    {
-        super() ;
-    }
-
-    public TreeException(String message)
-    {
-        super(message) ;
-    }
-
-    public TreeException(String message, Throwable cause)
-    {
-        super(message, cause) ;
-    }
-
-    public TreeException(Throwable cause)
-    {
-        super(cause) ;
-    }
+    public TreeException()                                  { super() ; }
+    public TreeException(String message)                    { super(message) ; }
+    public TreeException(String message, Throwable cause)   { super(message, cause) ; }
+    public TreeException(Throwable cause)                   { super(cause) ; }
 }

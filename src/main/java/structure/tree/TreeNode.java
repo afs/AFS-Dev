@@ -25,6 +25,7 @@ import java.util.List ;
 import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.io.PrintUtils ;
 import org.apache.jena.atlas.io.Printable ;
+import structure.TreeException ;
 
 
 /** Simple binary tree nodes, including operations that apply to all trees */  

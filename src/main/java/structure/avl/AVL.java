@@ -34,7 +34,7 @@ import org.apache.jena.atlas.iterator.Iter ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 import structure.OrderedSet ;
-import structure.tree.TreeException ;
+import structure.TreeException ;
 
 public class AVL<T extends Comparable<? super T>> implements Printable, OrderedSet<T>
 {
