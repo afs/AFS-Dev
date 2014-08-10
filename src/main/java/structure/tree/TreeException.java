@@ -16,30 +16,12 @@
  * limitations under the License.
  */
 
-package structure.tree2.new_tree_test;
+package structure.tree;
 
-import static org.apache.jena.atlas.lib.RandomLib.random;
-import org.apache.jena.atlas.test.ExecGenerator;
-
-class OrderedMapTest implements ExecGenerator
+public class TreeException extends RuntimeException
 {
-    int maxNumKeys ;
-    int maxValue ;
-    OrderedMapTestFactory factory ;
-    
-    OrderedMapTest(OrderedMapTestFactory factory, int maxValue, int maxNumKeys)
-    {
-        if ( maxValue <= maxNumKeys )
-            throw new IllegalArgumentException("SortedIndexTest: Max value less than number of keys") ;
-        this.maxValue = maxValue ; 
-        this.maxNumKeys = maxNumKeys ;
-        this.factory = factory ;
-    }
-    
-    @Override
-    public void executeOneTest()
-    {
-        int numKeys = random.nextInt(maxNumKeys)+1 ;
-        OrderedMapTestLib.randTest(factory, maxValue, numKeys) ;
-    }
+    public TreeException()                                  { super() ; }
+    public TreeException(String message)                    { super(message) ; }
+    public TreeException(String message, Throwable cause)   { super(message, cause) ; }
+    public TreeException(Throwable cause)                   { super(cause) ; }
 }

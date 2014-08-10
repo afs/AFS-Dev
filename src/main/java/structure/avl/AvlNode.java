@@ -24,7 +24,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import structure.TreeException ;
+import structure.tree.TreeException ;
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.atlas.io.Printable;
 

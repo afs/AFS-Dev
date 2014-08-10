@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package structure.tree2.new_tree_test ;
+package structure ;
 
 import static org.junit.Assert.assertEquals ;
 import static org.junit.Assert.assertFalse ;

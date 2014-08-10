@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package structure.tree2;
+package structure.tree;
 
 final
 public class TreeNodeBasic<K extends Comparable<K>,V> implements TreeNode<K,V>{

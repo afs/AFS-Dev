@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package structure.tree2.new_tree_test ;
+package structure ;
 
 import java.util.Iterator ;
 

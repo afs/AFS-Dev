@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package structure.tree2;
+package structure.binary_search_tree;
 
 import java.util.ArrayList ;
 import java.util.Iterator ;
@@ -27,13 +27,16 @@ import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.lib.Ref ;
 import structure.Entry ;
 import structure.OrderedMap ;
+import structure.tree.TreeNode ;
+import structure.tree.TreeNodeBasic ;
+import structure.tree.TreeOps ;
 
 /** Basic binary search tree (BST) - no balancing */
-public class Tree<K extends Comparable<K>,V> implements OrderedMap<K, V>{
+public class BST_Tree<K extends Comparable<K>,V> implements OrderedMap<K, V>{
 
     private TreeNode<K,V> root ;
     
-    public Tree() {
+    public BST_Tree() {
         root = null ;
     }
     

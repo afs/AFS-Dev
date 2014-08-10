@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,12 +16,18 @@
  * limitations under the License.
  */
 
-package structure;
+package structure.binary_search_tree;
 
-public class TreeException extends RuntimeException
-{
-    public TreeException()                                  { super() ; }
-    public TreeException(String message)                    { super(message) ; }
-    public TreeException(String message, Throwable cause)   { super(message, cause) ; }
-    public TreeException(Throwable cause)                   { super(cause) ; }
+import structure.OrderedMap ;
+import structure.OrderedMapTestBase ;
+import structure.binary_search_tree.BST_Tree ;
+
+public class TestBST_Tree extends OrderedMapTestBase {
+
+    @Override
+    protected OrderedMap<Integer, Integer> create() {
+        return new BST_Tree<Integer,Integer>() ;
+    }
+
 }
+

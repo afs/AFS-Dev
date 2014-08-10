@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-package structure.tree2;
+package structure.tree;
 
-import structure.TreeException ;
 
 /** Operations on trees */
 public class TreeOps {

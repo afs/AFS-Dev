@@ -21,6 +21,7 @@ package structure;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import structure.avl.TestAVL;
+import structure.binary_search_tree.TestBST_Tree ;
 import structure.exthash.TestExtHashMem;
 import structure.radix.TestRadix ;
 import structure.skiplist.TestSkipList;
@@ -28,7 +29,10 @@ import structure.ttree.TestTTree;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( {
-    TestAVL.class
+    TestBST_Tree.class
+    
+    
+    , TestAVL.class
     , TestExtHashMem.class
     , TestSkipList.class
     , TestTTree.class

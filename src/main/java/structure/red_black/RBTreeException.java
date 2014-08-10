@@ -18,7 +18,7 @@
 
 package structure.red_black;
 
-import structure.TreeException ;
+import structure.tree.TreeException ;
 
 public class RBTreeException extends TreeException
 {

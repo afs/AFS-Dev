@@ -18,14 +18,14 @@
 
 package structure.red_black;
 
-import structure.OrderedSet ;
-import structure.OrderedSetTestBase ;
+import structure.OrderedMap ;
+import structure.OrderedMapTestBase ;
 
-public class TestRBTree extends OrderedSetTestBase {
+public class TestRBTree extends OrderedMapTestBase {
 
     @Override
-    protected OrderedSet<Integer> create() {
-        return new RBTree<Integer>()  ;
+    protected OrderedMap<Integer, Integer> create() {
+        return new RBTree<Integer, Integer>()  ;
     }
 
 }

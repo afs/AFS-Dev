@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,30 +16,30 @@
  * limitations under the License.
  */
 
-package structure.tree2.new_tree_test;
+package structure;
 
-import structure.OrderedMap ;
-import structure.tree2.Tree ;
+import static org.apache.jena.atlas.lib.RandomLib.random;
+import org.apache.jena.atlas.test.ExecGenerator;
 
-public class DevTree {
-
-    public static void main(String[] args) {
-        int[] r = {1, 16, 3, 14, 5, 2, 37, 11, 6, 23, 4, 25, 12, 7, 40} ;
-        OrderedMap<Integer, Integer> index = create(r) ;
-
-        System.out.println(index) ;
-        boolean b = index.remove(1) ;
-        System.out.println(index) ;
-        System.out.println(b) ;
-//        for ( int i : r )
-//            assertTrue("remove i=" + i, index.remove(i)) ;
+class OrderedMapTest implements ExecGenerator
+{
+    int maxNumKeys ;
+    int maxValue ;
+    OrderedMapTestFactory factory ;
+    
+    OrderedMapTest(OrderedMapTestFactory factory, int maxValue, int maxNumKeys)
+    {
+        if ( maxValue <= maxNumKeys )
+            throw new IllegalArgumentException("SortedIndexTest: Max value less than number of keys") ;
+        this.maxValue = maxValue ; 
+        this.maxNumKeys = maxNumKeys ;
+        this.factory = factory ;
     }
-
-    private static OrderedMap<Integer, Integer> create(int[] r) {
-        OrderedMap<Integer, Integer> index = new Tree<>() ;
-        for ( int i : r )
-            index.insert(i,i) ;
-        return index ;
+    
+    @Override
+    public void executeOneTest()
+    {
+        int numKeys = random.nextInt(maxNumKeys)+1 ;
+        OrderedMapTestLib.randTest(factory, maxValue, numKeys) ;
     }
 }
-

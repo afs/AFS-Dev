@@ -32,7 +32,7 @@ import org.apache.jena.atlas.io.Printable ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 import structure.OrderedSet ;
-import structure.TreeException ;
+import structure.tree.TreeException ;
 
 public final
 class TTree<T extends Comparable<? super T>> implements Printable , OrderedSet<T>
