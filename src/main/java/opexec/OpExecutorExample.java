@@ -80,9 +80,9 @@ public class OpExecutorExample // extends QueryEngineMain
 
         String s = "SELECT DISTINCT ?s { ?s ?p ?o FILTER (?o=12) } " ;
         Query query = QueryFactory.create(s) ;
-        QueryExecution qExec = QueryExecutionFactory.create(query, m) ;
-        ResultSetFormatter.out(qExec.execSelect()) ;
-        qExec.close() ;
+        try(QueryExecution qExec = QueryExecutionFactory.create(query, m)) {
+            ResultSetFormatter.out(qExec.execSelect()) ;
+        }
     }
 
     private static Model data() {

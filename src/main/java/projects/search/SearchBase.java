@@ -50,8 +50,7 @@ public abstract class SearchBase implements Search
     // Put somewhere!
     public static String readAll(InputStream in, String charset)
     {
-        try {
-            Reader r = new InputStreamReader(in, charset) ;//FileUtils.asUTF8(in) ;
+        try(Reader r = new InputStreamReader(in, charset)) { //FileUtils.asUTF8(in)
             StringBuilder sw = new StringBuilder(64*1024);
             char buff[] = new char[8*1024];
             while (true)
@@ -61,8 +60,6 @@ public abstract class SearchBase implements Search
                     break;
                 sw.append(buff, 0, len);
             }
-            r.close();
-
             return sw.toString();
         } catch (IOException ex)
         {
