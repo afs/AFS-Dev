@@ -36,6 +36,8 @@ import com.hp.hpl.jena.reasoner.rulesys.Rule ;
 import com.hp.hpl.jena.sparql.graph.NodeConst ;
 import com.hp.hpl.jena.util.FileUtils ;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
+import com.hp.hpl.jena.util.iterator.Filter ;
+import com.hp.hpl.jena.vocabulary.RDFS ;
 
 public class DevRDFS {
     static { LogCtl.setLog4j() ; }
@@ -84,22 +86,27 @@ public class DevRDFS {
 
     static Node node(String str) { return NodeFactory.createURI("http://example/"+str) ; }
     
-    static void dwim(Graph g1, Graph g2, Node s, Node p , Node o) {
-        System.out.println("** Graph 1:") ; 
-        dwim$(g1, s,p,o) ;
-        System.out.println("** Graph 2:") ; 
-        dwim$(g2, s,p,o) ;
+    static void dwim(Graph gTest, Graph gInf, Node s, Node p , Node o) {
+        System.out.println("** Graph (test):") ; 
+        dwim$(gTest, s,p,o, false) ;
+        System.out.println("** Graph (inference):") ; 
+        dwim$(gInf, s,p,o, true) ;
         System.out.println() ;
     }
     
-    static void dwim(Graph g1, Node s, Node p , Node o) {
-        dwim$(g1, s,p,o) ;
-        System.out.println() ;
-    }
+    static Filter<Triple> filterRDFS = new Filter<Triple>() {
+        @Override
+        public boolean accept(Triple triple) {
+            return ! triple.getPredicate().getNameSpace().equals(RDFS.getURI()) ; 
+            }
+    } ;
     
-    static void dwim$(Graph g, Node s, Node p , Node o) {
+    
+    static void dwim$(Graph g, Node s, Node p , Node o, boolean filter) {
         System.out.printf("find(%s, %s, %s)\n", s,p,o) ; 
         ExtendedIterator<Triple> iter = g.find(s, p, o) ;
+        if ( filter )
+            iter = iter.filterKeep(filterRDFS) ;
         for ( ; iter.hasNext() ; )
             System.out.println("    "+iter.next()) ;
     }
