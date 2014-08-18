@@ -18,26 +18,21 @@
 
 package inf ;
 
-import java.util.ArrayList ;
-import java.util.HashMap ;
-import java.util.List ;
-import java.util.Map ;
+import java.util.* ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
 
+import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.query.Query ;
-import com.hp.hpl.jena.query.QueryExecution ;
-import com.hp.hpl.jena.query.QueryExecutionFactory ;
-import com.hp.hpl.jena.query.QueryFactory ;
-import com.hp.hpl.jena.query.QuerySolution ;
-import com.hp.hpl.jena.query.ResultSet ;
-import com.hp.hpl.jena.query.Syntax ;
+import com.hp.hpl.jena.query.* ;
 import com.hp.hpl.jena.rdf.model.Model ;
 
 public class InferenceSetupRDFS {
+    public final Graph vocabGraph ;
+    
     public final Map<Node, List<Node>> superClasses    = new HashMap<>() ;
     public final Map<Node, List<Node>> subClasses      = new HashMap<>() ;
+    public final Set<Node> classes                     = new HashSet<>() ;
 
     public final Map<Node, List<Node>> superProperties = new HashMap<>() ;
     public final Map<Node, List<Node>> subProperties   = new HashMap<>() ;
@@ -50,8 +45,18 @@ public class InferenceSetupRDFS {
     public final Map<Node, List<Node>> domainPropertyList      = new HashMap<>() ;
     public final Map<Node, List<Node>> rangePropertyList       = new HashMap<>() ;
     
+
+    private static String preamble = StrUtils.strjoinNL
+        ("PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+         "PREFIX  rdfs:   <http://www.w3.org/2000/01/rdf-schema#>",
+         "PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>",
+         "PREFIX  owl:    <http://www.w3.org/2002/07/owl#>",
+         "PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>") ;
+
     
     public InferenceSetupRDFS(Model vocab) {
+        vocabGraph = vocab.getGraph() ;
+        
         // Find super classes - uses property paths
         exec("SELECT ?x ?y { ?x rdfs:subClassOf+ ?y }", vocab, superClasses, subClasses ) ;
 
@@ -63,14 +68,15 @@ public class InferenceSetupRDFS {
 
         // Find range
         exec("SELECT ?x ?y { ?x rdfs:range ?y }", vocab, rangeList, rangePropertyList) ;
+        
+        // All mentioned classes
+        superClasses.keySet().stream().forEach(n-> classes.add(n)) ;
+        subClasses.keySet().stream().forEach(n-> classes.add(n)) ;
+        domainList.values().stream().forEach(v-> classes.addAll(v)) ;
+        rangeList.values().stream().forEach(v-> classes.addAll(v)) ;
     }
 
     private static void exec(String qs, Model model, Map<Node, List<Node>> multimap1, Map<Node, List<Node>> multimap2) {
-        String preamble = StrUtils.strjoinNL("PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
-                                             "PREFIX  rdfs:   <http://www.w3.org/2000/01/rdf-schema#>",
-                                             "PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>",
-                                             "PREFIX  owl:    <http://www.w3.org/2002/07/owl#>",
-                                             "PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>") ;
         Query query = QueryFactory.create(preamble + "\n" + qs, Syntax.syntaxARQ) ;
         QueryExecution qexec = QueryExecutionFactory.create(query, model) ;
         ResultSet rs = qexec.execSelect() ;
@@ -82,6 +88,17 @@ public class InferenceSetupRDFS {
             put(multimap2, y, x) ;
         }
     }
+    
+//    private static void exec(String qs, Model model, Set<Node> results) {
+//        Query query = QueryFactory.create(preamble + "\n" + qs, Syntax.syntaxARQ) ;
+//        QueryExecution qexec = QueryExecutionFactory.create(query, model) ;
+//        ResultSet rs = qexec.execSelect() ;
+//        for ( ; rs.hasNext() ; ) {
+//            QuerySolution soln = rs.next() ;
+//            Node x = soln.get("x").asNode() ;
+//            results.add(x) ;
+//        }
+//    }
     
     private static void put(Map<Node, List<Node>> multimap, Node n1, Node n2) {
         if ( !multimap.containsKey(n1) )

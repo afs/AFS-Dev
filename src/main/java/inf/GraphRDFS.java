@@ -23,6 +23,7 @@ import java.util.stream.Collectors ;
 import java.util.stream.Stream ;
 import java.util.stream.StreamSupport ;
 
+import org.apache.jena.atlas.iterator.Iter ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
@@ -33,10 +34,17 @@ import com.hp.hpl.jena.graph.TripleMatch ;
 import com.hp.hpl.jena.sparql.graph.GraphWrapper ;
 import com.hp.hpl.jena.sparql.graph.NodeConst ;
 import com.hp.hpl.jena.util.iterator.* ;
+import com.hp.hpl.jena.vocabulary.RDFS ;
 
 public class GraphRDFS extends GraphWrapper {
     private static Logger log = LoggerFactory.getLogger(GraphRDFS.class) ;
-    private static final Node rdfType = NodeConst.nodeRDFType ;
+    
+    private static final Node rdfType           = NodeConst.nodeRDFType ;
+    private static final Node rdfsRange         = RDFS.Nodes.range ;
+    private static final Node rdfsDomain        = RDFS.Nodes.domain ;
+    private static final Node rdfsSubClassOf    = RDFS.Nodes.subClassOf ;
+    private static final Node rdfsSubPropertyOf = RDFS.Nodes.subPropertyOf ;
+    
     private InferenceSetupRDFS setup ;
     private boolean infDomain ;
     private boolean infRange ;
@@ -207,33 +215,42 @@ public class GraphRDFS extends GraphWrapper {
         // + reverse (used in object position and there is a range clause)
         if ( infRange )
             iter = iter.andThen(super.find(Node.ANY, Node.ANY, subject)) ;
-        //iter = print(iter) ;
-        return infFilterSubjObj(iter, subject, object) ;
+        //iter = printExtended(iter) ;
+        return infFilterSubjObj(iter, subject, Node.ANY, object) ;
     }
 
     private ExtendedIterator<Triple> find_X_ANY_ANY(Node subject) {
-        // XXX DO BETTER
+        // Can we do better?
         return find_X_ANY_T(subject, Node.ANY) ;
     }
 
     private ExtendedIterator<Triple> find_ANY_ANY_T(Node object) {
         ExtendedIterator<Triple> iter = super.find(Node.ANY, Node.ANY, object) ;
-        // XXX BUG
-        // ? ? P (range) does not find :x a :P.
-        // :P is not in the target graph.
-        //add ? rdf:type P and distinct.
-        // And subclasses
+
+        // ? ? P (range) does not find :x a :P when :P is a class
+        // and "some p range P"
+        // Include from setup?
+        if ( InfGlobal.includeDerivedDataRDFS ) {
+            iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsRange, object)) ;
+            iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsDomain, object)) ;
+            iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsRange, object)) ;
+            iter = iter.andThen(setup.vocabGraph.find(object, rdfsSubClassOf, Node.ANY)) ;
+            iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsSubClassOf, object)) ;
+        }
         
-        // + reverse (used in object position and there is a domain clause)
-        if ( infDomain )
-            iter = iter.andThen(super.find(object, Node.ANY, Node.ANY)) ;
-        //iter = print(iter) ;
-        return infFilterSubjObj(iter, Node.ANY, object) ;
+        //iter = iter.andThen(find_ANY_type_T(object)) ;
+        return distinct(infFilterSubjObj(iter, Node.ANY, Node.ANY, object)) ;
     }
 
-    private ExtendedIterator<Triple> infFilterSubjObj(ExtendedIterator<Triple> iter, Node subject, Node object) {
+    private ExtendedIterator<Triple> infFilterSubjObj(ExtendedIterator<Triple> iter, Node subject, Node predicate, Node object) {
+        iter = printExtended(iter) ;
+        
         Iterator<Triple> iter2 = new InferenceProcessorIteratorRDFS(setup, iter) ;
+        
         Stream<Triple> stream = stream(iter2) ;
+        if ( isTerm(predicate) )
+            stream = stream.filter(triple -> { return triple.getPredicate().equals(predicate) ; } ) ;
+
         if ( isTerm(object) )
             stream = stream.filter(triple -> { return triple.getObject().equals(object) ; } ) ;
         if ( isTerm(subject) )
@@ -241,6 +258,11 @@ public class GraphRDFS extends GraphWrapper {
         // When needed?
         stream = stream.distinct() ;
         return new ExtendedIteratorCloser<>(stream.iterator(), iter) ;
+    }
+    
+    private <X> ExtendedIterator<X> distinct(ExtendedIterator<X> iter) {
+        Iterator<X> iter2 = Iter.distinct(iter) ;
+        return new ExtendedIteratorCloser<>(iter2, iter) ;
     }
 
     private ExtendedIterator<Triple> find_ANY_ANY_ANY() {
@@ -281,18 +303,22 @@ public class GraphRDFS extends GraphWrapper {
         }
     }
 
-
-    private ExtendedIterator<Triple> print(ExtendedIterator<Triple> iter) {
+    // XXX UTILS
+    
+    static public ExtendedIterator<Triple> printExtended(ExtendedIterator<Triple> iter) {
+        Iterator<Triple> iter2 = print(iter) ;
+        iter.close() ;
+        return WrappedIterator.create(iter2) ;
+    }
+    
+    static public Iterator<Triple> print(Iterator<Triple> iter) {
         List<Triple> triples = new ArrayList<>() ; 
         for ( ; iter.hasNext() ;)
             triples.add(iter.next()) ;
-        
-        //iter.forEachRemaining(triples::add) ;
-        iter.close() ;
-        System.out.println(triples) ;
-        return WrappedIterator.create(triples.iterator()) ;
+        triples.stream().forEach(t -> System.out.println("# "+t)) ;
+        return triples.iterator() ;
     }
-    
+
     private void accTypes(Set<Node> types, Node subject) {
         ExtendedIterator<Triple> iter = get().find(subject, rdfType, Node.ANY) ;
         iter.forEachRemaining(triple -> types.add(triple.getObject())) ;

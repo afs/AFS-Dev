@@ -26,8 +26,6 @@ import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
-import org.apache.jena.riot.system.StreamRDF ;
-import org.apache.jena.riot.system.StreamRDFLib ;
 import org.junit.Assert ;
 import org.junit.BeforeClass ;
 import org.junit.Test ;
@@ -50,41 +48,69 @@ public class TestRDFS {// extends BaseTest {
     static Model vocab ;
     static Model data ;
     static Node rt = NodeConst.nodeRDFType ;
+
+    static InferenceSetupRDFS setup ;
     // Jena graph to check results against.
     static Graph infGraph ;
-    static Graph testGraph1 ;
-    static Graph testGraph2 ;
-    static Graph testGraph3 ;
+    static Graph testGraphRDFS ;
+    static Graph testGraphExpanded ;
+    static Graph testGraphFilterAll ;
+    static Graph testGraphDataVocab ;
     
     static Node node(String str) { return NodeFactory.createURI("http://example/"+str) ; }
     
+    static final String DATA_FILE = "rdfs-data.ttl" ;
+    static final String VOCAB_FILE = "rdfs-vocab.ttl" ;
+    
     @BeforeClass public static void setupClass() {
         try { 
-            vocab = RDFDataMgr.loadModel("rdfs-vocab.ttl") ;
-            data = RDFDataMgr.loadModel("rdfs-data.ttl") ;
-            String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
-            rules = rules.replaceAll("#[^\\n]*", "") ;
-            Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
-            //Model m = ModelFactory.createInfModel(reasoner, data);
-            /** Rules way */ 
-            InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
-            infGraph = m.getGraph() ;
-            InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
+            boolean VOCAB_IN_DATA = false ;
+            
+            vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
+            data = RDFDataMgr.loadModel(DATA_FILE) ;
+            setup = new InferenceSetupRDFS(vocab) ;
+            
+            {
+                String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
+                rules = rules.replaceAll("#[^\\n]*", "") ;
+                Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
+                //Model m = ModelFactory.createInfModel(reasoner, data);
+                /** Rules way */ 
+                InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
+                infGraph = m.getGraph() ;
+            }
             
             /** Compute way */
-            testGraph1 = new GraphRDFS(setup, data.getGraph()) ;
+            {
+                testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
+            }
             
-            /** Expansion way */
-            testGraph2 = Factory.createDefaultGraph() ;
-            StreamRDF stream = StreamRDFLib.graph(testGraph2) ; 
-            stream = new InferenceProcessorStreamRDF(stream, setup) ;
-            RDFDataMgr.parse(stream, "rdfs-data.ttl") ;
+            /** Expansion way (no vocab in the data) */
+            testGraphExpanded = Factory.createDefaultGraph() ;
+//            if ( false )
+//            {
+//                StreamRDF stream = StreamRDFLib.graph(testGraphExpanded) ;
+//                stream = new InferenceProcessorStreamRDF(stream, setup) ;
+//                RDFDataMgr.parse(stream, DATA_FILE) ;
+//                //Vocab in data.
+//                if ( VOCAB_IN_DATA )
+//                    RDFDataMgr.parse(stream, VOCAB_FILE) ;
+//            }
             
-            /** Whole graph expansion, filter */
-            /** Compute way */
-            testGraph3 = new GraphRDFS3(setup, data.getGraph()) ;
+            /** Whole graph expansion, filter  (no vocab in the data) */
+            testGraphFilterAll = Factory.createDefaultGraph() ;
+//            testGraphFilterAll = new GraphRDFS3(setup, data.getGraph()) ;
+//            if ( VOCAB_IN_DATA )
+//                RDFDataMgr.read(testGraphFilterAll, "rdfs-vocab.ttl") ;
             
-
+//            /* Combined data and vocab files as data. */
+//            Model mAll = ModelFactory.createDefaultModel() ;
+//            StreamRDF streamModelAll = StreamRDFLib.graph(mAll.getGraph()) ;
+//            
+//            //StreamRDF s = new InferenceProcessorStreamRDF(streamModelAll, setup) ;
+//            RDFDataMgr.parse(streamModelAll, VOCAB_FILE) ;             //Expand (subclass foo) ** ?? **
+//            RDFDataMgr.parse(streamModelAll, DATA_FILE) ; //Data direct
+//            testGraphDataVocab = new GraphRDFS(setup, mAll.getGraph()) ;
             
         } catch (IOException ex ) { IO.exception(ex) ; }
     }
@@ -122,7 +148,6 @@ public class TestRDFS {// extends BaseTest {
     @Test public void test_calc_rdfs_13e()       { test(null, null, node("Q1")) ; }
     @Test public void test_calc_rdfs_13f()       { test(null, null, node("Q2")) ; }
 
-    
     // all T cases.
     // all U cases.
     @Test public void test_calc_rdfs_14a()       { test(null, rt, node("T")) ; }
@@ -134,21 +159,42 @@ public class TestRDFS {// extends BaseTest {
 
     @Test public void test_calc_rdfs_15a()       { test(null, rt, node("U")) ; }
     @Test public void test_calc_rdfs_15b()       { test(null, null, node("U")) ; }
+    
+    @Test public void test_calc_rdfs_16a()       { test(null, null, node("X")) ; }
+    @Test public void test_calc_rdfs_16b()       { test(null, rt, node("X")) ; }
 
-    private void test(Node s, Node p, Node o) {
+    static public Set<Triple> filterRDFS(Set<Triple> x) {
         Set<Triple> x0 = new HashSet<>() ;
-        infGraph.find(s,p,o).forEachRemaining(triple -> {
+        x.stream().forEach(triple -> {
             Node pred = triple.getPredicate() ;
-            if ( ! pred.getNameSpace().equals(RDFS.getURI()) ) { 
-                x0.add(triple) ;
+            if ( InfGlobal.includeDerivedDataRDFS ) {
+//                if ( ! pred.equals(RDFS.domain.asNode()) &&
+//                     ! pred.equals(RDFS.range.asNode()) )
+                    x0.add(triple) ;
+            } else {
+                if (! pred.getNameSpace().equals(RDFS.getURI()) ) 
+                    x0.add(triple) ;
             }
         }) ;
+        return x0 ;
+    }
+    
+    private void test(Node s, Node p, Node o) {
+        Set<Triple> x0 = infGraph.find(s,p,o).toSet() ;
+        x0 = filterRDFS(x0) ;
         
         //Set<Triple> x2 = Iter.toSet(testGraph2.find(s,p,o)) ;
         
-        Set<Triple> x1 = Iter.toSet(testGraph1.find(s,p,o)) ;
-        Set<Triple> x2 = Iter.toSet(testGraph2.find(s,p,o)) ;
-        Set<Triple> x3 = Iter.toSet(testGraph3.find(s,p,o)) ;
+//        Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
+//        Model data = RDFDataMgr.loadModel(DATA_FILE) ;
+//        InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
+//        testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
+        
+        
+        
+        Set<Triple> x1 = Iter.toSet(testGraphRDFS.find(s,p,o)) ;
+        Set<Triple> x2 = Iter.toSet(testGraphExpanded.find(s,p,o)) ;
+        Set<Triple> x3 = Iter.toSet(testGraphFilterAll.find(s,p,o)) ;
         if ( ! x0.equals(x1) || ! x0.equals(x2) || ! x0.equals(x3) ) {
             System.err.println("Expected: find("+s+", "+p+", "+o+")") ;
             x0.stream().forEach(triple -> {System.err.println("  "+triple) ; }) ;
@@ -170,7 +216,29 @@ public class TestRDFS {// extends BaseTest {
         Assert.assertEquals("GraphRDFS", x0, x1) ;
         Assert.assertEquals("Expansion stream", x0, x2) ;
         Assert.assertEquals("Expand/filter", x0, x3) ;
-        
+
+        if ( false ) {
+            //Inf graph and data+vocab
+
+            Set<Triple> x8 = Iter.toSet(infGraph.find(s,p,o)) ;
+            Set<Triple> x9 = Iter.toSet(testGraphDataVocab.find(s, p, o)) ;
+            if ( ! x8.equals(x9) ) {
+                System.err.println("Expected (inf): find("+s+", "+p+", "+o+")") ;
+                x8.stream().forEach(triple -> {System.err.println("  "+triple) ; }) ;
+                System.err.println("Got (combined):") ;
+                print(x9) ;
+                System.err.println("Missed:") ;
+                diff(x8, x9) ;
+            }
+            Assert.assertEquals("Data+vocab", x8, x9) ;
+        }
+    }
+    
+    static void diff(Set<Triple> A, Set<Triple> B) {
+        for ( Triple t : A ) {
+            if ( ! B.contains(t) )
+                System.err.println("> "+t) ;
+        }
     }
     
     static private void print(Set<Triple> x) {

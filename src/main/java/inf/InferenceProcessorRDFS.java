@@ -22,6 +22,7 @@ import java.util.List ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.vocabulary.RDF ;
+import com.hp.hpl.jena.vocabulary.RDFS ;
 
 /**
  * Apply a fixed set of inference rules to a stream of triples. This is
@@ -42,9 +43,14 @@ abstract class InferenceProcessorRDFS {
     // rdfs:member
     // list:member ???
 
-    static final Node                rdfType = RDF.type.asNode() ;
-    private final InferenceSetupRDFS state ;
+    static final Node rdfType           = RDF.type.asNode() ;
+    static final Node rdfsSubClassOf    = RDFS.subClassOf.asNode() ;
+    static final Node rdfsSubPropertyOf = RDFS.subPropertyOf.asNode() ;
+    static final Node rdfsDomain        = RDFS.domain.asNode() ;
+    static final Node rdfsRange         = RDFS.range.asNode() ;
 
+    private final InferenceSetupRDFS state ;
+    
     public InferenceProcessorRDFS(InferenceSetupRDFS state) {
         this.state = state ;
     }
@@ -70,6 +76,21 @@ abstract class InferenceProcessorRDFS {
             if ( x != null )
                 for ( Node c : x )
                     derive(s, p, c) ;
+            if ( InfGlobal.includeDerivedDataRDFS ) {
+                subClass(o, rdfsSubClassOf, o) ;    // Recurse
+            }
+        }
+        if ( InfGlobal.includeDerivedDataRDFS && p.equals(rdfsSubClassOf) ) {
+            List<Node> superClasses = state.superClasses.get(o) ;
+            if ( superClasses != null )
+                for ( Node c : superClasses )
+                    derive(o, p, c) ;
+            List<Node> subClasses = state.subClasses.get(o) ;
+            if ( subClasses != null )
+                for ( Node c : subClasses )
+                    derive(c, p, o) ;
+            derive(s, p, s) ;
+            derive(o, p, o) ;
         }
     }
 
@@ -84,6 +105,21 @@ abstract class InferenceProcessorRDFS {
         if ( x != null ) {
             for ( Node p2 : x )
                 derive(s, p2, o) ;
+            if ( InfGlobal.includeDerivedDataRDFS )
+                subProperty(p, rdfsSubPropertyOf, p) ;
+        }
+        if ( InfGlobal.includeDerivedDataRDFS && p.equals(rdfsSubPropertyOf) ) {
+            // ** RDFS extra
+            List<Node> superProperties = state.superProperties.get(o) ;
+            if ( superProperties != null )
+                for ( Node c : superProperties )
+                    derive(o, p, c) ;
+            List<Node> subProperties = state.subProperties.get(o) ;
+            if ( subProperties != null )
+                for ( Node c : subProperties )
+                    derive(c, p, o) ;
+            derive(s, p, s) ;
+            derive(o, p, o) ;
         }
     }
 
@@ -97,13 +133,15 @@ abstract class InferenceProcessorRDFS {
             for ( Node c : x ) {
                 derive(s, rdfType, c) ;
                 subClass(s, rdfType, c) ;
+                if ( InfGlobal.includeDerivedDataRDFS )
+                    derive(p, rdfsDomain, c) ;
             }
         }
     }
 
     /*
-     * [rdfs3: (?p rdfs:range ?c) -> [(?y rdf:type ?c) <- (?x ?p ?y)] ] [rdfs9:
-     * (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
+     * [rdfs3: (?p rdfs:range ?c) -> [(?y rdf:type ?c) <- (?x ?p ?y)] ]
+     * [rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
      */
     final private void range(Node s, Node p, Node o) {
         // Mask out literal subjects
@@ -115,6 +153,8 @@ abstract class InferenceProcessorRDFS {
             for ( Node c : x ) {
                 derive(o, rdfType, c) ;
                 subClass(o, rdfType, c) ;
+                if ( InfGlobal.includeDerivedDataRDFS )
+                    derive(p, rdfsRange, c) ;
             }
         }
     }

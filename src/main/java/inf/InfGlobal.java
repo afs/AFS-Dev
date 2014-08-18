@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,19 +16,15 @@
  * limitations under the License.
  */
 
-package inf ;
+package inf;
 
-import org.apache.jena.riot.system.StreamRDF ;
+public class InfGlobal {
+    // Whether to include RDFS subClassOf/subPropertyOf derivation when
+    // subClassOf/subPropertyOf is in the data.
+    // Also covers rdf:type T --> T rdfs:subClassOf T 
+    // When false, inferences are only rdf:type stuff.
+    
+    static public final boolean includeDerivedDataRDFS = false ;
 
-import com.hp.hpl.jena.rdf.model.Model ;
-
-public class InfFactory {
-    public static StreamRDF inf(StreamRDF data, Model vocab) {
-        InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
-        return inf(data, setup) ;
-    }
-
-    public static StreamRDF inf(StreamRDF data, InferenceSetupRDFS setup) {
-        return new InferenceProcessorStreamRDF(data, setup) ;
-    }
 }
+

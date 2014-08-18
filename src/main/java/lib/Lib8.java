@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,19 +16,19 @@
  * limitations under the License.
  */
 
-package inf ;
+package lib;
 
-import org.apache.jena.riot.system.StreamRDF ;
+import java.util.Iterator ;
+import java.util.Spliterator ;
+import java.util.Spliterators ;
+import java.util.stream.Stream ;
+import java.util.stream.StreamSupport ;
 
-import com.hp.hpl.jena.rdf.model.Model ;
-
-public class InfFactory {
-    public static StreamRDF inf(StreamRDF data, Model vocab) {
-        InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
-        return inf(data, setup) ;
-    }
-
-    public static StreamRDF inf(StreamRDF data, InferenceSetupRDFS setup) {
-        return new InferenceProcessorStreamRDF(data, setup) ;
+public class Lib8 {
+    /** Iterator to Stream */ 
+    public static <T> Stream<T> stream(Iterator<? extends T> iterator) {
+        int characteristics = Spliterator.ORDERED | Spliterator.IMMUTABLE;
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, characteristics), false);
     }
 }
+

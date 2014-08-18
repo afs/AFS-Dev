@@ -22,8 +22,12 @@
 # rdfs:domain   rdfs:range  rdfs:Class
 # rdfs:range    rdfs:range  rdfs:Class
 # These replace (rdfs:range rdfs:range rdfs:Class) which combines with 
-# rdfs7; (?a rdf:type rdfs:Class) -> (?a rdfs:subClassOf ?a)
+# rdfs7: (?a rdf:type rdfs:Class) -> (?a rdfs:subClassOf ?a)
 
 [rdfsX1: (?a rdf:type ?T ) -> (?T rdfs:subClassOf ?T ) ]
 [rdfsX2: (?a rdf:domain ?T ) -> (?T rdfs:subClassOf ?T ) ]
 [rdfsX3: (?a rdf:range ?T ) -> (?T rdfs:subClassOf ?T ) ]
+[rdfsX4: (?a rdf:range ?T ) -> (?T rdfs:subClassOf ?T ) ]
+
+[rdfsX5: (?a rdfs:subClassOf ?b ) -> (?a rdfs:subClassOf ?a ) ]
+[rdfsX6: (?a rdfs:subClassOf ?b ) -> (?b rdfs:subClassOf ?b ) ]
