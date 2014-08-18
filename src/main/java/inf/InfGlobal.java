@@ -24,7 +24,7 @@ public class InfGlobal {
     // Also covers rdf:type T --> T rdfs:subClassOf T 
     // When false, inferences are only rdf:type stuff.
     
-    static public final boolean includeDerivedDataRDFS = false ;
+    static public /*final*/ boolean includeDerivedDataRDFS = false ;
 
 }
 

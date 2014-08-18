@@ -26,6 +26,8 @@ import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.riot.system.StreamRDF ;
+import org.apache.jena.riot.system.StreamRDFLib ;
 import org.junit.Assert ;
 import org.junit.BeforeClass ;
 import org.junit.Test ;
@@ -65,6 +67,8 @@ public class TestRDFS {// extends BaseTest {
     @BeforeClass public static void setupClass() {
         try { 
             boolean VOCAB_IN_DATA = false ;
+            if ( VOCAB_IN_DATA )
+                InfGlobal.includeDerivedDataRDFS = true ;
             
             vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
             data = RDFDataMgr.loadModel(DATA_FILE) ;
@@ -81,36 +85,31 @@ public class TestRDFS {// extends BaseTest {
             }
             
             /** Compute way */
-            {
-                testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
-            }
+            testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
             
             /** Expansion way (no vocab in the data) */
             testGraphExpanded = Factory.createDefaultGraph() ;
-//            if ( false )
-//            {
-//                StreamRDF stream = StreamRDFLib.graph(testGraphExpanded) ;
-//                stream = new InferenceProcessorStreamRDF(stream, setup) ;
-//                RDFDataMgr.parse(stream, DATA_FILE) ;
-//                //Vocab in data.
-//                if ( VOCAB_IN_DATA )
-//                    RDFDataMgr.parse(stream, VOCAB_FILE) ;
-//            }
+            StreamRDF stream = StreamRDFLib.graph(testGraphExpanded) ;
+            stream = new InferenceProcessorStreamRDF(stream, setup) ;
+            RDFDataMgr.parse(stream, DATA_FILE) ;
+            //Vocab in data.
+            if ( VOCAB_IN_DATA )
+                RDFDataMgr.parse(stream, VOCAB_FILE) ;
             
             /** Whole graph expansion, filter  (no vocab in the data) */
             testGraphFilterAll = Factory.createDefaultGraph() ;
-//            testGraphFilterAll = new GraphRDFS3(setup, data.getGraph()) ;
-//            if ( VOCAB_IN_DATA )
-//                RDFDataMgr.read(testGraphFilterAll, "rdfs-vocab.ttl") ;
+            testGraphFilterAll = new GraphRDFS3(setup, data.getGraph()) ;
+            if ( VOCAB_IN_DATA )
+                RDFDataMgr.read(testGraphFilterAll, "rdfs-vocab.ttl") ;
             
-//            /* Combined data and vocab files as data. */
-//            Model mAll = ModelFactory.createDefaultModel() ;
-//            StreamRDF streamModelAll = StreamRDFLib.graph(mAll.getGraph()) ;
-//            
-//            //StreamRDF s = new InferenceProcessorStreamRDF(streamModelAll, setup) ;
-//            RDFDataMgr.parse(streamModelAll, VOCAB_FILE) ;             //Expand (subclass foo) ** ?? **
-//            RDFDataMgr.parse(streamModelAll, DATA_FILE) ; //Data direct
-//            testGraphDataVocab = new GraphRDFS(setup, mAll.getGraph()) ;
+            /* Combined data and vocab files as data. */
+            Model mAll = ModelFactory.createDefaultModel() ;
+            StreamRDF streamModelAll = StreamRDFLib.graph(mAll.getGraph()) ;
+            
+            //StreamRDF s = new InferenceProcessorStreamRDF(streamModelAll, setup) ;
+            RDFDataMgr.parse(streamModelAll, VOCAB_FILE) ;             //Expand (subclass foo) ** ?? **
+            RDFDataMgr.parse(streamModelAll, DATA_FILE) ; //Data direct
+            testGraphDataVocab = new GraphRDFS(setup, mAll.getGraph()) ;
             
         } catch (IOException ex ) { IO.exception(ex) ; }
     }
