@@ -19,7 +19,9 @@
 package inf;
 
 import java.io.IOException ;
+import java.util.Collection ;
 import java.util.HashSet ;
+import java.util.List ;
 import java.util.Set ;
 
 import org.apache.jena.atlas.io.IO ;
@@ -66,7 +68,7 @@ public class TestRDFS {// extends BaseTest {
     
     @BeforeClass public static void setupClass() {
         try { 
-            boolean VOCAB_IN_DATA = false ;
+            boolean VOCAB_IN_DATA = true ;
             if ( VOCAB_IN_DATA )
                 InfGlobal.includeDerivedDataRDFS = true ;
             
@@ -191,37 +193,37 @@ public class TestRDFS {// extends BaseTest {
         
         
         
-        Set<Triple> x1 = Iter.toSet(testGraphRDFS.find(s,p,o)) ;
-        Set<Triple> x2 = Iter.toSet(testGraphExpanded.find(s,p,o)) ;
-        Set<Triple> x3 = Iter.toSet(testGraphFilterAll.find(s,p,o)) ;
-        if ( ! x0.equals(x1) || ! x0.equals(x2) || ! x0.equals(x3) ) {
+        List<Triple> x1 = Iter.toList(testGraphRDFS.find(s,p,o)) ;
+        List<Triple> x2 = Iter.toList(testGraphExpanded.find(s,p,o)) ;
+        List<Triple> x3 = Iter.toList(testGraphFilterAll.find(s,p,o)) ;
+        if ( ! equals(x0, x1) || ! equals(x0, x2) || ! equals(x0, x3) ) {
             System.err.println("Expected: find("+s+", "+p+", "+o+")") ;
             x0.stream().forEach(triple -> {System.err.println("  "+triple) ; }) ;
-            if ( ! x0.equals(x1) ) {
+            if ( ! equals(x0, x1) ) {
                 System.err.println("Got (GraphRDFS):") ;
                 print(x1) ;
             }
-            if ( ! x0.equals(x2) ) {
+            if ( !equals(x0, x2) ) {
                 System.err.println("Got (Expansion):") ;
                 print(x2) ;
             }
-            if ( ! x0.equals(x3) ) {
+            if ( ! equals(x0, x3) ) {
                 System.err.println("Got (GraphRDFS3):") ;
                 print(x3) ;
             }
             System.err.println() ;
         }
         
-        Assert.assertEquals("GraphRDFS", x0, x1) ;
-        Assert.assertEquals("Expansion stream", x0, x2) ;
-        Assert.assertEquals("Expand/filter", x0, x3) ;
+        Assert.assertTrue("GraphRDFS", equals(x0, x1)) ;
+        Assert.assertTrue("Expansion stream", equals(x0, x2)) ;
+        Assert.assertTrue("Expand/filter", equals(x0, x3)) ;
 
         if ( false ) {
             //Inf graph and data+vocab
 
             Set<Triple> x8 = Iter.toSet(infGraph.find(s,p,o)) ;
             Set<Triple> x9 = Iter.toSet(testGraphDataVocab.find(s, p, o)) ;
-            if ( ! x8.equals(x9) ) {
+            if ( ! equals(x8, x9) ) {
                 System.err.println("Expected (inf): find("+s+", "+p+", "+o+")") ;
                 x8.stream().forEach(triple -> {System.err.println("  "+triple) ; }) ;
                 System.err.println("Got (combined):") ;
@@ -229,7 +231,7 @@ public class TestRDFS {// extends BaseTest {
                 System.err.println("Missed:") ;
                 diff(x8, x9) ;
             }
-            Assert.assertEquals("Data+vocab", x8, x9) ;
+            Assert.assertTrue("Data+vocab", equals(x8, x9)) ;
         }
     }
     
@@ -240,7 +242,19 @@ public class TestRDFS {// extends BaseTest {
         }
     }
     
-    static private void print(Set<Triple> x) {
+    static private boolean equals(Collection<Triple> triples1, Collection<Triple> triples2) {
+        if ( triples1.size() != triples2.size() ) 
+            return false ;
+        for ( Triple t : triples1 )
+            if ( !triples2.contains(t) )
+                return false ;
+        for ( Triple t : triples2 )
+            if ( !triples1.contains(t) )
+                return false ;
+        return true ;
+    }
+    
+    static private void print(Collection<Triple> x) {
         if ( x.isEmpty() )
             System.err.println("  {}") ;
         else

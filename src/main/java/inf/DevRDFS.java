@@ -52,7 +52,10 @@ public class DevRDFS {
     //  - run with and without vocab in data
     //  - run with different files (e.g empty data). 
     
+    // Test (D,V) , (D,-), (-, V), (D+V, D+V)
+    //   Moed D-extract-V.
     
+    // ANY_ANY_T - filter rdf:type and replace - no distinct needed.
     
     // Use InfFactory.
     
