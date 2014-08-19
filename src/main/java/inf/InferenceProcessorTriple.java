@@ -19,32 +19,43 @@
 package inf;
 
 import java.util.Collection ;
+import java.util.HashSet ;
+import java.util.Set ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
 
-/** An inference processor that deals with one triple and adds any derived triples to an accumulator */
+/** An inference processor that deals with one triple.
+ * It can return the derived triples or adds them derived to an accumulator
+ * The input triple is not added (but it may be derived).
+ */
 public class InferenceProcessorTriple {
-    
-    Collection<Triple> acc ;
     private InferenceSetupRDFS setup ;
-    private InferenceProcessorRDFS infEngine ;
     
-    InferenceProcessorTriple(InferenceSetupRDFS setup) {
+    public InferenceProcessorTriple(InferenceSetupRDFS setup) {
         this.setup = setup ;
-        this.infEngine = new InferenceProcessorRDFS(setup) {
-            @Override
-            public void derive(Node s, Node p, Node o) {
-                acc.add(Triple.create(s, p, o)) ;
-            } };
+    }
+
+    /** Calculate the set of triples from processing triple t */
+    public Set<Triple> process(Triple t) {
+        return process(t.getSubject(), t.getPredicate(), t.getObject()) ;
     }
     
+    public Set<Triple> process(Node s, Node p, Node o) {
+        Set<Triple> acc = new HashSet<>() ;
+        process(acc, s, p, o) ;
+        return acc ;
+    }
+
+    /** Accumulate the triples from processing triple t */
     public void process(Collection<Triple> acc, Triple t) {
         process(acc, t.getSubject(), t.getPredicate(), t.getObject()) ;
     }
-
+    
+    /** Accumulate the triples from processing triple t */
     public void process(Collection<Triple> acc, Node s, Node p, Node o) {
-        this.acc = acc ;
-        infEngine.process(s, p, o) ;
+        InferenceProcessorAccRDFS inf = new InferenceProcessorAccRDFS(acc, setup) ;
+        inf.process(s, p, o) ;
     }
+
 }

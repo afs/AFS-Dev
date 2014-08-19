@@ -19,7 +19,9 @@
 package inf;
 
 import java.io.IOException ;
+import java.util.ArrayList ;
 import java.util.Iterator ;
+import java.util.List ;
 import java.util.Set ;
 
 import org.apache.jena.atlas.logging.LogCtl ;
@@ -41,19 +43,20 @@ import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
 import com.hp.hpl.jena.util.iterator.Filter ;
 import com.hp.hpl.jena.util.iterator.WrappedIterator ;
 import com.hp.hpl.jena.vocabulary.RDFS ;
-
 public class DevRDFS {
     static { LogCtl.setLog4j() ; }
-    
-    
     // Think through the cases.
     
     // More tests
     //  - run with and without vocab in data
     //  - run with different files (e.g empty data). 
     
+    // Tests for:
+    //   InfererenceProcessTriple - build on InferenceProcessStreamRDF
+    //   InfererenceProcessIteratorRDFS
+    
     // Test (D,V) , (D,-), (-, V), (D+V, D+V)
-    //   Moed D-extract-V.
+    //   Mode D-extract-V.
     
     // ANY_ANY_T - filter rdf:type and replace - no distinct needed.
     
@@ -76,23 +79,28 @@ public class DevRDFS {
         
         String DATA_FILE = "rdfs-data.ttl" ;
         String VOCAB_FILE = "rdfs-vocab.ttl" ;
+
+        Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
+        Model data = RDFDataMgr.loadModel(DATA_FILE) ;
+        InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
+        
+        System.out.println("Inf") ;
+        InferenceProcessorTriple proc = new InferenceProcessorTriple(setup) ;
+        List<Triple> triples = new ArrayList<>() ;
+        //InfGlobal.includeDerivedDataRDFS = true ;
+        proc.process(triples, node("x1"),  node("p"), node("123")) ;
+        triples.forEach(t -> System.out.println(t)) ;
+        System.exit(0) ;
         
         if ( false ) {
-            Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
-            InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
-            
             // Treat as data.
             Graph g = new GraphRDFS3(setup, vocab.getGraph()) ;
             Iterator<Triple> iter = g.find(null, null, node("P")) ;
 //            Iterator<Triple> iter = new InferenceProcessorIteratorRDFS(setup, vocab.getGraph().find(null, null, null)) ;
-            while(iter.hasNext()) {
+            while(iter.hasNext())
                 System.out.println("-- "+iter.next()) ;
-            }
             System.exit(0) ;
         }
-        
-        Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
-        Model data = RDFDataMgr.loadModel(DATA_FILE) ;
         
         String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
         rules = rules.replaceAll("#[^\\n]*", "") ;
@@ -107,8 +115,6 @@ public class DevRDFS {
 //        m2.setNsPrefixes(m) ;
 //        m2.add(m.getDeductionsModel()) ;
 
-        InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
-        
         Node rt = NodeConst.nodeRDFType ;
         g_rdfs2 = new GraphRDFS(setup, data.getGraph()) ;
         

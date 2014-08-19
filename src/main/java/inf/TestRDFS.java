@@ -68,7 +68,7 @@ public class TestRDFS {// extends BaseTest {
     
     @BeforeClass public static void setupClass() {
         try { 
-            boolean VOCAB_IN_DATA = true ;
+            boolean VOCAB_IN_DATA = false ;
             if ( VOCAB_IN_DATA )
                 InfGlobal.includeDerivedDataRDFS = true ;
             

@@ -26,10 +26,13 @@ import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.core.Quad ;
 
 /**
- * Receive triples and quads (incoming because this is a StreamRDF); allow RDFS;
- * output to place provided.
+ * Receive triples and quads (incoming because this is a StreamRDF); 
+ * apply allow RDFS;
+ * output to the StreamRDF provided.
+ * Stream output may include duplicates.
  */
 public class InferenceProcessorStreamRDF extends StreamRDFWrapper {
+    // Combine into InferenceProcessorRDFS?
     private final InferenceSetupRDFS     rdfsSetup ;
     private final InferenceProcessorRDFS rdfs ;
     private boolean                      isTriple = true ;
@@ -64,5 +67,4 @@ public class InferenceProcessorStreamRDF extends StreamRDFWrapper {
         g = quad.getGraph() ;
         rdfs.process(quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
     }
-
 }

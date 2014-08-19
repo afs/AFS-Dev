@@ -31,11 +31,11 @@ class InferenceProcessorIteratorRDFS implements Iterator<Triple> {
     private final Iterator<Triple> iter ;
     private List<Triple> current = new ArrayList<>() ;
     private int idx = -1 ;
-    private InferenceProcessorTriple infEngine ;
+    private InferenceProcessorAccRDFS infEngine ;
     
     public InferenceProcessorIteratorRDFS(InferenceSetupRDFS setup, Iterator<Triple> iter) {
         this.iter = iter ;
-        this.infEngine = new InferenceProcessorTriple(setup) ;
+        this.infEngine = new InferenceProcessorAccRDFS(current, setup) ;
     }
     
     @Override
@@ -60,7 +60,8 @@ class InferenceProcessorIteratorRDFS implements Iterator<Triple> {
         // Base data triple.
         Triple t = iter.next() ;
         Node p = t.getPredicate() ;
-        infEngine.process(current, t.getSubject(), t.getPredicate(), t.getObject()) ;
+        
+        infEngine.process(t.getSubject(), t.getPredicate(), t.getObject()) ;
         idx = (current.size() != 0 ) ? 0 : -1 ; 
         return t ;
     }
