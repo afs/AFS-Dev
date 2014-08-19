@@ -16,7 +16,9 @@
  * limitations under the License.
  */
 
-package inf;
+package inf.test;
+
+import inf.* ;
 
 import java.io.IOException ;
 import java.util.Collection ;
@@ -26,6 +28,7 @@ import java.util.Set ;
 
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.iterator.Iter ;
+import org.apache.jena.atlas.junit.BaseTest ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.apache.jena.riot.system.StreamRDF ;
@@ -45,9 +48,8 @@ import com.hp.hpl.jena.sparql.graph.NodeConst ;
 import com.hp.hpl.jena.util.FileUtils ;
 import com.hp.hpl.jena.vocabulary.RDFS ;
 
-public class TestRDFS {// extends BaseTest {
+public abstract class AbstractTestRDFS extends BaseTest {
     static { LogCtl.setCmdLogging(); }
-    
     
     static Model vocab ;
     static Model data ;

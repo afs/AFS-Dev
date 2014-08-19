@@ -18,10 +18,10 @@
 
 package inf;
 
+import inf.test.TestRDFS ;
+
 import java.io.IOException ;
-import java.util.ArrayList ;
 import java.util.Iterator ;
-import java.util.List ;
 import java.util.Set ;
 
 import org.apache.jena.atlas.logging.LogCtl ;
@@ -52,7 +52,8 @@ public class DevRDFS {
     //  - run with different files (e.g empty data). 
     
     // Tests for:
-    //   InfererenceProcessTriple - build on InferenceProcessStreamRDF
+    //   InfererenceProcessTriple
+    //   InferenceProcessStreamRDF
     //   InfererenceProcessIteratorRDFS
     
     // Test (D,V) , (D,-), (-, V), (D+V, D+V)
@@ -82,15 +83,39 @@ public class DevRDFS {
 
         Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
         Model data = RDFDataMgr.loadModel(DATA_FILE) ;
-        InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
+        Model dataAndVocab = ModelFactory.createDefaultModel() ;
+        dataAndVocab.add(vocab) ;
+        dataAndVocab.add(data) ;
         
-        System.out.println("Inf") ;
-        InferenceProcessorTriple proc = new InferenceProcessorTriple(setup) ;
-        List<Triple> triples = new ArrayList<>() ;
-        //InfGlobal.includeDerivedDataRDFS = true ;
-        proc.process(triples, node("x1"),  node("p"), node("123")) ;
-        triples.forEach(t -> System.out.println(t)) ;
+        String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
+        rules = rules.replaceAll("#[^\\n]*", "") ;
+        //System.out.println(rules) ;
+
+        InferenceSetupRDFS setup = new InferenceSetupRDFS(dataAndVocab) ;
+        Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
+        //Model m = ModelFactory.createInfModel(reasoner, data);  
+        InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
+        inf = m.getGraph() ;
+        Node rt = NodeConst.nodeRDFType ;
+        
+        GraphRDFS g_rdfs = new GraphRDFS(setup, dataAndVocab.getGraph()) ;
+        // Misses "P subClassof P"
+        dwim$("test", g_rdfs, node("a"), rt, null, false) ;
+        dwim$("inference", inf, node("a"), rt, null, false) ;
+        System.out.println() ;
+        dwim$("test", g_rdfs, null, rt, null , false) ;
+        dwim$("inference", inf, null, rt, null, false) ;
         System.exit(0) ;
+        
+        
+        
+//        System.out.println("Inf") ;
+//        InferenceProcessorTriple proc = new InferenceProcessorTriple(setup) ;
+//        List<Triple> triples = new ArrayList<>() ;
+//        //InfGlobal.includeDerivedDataRDFS = true ;
+//        proc.process(triples, node("x1"),  node("p"), node("123")) ;
+//        triples.forEach(t -> System.out.println(t)) ;
+//        System.exit(0) ;
         
         if ( false ) {
             // Treat as data.
@@ -102,20 +127,13 @@ public class DevRDFS {
             System.exit(0) ;
         }
         
-        String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
-        rules = rules.replaceAll("#[^\\n]*", "") ;
-        //System.out.println(rules) ;
         
-        Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
-        //Model m = ModelFactory.createInfModel(reasoner, data);  
-        InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
-        inf = m.getGraph() ;
         
 //        Model m2 = ModelFactory.createDefaultModel() ;
 //        m2.setNsPrefixes(m) ;
 //        m2.add(m.getDeductionsModel()) ;
 
-        Node rt = NodeConst.nodeRDFType ;
+        
         g_rdfs2 = new GraphRDFS(setup, data.getGraph()) ;
         
         g_rdfs3 = new GraphRDFS3(setup, data.getGraph()) ;
@@ -135,11 +153,13 @@ public class DevRDFS {
     static Node node(String str) { return NodeFactory.createURI("http://example/"+str) ; }
     
     static void dwim(Graph gTest, Graph gInf, Node s, Node p , Node o) {
-        System.out.println("** Graph (test):") ; 
-        dwim$(gTest, s,p,o, false) ;
-        System.out.println("** Graph (inference):") ; 
-        dwim$(gInf, s,p,o, true) ;
+        dwim$("test", gTest, s,p,o, false) ;
+        dwim$("inference", gInf, s,p,o, true) ;
         System.out.println() ;
+    }
+    
+    static void dwim(Graph graph, Node s, Node p , Node o) {
+        dwim$(null, graph, s,p,o, false) ;
     }
     
     
@@ -157,7 +177,9 @@ public class DevRDFS {
     } ;
     
     
-    static void dwim$(Graph g, Node s, Node p , Node o, boolean filter) {
+    static void dwim$(String label, Graph g, Node s, Node p , Node o, boolean filter) {
+        if ( label != null )
+            System.out.println("** Graph ("+label+"):") ;
         System.out.printf("find(%s, %s, %s)\n", s,p,o) ; 
         ExtendedIterator<Triple> iter = g.find(s, p, o) ;
         if ( filter ) {
@@ -167,6 +189,7 @@ public class DevRDFS {
         }
         for ( ; iter.hasNext() ; )
             System.out.println("    "+iter.next()) ;
+        System.out.println() ;
     }
 }
 

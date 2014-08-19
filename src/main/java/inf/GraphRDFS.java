@@ -221,8 +221,19 @@ public class GraphRDFS extends GraphWrapper {
         return find_X_ANY_T(subject, Node.ANY) ;
     }
 
+    static private Filter<Triple> filterRdfType = new Filter<Triple>() {
+
+        @Override
+        public boolean accept(Triple triple) {
+            return triple.getPredicate().equals(rdfType) ;
+        } } ;
+    
     private ExtendedIterator<Triple> find_ANY_ANY_T(Node object) {
         ExtendedIterator<Triple> iter = super.find(Node.ANY, Node.ANY, object) ;
+        iter = iter.filterDrop(filterRdfType) ;
+        // and get via inference.
+        // Exclude rdf:type and do by inference?
+        iter = iter.andThen(find_ANY_type_T(object)) ;
 
         // ? ? P (range) does not find :x a :P when :P is a class
         // and "some p range P"
