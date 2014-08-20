@@ -42,6 +42,38 @@ public class DevRDFS {
     static { LogCtl.setLog4j() ; }
     // Think through the cases.
     
+    /* 
+     * OWL 2 RL / OWL 2 QL.
+     * http://www.w3.org/TR/owl2-profiles/#OWL_2_QL
+     * http://www.w3.org/TR/owl2-profiles/#OWL_2_RL
+     * RDFS 3.0 / RDFS Plus / 
+     * http://www.w3.org/2009/12/rdf-ws/papers/ws31
+        rdfs:domain
+        rdfs:range
+        rdfs:subClassOf
+        rdfs:subPropertyOf
+        owl:equivalentClass
+        owl:equivalentProperty
+        owl:sameAs
+        owl:inverseOf
+        (no reflexive)
+        owl:TransitiveProperty 
+        owl:SymmetricProperty
+        owl:FunctionalProperty
+        owl:InverseFunctionalProperty 
+
+     * 
+     * RDFS++ -- AllegroGraph 
+    rdf:type
+    rdfs:subClassOf
+    rdfs:domain and rdfs:range
+    rdfs:subPropertyOf
+    owl:sameAs
+    owl:inverseOf
+    owl:TransitiveProperty
+    
+*/
+    
     // More tests
     //   Coverage
     //   TestCombined - reset test().
