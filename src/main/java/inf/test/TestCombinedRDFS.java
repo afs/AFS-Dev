@@ -19,13 +19,11 @@
 package inf.test;
 
 import inf.GraphRDFS ;
-import inf.InfGlobal ;
 import inf.InferenceSetupRDFS ;
 
 import java.util.List ;
 
 import org.apache.jena.riot.RDFDataMgr ;
-import org.junit.AfterClass ;
 import org.junit.BeforeClass ;
 
 import com.hp.hpl.jena.graph.Graph ;
@@ -49,27 +47,18 @@ public class TestCombinedRDFS extends AbstractTestRDFS {
     static final String VOCAB_FILE = DIR+"/rdfs-vocab.ttl" ;
     static final String RULES_FILE = DIR+"/rdfs-min.rules" ;
     
-    static boolean original_includeDerivedDataRDFS ;
-    
     @BeforeClass public static void setupClass() {
-        original_includeDerivedDataRDFS = InfGlobal.includeDerivedDataRDFS ;
-        InfGlobal.includeDerivedDataRDFS = true ;
-
         vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
         data = RDFDataMgr.loadModel(DATA_FILE) ;
         // And the vocabulary
         RDFDataMgr.read(data, VOCAB_FILE) ;
         
         infGraph = createRulesGraph(data, vocab, RULES_FILE) ;
-        setup = new InferenceSetupRDFS(vocab) ;
+        setup = new InferenceSetupRDFS(vocab, true) ;
         /** Compute way */
         testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
     }
     
-    @AfterClass public static void resetClass() {
-        InfGlobal.includeDerivedDataRDFS = original_includeDerivedDataRDFS ;
-    }
-
     @Override
     protected List<Triple> findInTestGraph(Node s, Node p, Node o) {
         List<Triple> x = getTestGraph().find(s,p,o).toList() ;

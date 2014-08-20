@@ -49,10 +49,10 @@ abstract class InferenceProcessorRDFS {
     static final Node rdfsDomain        = RDFS.domain.asNode() ;
     static final Node rdfsRange         = RDFS.range.asNode() ;
 
-    private final InferenceSetupRDFS state ;
+    private final InferenceSetupRDFS setup ;
     
     public InferenceProcessorRDFS(InferenceSetupRDFS state) {
-        this.state = state ;
+        this.setup = state ;
     }
 
     public void process(Node s, Node p, Node o) {
@@ -72,20 +72,20 @@ abstract class InferenceProcessorRDFS {
      */
     final private void subClass(Node s, Node p, Node o) {
         if ( p.equals(rdfType) ) {
-            List<Node> x = state.superClasses.get(o) ;
+            List<Node> x = setup.superClasses.get(o) ;
             if ( x != null )
                 for ( Node c : x )
-                    derive(s, p, c) ;
-            if ( InfGlobal.includeDerivedDataRDFS ) {
+                    derive(s, rdfType, c) ;
+            if ( setup.includeDerivedDataRDFS ) {
                 subClass(o, rdfsSubClassOf, o) ;    // Recurse
             }
         }
-        if ( InfGlobal.includeDerivedDataRDFS && p.equals(rdfsSubClassOf) ) {
-            List<Node> superClasses = state.superClasses.get(o) ;
+        if ( setup.includeDerivedDataRDFS && p.equals(rdfsSubClassOf) ) {
+            List<Node> superClasses = setup.superClasses.get(o) ;
             if ( superClasses != null )
                 for ( Node c : superClasses )
                     derive(o, p, c) ;
-            List<Node> subClasses = state.subClasses.get(o) ;
+            List<Node> subClasses = setup.subClasses.get(o) ;
             if ( subClasses != null )
                 for ( Node c : subClasses )
                     derive(c, p, o) ;
@@ -101,20 +101,20 @@ abstract class InferenceProcessorRDFS {
      * [rdfs6: (?a ?p ?b), (?p rdfs:subPropertyOf ?q) -> (?a ?q ?b)]
      */
     private void subProperty(Node s, Node p, Node o) {
-        List<Node> x = state.superProperties.get(p) ;
+        List<Node> x = setup.superProperties.get(p) ;
         if ( x != null ) {
             for ( Node p2 : x )
                 derive(s, p2, o) ;
-            if ( InfGlobal.includeDerivedDataRDFS )
+            if ( setup.includeDerivedDataRDFS )
                 subProperty(p, rdfsSubPropertyOf, p) ;
         }
-        if ( InfGlobal.includeDerivedDataRDFS && p.equals(rdfsSubPropertyOf) ) {
+        if ( setup.includeDerivedDataRDFS && p.equals(rdfsSubPropertyOf) ) {
             // ** RDFS extra
-            List<Node> superProperties = state.superProperties.get(o) ;
+            List<Node> superProperties = setup.superProperties.get(o) ;
             if ( superProperties != null )
                 for ( Node c : superProperties )
                     derive(o, p, c) ;
-            List<Node> subProperties = state.subProperties.get(o) ;
+            List<Node> subProperties = setup.subProperties.get(o) ;
             if ( subProperties != null )
                 for ( Node c : subProperties )
                     derive(c, p, o) ;
@@ -128,12 +128,12 @@ abstract class InferenceProcessorRDFS {
      * [rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
      */
     final private void domain(Node s, Node p, Node o) {
-        List<Node> x = state.domainList.get(p) ;
+        List<Node> x = setup.domainList.get(p) ;
         if ( x != null ) {
             for ( Node c : x ) {
                 derive(s, rdfType, c) ;
                 subClass(s, rdfType, c) ;
-                if ( InfGlobal.includeDerivedDataRDFS )
+                if ( setup.includeDerivedDataRDFS )
                     derive(p, rdfsDomain, c) ;
             }
         }
@@ -148,12 +148,12 @@ abstract class InferenceProcessorRDFS {
         if ( o.isLiteral() )
             return ;
         // Range
-        List<Node> x = state.rangeList.get(p) ;
+        List<Node> x = setup.rangeList.get(p) ;
         if ( x != null ) {
             for ( Node c : x ) {
                 derive(o, rdfType, c) ;
                 subClass(o, rdfType, c) ;
-                if ( InfGlobal.includeDerivedDataRDFS )
+                if ( setup.includeDerivedDataRDFS )
                     derive(p, rdfsRange, c) ;
             }
         }

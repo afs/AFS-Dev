@@ -20,9 +20,19 @@ package inf ;
 
 import org.apache.jena.riot.system.StreamRDF ;
 
+import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.rdf.model.Model ;
 
 public class InfFactory {
+    
+    public static Graph graphRDF(Graph data, Graph vocab) {
+        return graphRDF(data, new InferenceSetupRDFS(vocab)) ;
+    }
+    
+        public static Graph graphRDF(Graph data, InferenceSetupRDFS setup) {
+            return new GraphRDFS(setup, data) ;
+        }
+        
     public static StreamRDF inf(StreamRDF data, Model vocab) {
         InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
         return inf(data, setup) ;

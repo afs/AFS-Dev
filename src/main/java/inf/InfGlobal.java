@@ -29,13 +29,6 @@ import com.hp.hpl.jena.sparql.graph.NodeConst ;
 import com.hp.hpl.jena.vocabulary.RDFS ;
 
 public class InfGlobal {
-    // Whether to include RDFS subClassOf/subPropertyOf derivation when
-    // subClassOf/subPropertyOf is in the data.
-    // Also covers rdf:type T --> T rdfs:subClassOf T
-    // When false, inferences are only rdf:type stuff.
-
-    public static /* final */ boolean includeDerivedDataRDFS = false ;
-
     public static final Node        rdfType                = NodeConst.nodeRDFType ;
     public static final Node        rdfsRange              = RDFS.Nodes.range ;
     public static final Node        rdfsDomain             = RDFS.Nodes.domain ;

@@ -36,47 +36,40 @@ import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
 import com.hp.hpl.jena.reasoner.rulesys.Rule ;
 import com.hp.hpl.jena.util.FileUtils ;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
-import com.hp.hpl.jena.util.iterator.Filter ;
-import com.hp.hpl.jena.vocabulary.RDFS ;
 public class DevRDFS {
     static { LogCtl.setLog4j() ; }
     // Think through the cases.
     
-    /* 
+    /*
+     * rdfs:member, list:member
+     *  
      * OWL 2 RL / OWL 2 QL.
      * http://www.w3.org/TR/owl2-profiles/#OWL_2_QL
      * http://www.w3.org/TR/owl2-profiles/#OWL_2_RL
+
      * RDFS 3.0 / RDFS Plus / 
      * http://www.w3.org/2009/12/rdf-ws/papers/ws31
         rdfs:domain
         rdfs:range
         rdfs:subClassOf
         rdfs:subPropertyOf
+        
         owl:equivalentClass
         owl:equivalentProperty
+        
         owl:sameAs
         owl:inverseOf
         (no reflexive)
         owl:TransitiveProperty 
         owl:SymmetricProperty
+
         owl:FunctionalProperty
         owl:InverseFunctionalProperty 
-
-     * 
-     * RDFS++ -- AllegroGraph 
-    rdf:type
-    rdfs:subClassOf
-    rdfs:domain and rdfs:range
-    rdfs:subPropertyOf
-    owl:sameAs
-    owl:inverseOf
-    owl:TransitiveProperty
-    
 */
     
     // More tests
     //   Coverage
-    //   TestCombined - reset test().
+    //   find_X_rdfsSubClassOf_Y
     
     // Tests for:
     //   InfererenceProcessTriple
@@ -114,11 +107,12 @@ public class DevRDFS {
         dataAndVocab.add(vocab) ;
         dataAndVocab.add(data) ;
         
-        String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
+        String rules        //iter = printExtended(iter) ;
+ = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
         rules = rules.replaceAll("#[^\\n]*", "") ;
         //System.out.println(rules) ;
 
-        InferenceSetupRDFS setup = new InferenceSetupRDFS(dataAndVocab) ;
+        InferenceSetupRDFS setup = new InferenceSetupRDFS(dataAndVocab, false) ;
         Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
         //Model m = ModelFactory.createInfModel(reasoner, data);  
         InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
@@ -150,18 +144,17 @@ public class DevRDFS {
     }
     
     
-    
-    static Filter<Triple> filterRDFS = new Filter<Triple>() {
-        @Override
-        public boolean accept(Triple triple) {
-            if ( InfGlobal.includeDerivedDataRDFS ) {
-                Node p = triple.getPredicate() ;
-                return ! p.equals(RDFS.Nodes.domain) && ! p.equals(RDFS.Nodes.range) ; 
-            }
-            return  
-                ! triple.getPredicate().getNameSpace().equals(RDFS.getURI()) ; 
-            }
-    } ;
+//    static Filter<Triple> filterRDFS = new Filter<Triple>() {
+//        @Override
+//        public boolean accept(Triple triple) {
+//            if ( InfGlobal.includeDerivedDataRDFS ) {
+//                Node p = triple.getPredicate() ;
+//                return ! p.equals(RDFS.Nodes.domain) && ! p.equals(RDFS.Nodes.range) ; 
+//            }
+//            return  
+//                ! triple.getPredicate().getNameSpace().equals(RDFS.getURI()) ; 
+//            }
+//    } ;
     
     
     static void dwim$(String label, Graph g, Node s, Node p , Node o, boolean filter) {

@@ -26,6 +26,7 @@ import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.query.* ;
 import com.hp.hpl.jena.rdf.model.Model ;
+import com.hp.hpl.jena.rdf.model.ModelFactory ;
 
 public class InferenceSetupRDFS {
     public final Graph vocabGraph ;
@@ -44,6 +45,8 @@ public class InferenceSetupRDFS {
     // Type -> predicate
     public final Map<Node, List<Node>> domainPropertyList      = new HashMap<>() ;
     public final Map<Node, List<Node>> rangePropertyList       = new HashMap<>() ;
+
+    public final  boolean includeDerivedDataRDFS ;
     
 
     private static String preamble = StrUtils.strjoinNL
@@ -54,7 +57,19 @@ public class InferenceSetupRDFS {
          "PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>") ;
 
     
+    public InferenceSetupRDFS(Graph vocab) {
+        this(vocab, false) ;
+    }
+
+    public InferenceSetupRDFS(Graph vocab, boolean incDerivedDataRDFS) {
+        this(ModelFactory.createModelForGraph(vocab), incDerivedDataRDFS) ;
+    }
     public InferenceSetupRDFS(Model vocab) {
+        this(vocab, false) ;
+    }
+    
+    public InferenceSetupRDFS(Model vocab, boolean incDerivedDataRDFS) {
+        includeDerivedDataRDFS = incDerivedDataRDFS ;
         vocabGraph = vocab.getGraph() ;
         
         // Find super classes - uses property paths

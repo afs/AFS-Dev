@@ -212,8 +212,7 @@ public class GraphRDFS extends GraphWrapper {
         // + reverse (used in object position and there is a range clause)
         if ( infRange )
             iter = iter.andThen(super.find(Node.ANY, Node.ANY, subject)) ;
-        //iter = printExtended(iter) ;
-        return infFilterSubjObj(iter, subject, Node.ANY, object) ;
+        return infFilterSubjObj(iter, subject, Node.ANY, object, false) ;
     }
 
     private ExtendedIterator<Triple> find_X_ANY_ANY(Node subject) {
@@ -238,16 +237,17 @@ public class GraphRDFS extends GraphWrapper {
         // ? ? P (range) does not find :x a :P when :P is a class
         // and "some p range P"
         // Include from setup?
-        if ( InfGlobal.includeDerivedDataRDFS ) {
+        boolean ensureDistinct = false ;
+        if ( setup.includeDerivedDataRDFS ) {
+            // These cause duplicates.
+            ensureDistinct = true ;
             iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsRange, object)) ;
             iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsDomain, object)) ;
             iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsRange, object)) ;
             iter = iter.andThen(setup.vocabGraph.find(object, rdfsSubClassOf, Node.ANY)) ;
             iter = iter.andThen(setup.vocabGraph.find(Node.ANY, rdfsSubClassOf, object)) ;
         }
-        
-        //iter = iter.andThen(find_ANY_type_T(object)) ;
-        return infFilterSubjObj(iter, Node.ANY, Node.ANY, object) ;
+        return infFilterSubjObj(iter, Node.ANY, Node.ANY, object, ensureDistinct) ;
     }
 
     //    private <X> ExtendedIterator<X> distinct(ExtendedIterator<X> iter) {
@@ -261,7 +261,7 @@ public class GraphRDFS extends GraphWrapper {
             return new ExtendedIteratorCloser<>(iter2, iter) ;
         }
 
-    private ExtendedIterator<Triple> infFilterSubjObj(ExtendedIterator<Triple> iter, Node subject, Node predicate, Node object) {
+    private ExtendedIterator<Triple> infFilterSubjObj(ExtendedIterator<Triple> iter, Node subject, Node predicate, Node object, boolean ensureDistinct) {
         Iterator<Triple> iter2 = new InferenceProcessorIteratorRDFS(setup, iter) ;
         
         Stream<Triple> stream = stream(iter2) ;
@@ -273,7 +273,8 @@ public class GraphRDFS extends GraphWrapper {
         if ( isTerm(subject) )
             stream = stream.filter(triple -> { return triple.getSubject().equals(subject) ; } ) ;
         // When needed?
-        //stream = stream.distinct() ;
+        if ( ensureDistinct ) 
+            stream = stream.distinct() ;
         return new ExtendedIteratorCloser<>(stream.iterator(), iter) ;
     }
     
