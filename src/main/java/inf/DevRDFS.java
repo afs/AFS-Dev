@@ -42,6 +42,7 @@ public class DevRDFS {
     
     /*
      * rdfs:member, list:member
+     * Remove rule rdfs5b ( P subPropertyOf P )
      *  
      * OWL 2 RL / OWL 2 QL.
      * http://www.w3.org/TR/owl2-profiles/#OWL_2_QL

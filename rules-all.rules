@@ -7,7 +7,7 @@
 
 [rdfs5a: (?a rdfs:subPropertyOf ?b), (?b rdfs:subPropertyOf ?c) -> (?a rdfs:subPropertyOf ?c)]
 
-# [rdfs5b: (?a rdf:type rdf:Property) -> (?a rdfs:subPropertyOf ?a)]
+[rdfs5b: (?a rdf:type rdf:Property) -> (?a rdfs:subPropertyOf ?a)]
 
 [rdfs6:  (?a ?p ?b), (?p rdfs:subPropertyOf ?q) -> (?a ?q ?b)]
 
@@ -27,6 +27,9 @@
 [rdfsX1: (?a rdf:type ?T ) -> (?T rdfs:subClassOf ?T ) ]
 [rdfsX2: (?a rdf:domain ?T ) -> (?T rdfs:subClassOf ?T ) ]
 [rdfsX3: (?a rdf:range ?T ) -> (?T rdfs:subClassOf ?T ) ]
+[rdfsX4: (?a rdf:range ?T ) -> (?T rdfs:subClassOf ?T ) ]
 
-[rdfsX4: (?a rdfs:subClassOf ?b ) , notEqual(?a,?b) -> (?a rdfs:subClassOf ?a ) ]
-[rdfsX5: (?a rdfs:subClassOf ?b ) , notEqual(?a,?b) -> (?b rdfs:subClassOf ?b ) ]
+[rdfsX5: (?a rdfs:subClassOf ?b ) -> (?a rdfs:subClassOf ?a ) ]
+[rdfsX6: (?a rdfs:subClassOf ?b ) -> (?b rdfs:subClassOf ?b ) ]
+
+## -------------------------------------------------------------------
