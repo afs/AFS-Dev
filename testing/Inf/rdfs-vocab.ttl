@@ -22,3 +22,7 @@ PREFIX : <http://example/>
 :q rdfs:range :P .
 :P rdfs:subClassOf :P2 .
 :P1 rdfs:subClassOf :P .
+
+:pp rdfs:subPropertyOf :p .
+:p  rdfs:subPropertyOf :pTop .
+:ppp rdfs:subPropertyOf :pp .

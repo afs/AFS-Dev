@@ -40,8 +40,8 @@ public class TestRDFS extends AbstractTestRDFS {
     static final String DIR = "testing/Inf" ;
     static final String DATA_FILE = DIR+"/rdfs-data.ttl" ;
     static final String VOCAB_FILE = DIR+"/rdfs-vocab.ttl" ;
-    static final String RULES_FILE = "rdfs-min-backwards.rules" ;
-    //static final String RULES_FILE = DIR+"/rdfs-min.rules" ;
+    //static final String RULES_FILE = DIR+"/rdfs-min-backwards.rules" ;
+    static final String RULES_FILE = DIR+"/rdfs-min.rules" ;
     
     @BeforeClass public static void setupClass() {
         vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;

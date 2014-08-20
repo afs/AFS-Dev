@@ -30,3 +30,7 @@
 
 [rdfsX4: (?a rdfs:subClassOf ?b ) , notEqual(?a,?b) -> (?a rdfs:subClassOf ?a ) ]
 [rdfsX5: (?a rdfs:subClassOf ?b ) , notEqual(?a,?b) -> (?b rdfs:subClassOf ?b ) ]
+
+[rdfsX6: (?a rdfs:subPropertyOf ?b ) , notEqual(?a,?b) -> (?a rdfs:subPropertyOf ?a ) ]
+[rdfsX7: (?a rdfs:subPropertyOf ?b ) , notEqual(?a,?b) -> (?b rdfs:subPropertyOf ?b ) ]
+

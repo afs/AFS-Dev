@@ -28,6 +28,7 @@ import java.util.stream.Collectors ;
 import java.util.stream.Stream ;
 import java.util.stream.StreamSupport ;
 
+import org.apache.jena.atlas.iterator.Iter ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
@@ -115,10 +116,12 @@ public class GraphRDFS extends GraphWrapper {
             return super.find(subject, predicate, object) ;
         
         // Hard work, not scalable.
-        Set<Triple> triples = new HashSet<>() ;
+        //Don't forget predicate itself!
+        Set<Triple> triples = super.find(subject, predicate, object).toSet() ;
         
         for ( Node p : predicates ) {
             ExtendedIterator<Triple> iter = super.find(subject, p, object) ;
+            
             // replace p by predicate
             Map1<Triple, Triple> map = new Map1<Triple, Triple>(){
                 @Override
@@ -250,16 +253,20 @@ public class GraphRDFS extends GraphWrapper {
         return infFilterSubjObj(iter, Node.ANY, Node.ANY, object, ensureDistinct) ;
     }
 
-    //    private <X> ExtendedIterator<X> distinct(ExtendedIterator<X> iter) {
-    //        Iterator<X> iter2 = Iter.distinct(iter) ;
-    //        return new ExtendedIteratorCloser<>(iter2, iter) ;
-    //    }
+    private static <X> ExtendedIterator<X> distinct(ExtendedIterator<X> iter) {
+        Iterator<X> iter2 = Iter.distinct(iter) ;
+        return new ExtendedIteratorCloser<>(iter2, iter) ;
+    }
     
-        private ExtendedIterator<Triple> find_ANY_ANY_ANY() {
-            ExtendedIterator<Triple> iter = super.find(Node.ANY, Node.ANY, Node.ANY) ;
-            Iterator<Triple> iter2 = new InferenceProcessorIteratorRDFS(setup, iter) ;
-            return new ExtendedIteratorCloser<>(iter2, iter) ;
-        }
+    private ExtendedIterator<Triple> find_ANY_ANY_ANY() {
+        ExtendedIterator<Triple> iter = super.find(Node.ANY, Node.ANY, Node.ANY) ;
+        Iterator<Triple> iter2 = new InferenceProcessorIteratorRDFS(setup, iter) ;
+
+        if ( setup.includeDerivedDataRDFS )
+            iter2 = Iter.distinct(iter2) ;
+
+        return new ExtendedIteratorCloser<>(iter2, iter) ;
+    }
 
     private ExtendedIterator<Triple> infFilterSubjObj(ExtendedIterator<Triple> iter, Node subject, Node predicate, Node object, boolean ensureDistinct) {
         Iterator<Triple> iter2 = new InferenceProcessorIteratorRDFS(setup, iter) ;
@@ -278,11 +285,6 @@ public class GraphRDFS extends GraphWrapper {
         return new ExtendedIteratorCloser<>(stream.iterator(), iter) ;
     }
     
-//    private <X> ExtendedIterator<X> distinct(ExtendedIterator<X> iter) {
-//        Iterator<X> iter2 = Iter.distinct(iter) ;
-//        return new ExtendedIteratorCloser<>(iter2, iter) ;
-//    }
-
     private void accInstances(Set<Triple> triples, Set<Node> types, Node requestedType) {
         for ( Node type : types ) {
             ExtendedIterator<Triple> iter = super.find(Node.ANY, rdfType, type) ;

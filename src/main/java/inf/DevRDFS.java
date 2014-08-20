@@ -41,6 +41,10 @@ public class DevRDFS {
     // Think through the cases.
     
     /*
+     * coverage
+     * Duplicates in (? ? ?)combined due to subClassOf
+     *   Another rules file - RDFS graph without axioms.
+     * 
      * rdfs:member, list:member
      * Remove rule rdfs5b ( P subPropertyOf P )
      *  
@@ -99,8 +103,10 @@ public class DevRDFS {
     
     public static void main(String...argv) throws IOException {
         
-        String DATA_FILE = "rdfs-data.ttl" ;
-        String VOCAB_FILE = "rdfs-vocab.ttl" ;
+        String DIR = "testing/Inf" ;
+        String DATA_FILE = DIR+"/rdfs-data.ttl" ;
+        String VOCAB_FILE = DIR+"/rdfs-vocab.ttl" ;
+        String RULES_FILE = DIR+"/rdfs-min.rules" ;
 
         Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
         Model data = RDFDataMgr.loadModel(DATA_FILE) ;
@@ -108,10 +114,8 @@ public class DevRDFS {
         dataAndVocab.add(vocab) ;
         dataAndVocab.add(data) ;
         
-        String rules        //iter = printExtended(iter) ;
- = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
+        String rules = FileUtils.readWholeFileAsUTF8(RULES_FILE) ;
         rules = rules.replaceAll("#[^\\n]*", "") ;
-        //System.out.println(rules) ;
 
         InferenceSetupRDFS setup = new InferenceSetupRDFS(dataAndVocab, false) ;
         Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
@@ -119,8 +123,7 @@ public class DevRDFS {
         InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
         inf = m.getGraph() ;
         g_rdfs2 = new GraphRDFS(setup, data.getGraph()) ;
-        
-        test(null, null, node("P")) ;
+        test(node("c"), node("pTop"), null) ;
     }
     
     private static void test(Node s, Node p, Node o) {
@@ -135,8 +138,8 @@ public class DevRDFS {
     static Node node(String str) { return NodeFactory.createURI("http://example/"+str) ; }
     
     static void dwim(Graph gTest, Graph gInf, Node s, Node p , Node o) {
-        dwim$("test", gTest, s,p,o, false) ;
         dwim$("inference", gInf, s,p,o, true) ;
+        dwim$("test", gTest, s,p,o, false) ;
         System.out.println() ;
     }
     
