@@ -46,31 +46,7 @@ public class DevRDFS {
      *   Another rules file - RDFS graph without axioms.
      * 
      * rdfs:member, list:member
-     * Remove rule rdfs5b ( P subPropertyOf P )
-     *  
-     * OWL 2 RL / OWL 2 QL.
-     * http://www.w3.org/TR/owl2-profiles/#OWL_2_QL
-     * http://www.w3.org/TR/owl2-profiles/#OWL_2_RL
-
-     * RDFS 3.0 / RDFS Plus / 
-     * http://www.w3.org/2009/12/rdf-ws/papers/ws31
-        rdfs:domain
-        rdfs:range
-        rdfs:subClassOf
-        rdfs:subPropertyOf
-        
-        owl:equivalentClass
-        owl:equivalentProperty
-        
-        owl:sameAs
-        owl:inverseOf
-        (no reflexive)
-        owl:TransitiveProperty 
-        owl:SymmetricProperty
-
-        owl:FunctionalProperty
-        owl:InverseFunctionalProperty 
-*/
+     */
     
     // More tests
     //   Coverage
@@ -88,15 +64,6 @@ public class DevRDFS {
     
     // Use InfFactory.
     
-    // test(null, null, node("P")) misses when inclued RDFS is on.
-    //     http://example/q @rdfs:range http://example/P
-    
-    // Tests - also with vocab in data (and separate).
-    // Processor flag for "no machinary" - only rdf:type derivations  - when data includes vocab.
-    // == hide rdfs: derived stuff from data.
-    
-    // If data inference - tests for X subClassOf X
-    
     static Graph inf ;
     static Graph g_rdfs2 ; 
     static Graph g_rdfs3 ;
@@ -110,14 +77,14 @@ public class DevRDFS {
 
         Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
         Model data = RDFDataMgr.loadModel(DATA_FILE) ;
-        Model dataAndVocab = ModelFactory.createDefaultModel() ;
-        dataAndVocab.add(vocab) ;
-        dataAndVocab.add(data) ;
+//        Model dataAndVocab = ModelFactory.createDefaultModel() ;
+//        dataAndVocab.add(vocab) ;
+//        dataAndVocab.add(data) ;
         
         String rules = FileUtils.readWholeFileAsUTF8(RULES_FILE) ;
         rules = rules.replaceAll("#[^\\n]*", "") ;
 
-        InferenceSetupRDFS setup = new InferenceSetupRDFS(dataAndVocab, false) ;
+        InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab, false) ;
         Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
         //Model m = ModelFactory.createInfModel(reasoner, data);  
         InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
