@@ -23,7 +23,6 @@ import inf.InfGlobal ;
 
 import java.io.IOException ;
 import java.io.PrintStream ;
-import java.nio.file.Paths ;
 import java.util.Collection ;
 import java.util.List ;
 import java.util.Set ;
@@ -51,7 +50,7 @@ public abstract class AbstractTestRDFS extends BaseTest {
     
     static Node node(String str) { return NodeFactory.createURI("http://example/"+str) ; }
 
-    // Check this is coverage.
+    // XXX Check this is coverage.
     
     @Test public void test_calc_rdfs_01()       { test(node("a"), rdfType, null) ; }
     @Test public void test_calc_rdfs_02()       { test(node("a"), rdfType, node("T2")) ; }
