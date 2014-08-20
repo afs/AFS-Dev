@@ -18,15 +18,18 @@
 
 package inf.test;
 
-import inf.GraphRDFS ;
+import inf.InferenceProcessorStreamRDF ;
 import inf.InferenceSetupRDFS ;
 
 import java.io.IOException ;
 
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.riot.system.StreamRDF ;
+import org.apache.jena.riot.system.StreamRDFLib ;
 import org.junit.BeforeClass ;
 
+import com.hp.hpl.jena.graph.Factory ;
 import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.rdf.model.InfModel ;
 import com.hp.hpl.jena.rdf.model.Model ;
@@ -37,7 +40,7 @@ import com.hp.hpl.jena.reasoner.rulesys.Rule ;
 import com.hp.hpl.jena.util.FileUtils ;
 
 /** Test of RDFS, with separate data and vocabulary, no RDFS in the deductions. */
-public class TestRDFS extends AbstractTestRDFS {
+public class TestExpandRDFS extends AbstractTestRDFS {
     static Model vocab ;
     static Model data ;
 
@@ -45,7 +48,7 @@ public class TestRDFS extends AbstractTestRDFS {
     // Jena graph to check results against.
     static Graph infGraph ;
     // The main test target
-    static Graph testGraphRDFS ;
+    static Graph testGraphExpanded ;
     
     static final String DIR = "testing/Inf" ;
     static final String DATA_FILE = DIR+"/rdfs-data.ttl" ;
@@ -67,8 +70,11 @@ public class TestRDFS extends AbstractTestRDFS {
                 infGraph = m.getGraph() ;
             }
             
-            /** Compute way */
-            testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
+            // Expansion Graph
+            testGraphExpanded = Factory.createDefaultGraph() ;
+            StreamRDF stream = StreamRDFLib.graph(testGraphExpanded) ;
+            stream = new InferenceProcessorStreamRDF(stream, setup) ;
+            RDFDataMgr.parse(stream, DATA_FILE) ;
         } catch (IOException ex ) { IO.exception(ex) ; }
     }
 
@@ -79,7 +85,7 @@ public class TestRDFS extends AbstractTestRDFS {
 
     @Override
     protected Graph getTestGraph() {
-        return testGraphRDFS ;
+        return testGraphExpanded ;
     }
 
     @Override
@@ -89,7 +95,7 @@ public class TestRDFS extends AbstractTestRDFS {
 
     @Override
     protected String getTestLabel() {
-        return "GraphRDFS" ;
+        return "Expanded" ;
     }
 }
 

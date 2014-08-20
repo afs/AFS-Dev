@@ -16,27 +16,25 @@
  * limitations under the License.
  */
 
-package lib;
+package inf.test;
 
-import java.util.* ;
-import java.util.stream.Collectors ;
-import java.util.stream.Stream ;
-import java.util.stream.StreamSupport ;
+import java.util.Collection ;
 
-public class Lib8 {
-    /** Iterator to Stream */ 
-    public static <T> Stream<T> stream(Iterator<? extends T> iterator) {
-        int characteristics = Spliterator.ORDERED | Spliterator.IMMUTABLE;
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, characteristics), false);
+public class InfTestLib {
+
+    /** Collection equality regardless of order */
+    public static <X> boolean sameElts(Collection<X> items1, Collection<X> items2) {
+        if ( items1.size() != items2.size() ) 
+            return false ;
+        for ( X t : items1 )
+            if ( !items2.contains(t) )
+                return false ;
+        for ( X t : items2 )
+            if ( !items1.contains(t) )
+                return false ;
+        return true ;
     }
     
-    public static <X> List<X> toList(Stream<X> stream) {
-        return stream.collect(Collectors.toList()) ;
-    }
-    
-    public static <X> Set<X> toSet(Stream<X> stream) {
-        return stream.collect(Collectors.toSet()) ;
-    }
 
 }
 

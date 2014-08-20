@@ -18,7 +18,13 @@
 
 package inf ;
 
+import static lib.Lib8.toList ;
+
+import java.util.List ;
+import java.util.function.Predicate ;
+
 import com.hp.hpl.jena.graph.Node ;
+import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.graph.NodeConst ;
 import com.hp.hpl.jena.vocabulary.RDFS ;
 
@@ -36,4 +42,12 @@ public class InfGlobal {
     public static final Node        rdfsSubClassOf         = RDFS.Nodes.subClassOf ;
     public static final Node        rdfsSubPropertyOf      = RDFS.Nodes.subPropertyOf ;
 
+    private static Predicate<Triple> filterRDFS = 
+        triple -> triple.getPredicate().getNameSpace().equals(RDFS.getURI()) ;
+    private static Predicate<Triple> filterNotRDFS = 
+        triple -> ! triple.getPredicate().getNameSpace().equals(RDFS.getURI()) ;
+        
+    public static List<Triple> removeRDFS(List<Triple> x) {
+        return toList(x.stream().filter(filterNotRDFS)) ;
+    }
 }

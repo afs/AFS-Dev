@@ -16,27 +16,21 @@
  * limitations under the License.
  */
 
-package lib;
+package inf.test;
 
-import java.util.* ;
-import java.util.stream.Collectors ;
-import java.util.stream.Stream ;
-import java.util.stream.StreamSupport ;
+import org.junit.runner.RunWith ;
+import org.junit.runners.Suite ;
 
-public class Lib8 {
-    /** Iterator to Stream */ 
-    public static <T> Stream<T> stream(Iterator<? extends T> iterator) {
-        int characteristics = Spliterator.ORDERED | Spliterator.IMMUTABLE;
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, characteristics), false);
-    }
-    
-    public static <X> List<X> toList(Stream<X> stream) {
-        return stream.collect(Collectors.toList()) ;
-    }
-    
-    public static <X> Set<X> toSet(Stream<X> stream) {
-        return stream.collect(Collectors.toSet()) ;
-    }
+@RunWith(Suite.class)
+@Suite.SuiteClasses( {
+    TestRDFS.class
+    , TestExpandRDFS.class
+    , TestCombinedRDFS.class
+})
+
+
+
+public class TS_Inf {
 
 }
 

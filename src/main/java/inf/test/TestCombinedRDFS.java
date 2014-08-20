@@ -19,12 +19,16 @@
 package inf.test;
 
 import inf.GraphRDFS ;
+import inf.InfGlobal ;
 import inf.InferenceSetupRDFS ;
 
 import java.io.IOException ;
 
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.riot.system.StreamRDF ;
+import org.apache.jena.riot.system.StreamRDFLib ;
+import org.junit.AfterClass ;
 import org.junit.BeforeClass ;
 
 import com.hp.hpl.jena.graph.Graph ;
@@ -36,8 +40,8 @@ import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
 import com.hp.hpl.jena.reasoner.rulesys.Rule ;
 import com.hp.hpl.jena.util.FileUtils ;
 
-/** Test of RDFS, with separate data and vocabulary, no RDFS in the deductions. */
-public class TestRDFS extends AbstractTestRDFS {
+/** Test of RDFS, with combined data and vocabulary. */
+public class TestCombinedRDFS extends AbstractTestRDFS {
     static Model vocab ;
     static Model data ;
 
@@ -51,10 +55,19 @@ public class TestRDFS extends AbstractTestRDFS {
     static final String DATA_FILE = DIR+"/rdfs-data.ttl" ;
     static final String VOCAB_FILE = DIR+"/rdfs-vocab.ttl" ;
     
+    static boolean original_includeDerivedDataRDFS ;
+    
     @BeforeClass public static void setupClass() {
-        try { 
+        try {
+            /**/
+            original_includeDerivedDataRDFS = InfGlobal.includeDerivedDataRDFS ;
+            InfGlobal.includeDerivedDataRDFS = true ;
+            
             vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
             data = RDFDataMgr.loadModel(DATA_FILE) ;
+            
+            RDFDataMgr.read(data, VOCAB_FILE) ;
+            
             setup = new InferenceSetupRDFS(vocab) ;
             
             {
@@ -69,9 +82,20 @@ public class TestRDFS extends AbstractTestRDFS {
             
             /** Compute way */
             testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
+            
+            /* Combined data and vocab files as data. */
+            Model mAll = ModelFactory.createDefaultModel() ;
+            StreamRDF streamModelAll = StreamRDFLib.graph(mAll.getGraph()) ;
         } catch (IOException ex ) { IO.exception(ex) ; }
     }
+    
+    @AfterClass public static void resetClass() {
+        InfGlobal.includeDerivedDataRDFS = original_includeDerivedDataRDFS ;
+    }
 
+    @Override
+    protected boolean removeVocabFromReferenceResults()      { return false ; } 
+    
     @Override
     protected Graph getReferenceGraph() {
         return infGraph ;

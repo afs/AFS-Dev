@@ -18,11 +18,8 @@
 
 package inf;
 
-import inf.test.TestRDFS ;
-
 import java.io.IOException ;
-import java.util.Iterator ;
-import java.util.Set ;
+import java.util.List ;
 
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
@@ -37,19 +34,17 @@ import com.hp.hpl.jena.rdf.model.ModelFactory ;
 import com.hp.hpl.jena.reasoner.Reasoner ;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
 import com.hp.hpl.jena.reasoner.rulesys.Rule ;
-import com.hp.hpl.jena.sparql.graph.NodeConst ;
 import com.hp.hpl.jena.util.FileUtils ;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
 import com.hp.hpl.jena.util.iterator.Filter ;
-import com.hp.hpl.jena.util.iterator.WrappedIterator ;
 import com.hp.hpl.jena.vocabulary.RDFS ;
 public class DevRDFS {
     static { LogCtl.setLog4j() ; }
     // Think through the cases.
     
     // More tests
-    //  - run with and without vocab in data
-    //  - run with different files (e.g empty data). 
+    //   Coverage
+    //   TestCombined - reset test().
     
     // Tests for:
     //   InfererenceProcessTriple
@@ -96,47 +91,7 @@ public class DevRDFS {
         //Model m = ModelFactory.createInfModel(reasoner, data);  
         InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
         inf = m.getGraph() ;
-        Node rt = NodeConst.nodeRDFType ;
-        
-        GraphRDFS g_rdfs = new GraphRDFS(setup, dataAndVocab.getGraph()) ;
-        // Misses "P subClassof P"
-        dwim$("test", g_rdfs, node("a"), rt, null, false) ;
-        dwim$("inference", inf, node("a"), rt, null, false) ;
-        System.out.println() ;
-        dwim$("test", g_rdfs, null, rt, null , false) ;
-        dwim$("inference", inf, null, rt, null, false) ;
-        System.exit(0) ;
-        
-        
-        
-//        System.out.println("Inf") ;
-//        InferenceProcessorTriple proc = new InferenceProcessorTriple(setup) ;
-//        List<Triple> triples = new ArrayList<>() ;
-//        //InfGlobal.includeDerivedDataRDFS = true ;
-//        proc.process(triples, node("x1"),  node("p"), node("123")) ;
-//        triples.forEach(t -> System.out.println(t)) ;
-//        System.exit(0) ;
-        
-        if ( false ) {
-            // Treat as data.
-            Graph g = new GraphRDFS3(setup, vocab.getGraph()) ;
-            Iterator<Triple> iter = g.find(null, null, node("P")) ;
-//            Iterator<Triple> iter = new InferenceProcessorIteratorRDFS(setup, vocab.getGraph().find(null, null, null)) ;
-            while(iter.hasNext())
-                System.out.println("-- "+iter.next()) ;
-            System.exit(0) ;
-        }
-        
-        
-        
-//        Model m2 = ModelFactory.createDefaultModel() ;
-//        m2.setNsPrefixes(m) ;
-//        m2.add(m.getDeductionsModel()) ;
-
-        
         g_rdfs2 = new GraphRDFS(setup, data.getGraph()) ;
-        
-        g_rdfs3 = new GraphRDFS3(setup, data.getGraph()) ;
         
         test(null, null, node("P")) ;
     }
@@ -182,13 +137,10 @@ public class DevRDFS {
             System.out.println("** Graph ("+label+"):") ;
         System.out.printf("find(%s, %s, %s)\n", s,p,o) ; 
         ExtendedIterator<Triple> iter = g.find(s, p, o) ;
-        if ( filter ) {
-            Set<Triple> x = TestRDFS.filterRDFS(iter.toSet()) ;
-            iter = WrappedIterator.create(x.iterator()) ;
-            //iter = iter.filterKeep(filterRDFS) ;
-        }
-        for ( ; iter.hasNext() ; )
-            System.out.println("    "+iter.next()) ;
+        List<Triple> x = iter.toList() ;
+        if ( filter )
+            x = InfGlobal.removeRDFS(x) ;
+        x.forEach(t -> System.out.println("    "+t)) ;
         System.out.println() ;
     }
 }
