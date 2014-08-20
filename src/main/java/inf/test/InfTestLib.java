@@ -20,6 +20,8 @@ package inf.test;
 
 import java.util.Collection ;
 
+import org.apache.jena.atlas.lib.Lib ;
+
 public class InfTestLib {
 
     /** Collection equality regardless of order */
@@ -35,6 +37,32 @@ public class InfTestLib {
         return true ;
     }
     
+    /** Test whether 2 collection have the same elements regardless of order */
+    public static <X> boolean sameElts2(Collection<X> items1, Collection<X> items2) {
+        // Simple and inefficient.
+        if ( items1.size() != items2.size() ) 
+            return false ;
+        // Need to account for duplicates
+        // Make sure counts agree.
+        for ( X t : items1 ) {
+            int x1 = countElts(items1, t) ;
+            int x2 = countElts(items2, t) ;            
+            if ( x1 != x2 )
+                return false ;
+        }
+        return true ;
+    }
+
+    private static <X> int countElts(Collection<X> items, X item) {
+        int i = 0 ;
+        for ( X x : items ) {
+            if ( Lib.equal(x, item) )
+                i++ ;
+        }
+        return i ;
+    }
+    
 
 }
+
 

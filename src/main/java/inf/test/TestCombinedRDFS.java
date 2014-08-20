@@ -22,23 +22,16 @@ import inf.GraphRDFS ;
 import inf.InfGlobal ;
 import inf.InferenceSetupRDFS ;
 
-import java.io.IOException ;
+import java.util.List ;
 
-import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.riot.RDFDataMgr ;
-import org.apache.jena.riot.system.StreamRDF ;
-import org.apache.jena.riot.system.StreamRDFLib ;
 import org.junit.AfterClass ;
 import org.junit.BeforeClass ;
 
 import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.rdf.model.InfModel ;
+import com.hp.hpl.jena.graph.Node ;
+import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.rdf.model.Model ;
-import com.hp.hpl.jena.rdf.model.ModelFactory ;
-import com.hp.hpl.jena.reasoner.Reasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.Rule ;
-import com.hp.hpl.jena.util.FileUtils ;
 
 /** Test of RDFS, with combined data and vocabulary. */
 public class TestCombinedRDFS extends AbstractTestRDFS {
@@ -54,45 +47,37 @@ public class TestCombinedRDFS extends AbstractTestRDFS {
     static final String DIR = "testing/Inf" ;
     static final String DATA_FILE = DIR+"/rdfs-data.ttl" ;
     static final String VOCAB_FILE = DIR+"/rdfs-vocab.ttl" ;
+    static final String RULES_FILE = DIR+"/rdfs-min.rules" ;
     
     static boolean original_includeDerivedDataRDFS ;
     
     @BeforeClass public static void setupClass() {
-        try {
-            /**/
-            original_includeDerivedDataRDFS = InfGlobal.includeDerivedDataRDFS ;
-            InfGlobal.includeDerivedDataRDFS = true ;
-            
-            vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
-            data = RDFDataMgr.loadModel(DATA_FILE) ;
-            
-            RDFDataMgr.read(data, VOCAB_FILE) ;
-            
-            setup = new InferenceSetupRDFS(vocab) ;
-            
-            {
-                String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
-                rules = rules.replaceAll("#[^\\n]*", "") ;
-                Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
-                //Model m = ModelFactory.createInfModel(reasoner, data);
-                /** Rules way */ 
-                InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
-                infGraph = m.getGraph() ;
-            }
-            
-            /** Compute way */
-            testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
-            
-            /* Combined data and vocab files as data. */
-            Model mAll = ModelFactory.createDefaultModel() ;
-            StreamRDF streamModelAll = StreamRDFLib.graph(mAll.getGraph()) ;
-        } catch (IOException ex ) { IO.exception(ex) ; }
+        original_includeDerivedDataRDFS = InfGlobal.includeDerivedDataRDFS ;
+        InfGlobal.includeDerivedDataRDFS = true ;
+
+        vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
+        data = RDFDataMgr.loadModel(DATA_FILE) ;
+        // And the vocabulary
+        RDFDataMgr.read(data, VOCAB_FILE) ;
+        
+        infGraph = createRulesGraph(data, vocab, RULES_FILE) ;
+        setup = new InferenceSetupRDFS(vocab) ;
+        /** Compute way */
+        testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
     }
     
     @AfterClass public static void resetClass() {
         InfGlobal.includeDerivedDataRDFS = original_includeDerivedDataRDFS ;
     }
 
+    @Override
+    protected List<Triple> findInTestGraph(Node s, Node p, Node o) {
+        List<Triple> x = getTestGraph().find(s,p,o).toList() ;
+        // This should not be necessary.
+        //x = Lib8.toList(x.stream().distinct()) ;
+        return x ;
+    }
+    
     @Override
     protected boolean removeVocabFromReferenceResults()      { return false ; } 
     
@@ -113,7 +98,7 @@ public class TestCombinedRDFS extends AbstractTestRDFS {
 
     @Override
     protected String getTestLabel() {
-        return "GraphRDFS" ;
+        return "Combined GraphRDFS" ;
     }
 }
 

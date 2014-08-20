@@ -20,21 +20,11 @@ package inf.test;
 
 import inf.GraphRDFS ;
 import inf.InferenceSetupRDFS ;
-
-import java.io.IOException ;
-
-import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.junit.BeforeClass ;
 
 import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.rdf.model.InfModel ;
 import com.hp.hpl.jena.rdf.model.Model ;
-import com.hp.hpl.jena.rdf.model.ModelFactory ;
-import com.hp.hpl.jena.reasoner.Reasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.Rule ;
-import com.hp.hpl.jena.util.FileUtils ;
 
 /** Test of RDFS, with separate data and vocabulary, no RDFS in the deductions. */
 public class TestRDFS extends AbstractTestRDFS {
@@ -50,26 +40,16 @@ public class TestRDFS extends AbstractTestRDFS {
     static final String DIR = "testing/Inf" ;
     static final String DATA_FILE = DIR+"/rdfs-data.ttl" ;
     static final String VOCAB_FILE = DIR+"/rdfs-vocab.ttl" ;
+    static final String RULES_FILE = DIR+"/rdfs-min.rules" ;
     
     @BeforeClass public static void setupClass() {
-        try { 
-            vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
-            data = RDFDataMgr.loadModel(DATA_FILE) ;
-            setup = new InferenceSetupRDFS(vocab) ;
-            
-            {
-                String rules = FileUtils.readWholeFileAsUTF8("rdfs-min.rules") ;
-                rules = rules.replaceAll("#[^\\n]*", "") ;
-                Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
-                //Model m = ModelFactory.createInfModel(reasoner, data);
-                /** Rules way */ 
-                InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
-                infGraph = m.getGraph() ;
-            }
-            
-            /** Compute way */
-            testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
-        } catch (IOException ex ) { IO.exception(ex) ; }
+        vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
+        data = RDFDataMgr.loadModel(DATA_FILE) ;
+        setup = new InferenceSetupRDFS(vocab) ;
+        
+        infGraph = createRulesGraph(data, vocab, RULES_FILE) ;
+        /** Compute way */
+        testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
     }
 
     @Override

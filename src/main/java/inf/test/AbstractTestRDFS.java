@@ -21,11 +21,13 @@ package inf.test;
 import static inf.InfGlobal.rdfType ;
 import inf.InfGlobal ;
 
+import java.io.IOException ;
 import java.io.PrintStream ;
 import java.util.Collection ;
 import java.util.List ;
 import java.util.Set ;
 
+import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.junit.BaseTest ;
 import org.apache.jena.atlas.lib.SetUtils ;
 import org.junit.Assert ;
@@ -35,6 +37,13 @@ import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.NodeFactory ;
 import com.hp.hpl.jena.graph.Triple ;
+import com.hp.hpl.jena.rdf.model.InfModel ;
+import com.hp.hpl.jena.rdf.model.Model ;
+import com.hp.hpl.jena.rdf.model.ModelFactory ;
+import com.hp.hpl.jena.reasoner.Reasoner ;
+import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
+import com.hp.hpl.jena.reasoner.rulesys.Rule ;
+import com.hp.hpl.jena.util.FileUtils ;
 
 public abstract class AbstractTestRDFS extends BaseTest {
     private static PrintStream      out = System.err ;
@@ -49,7 +58,7 @@ public abstract class AbstractTestRDFS extends BaseTest {
 
     @Test public void test_calc_rdfs_04()       { test(null, null, node("T2")) ; }
     @Test public void test_calc_rdfs_05()       { test(null, rdfType, node("T")) ; }
-    @Test public void test_calc_rdfs_05a()       { test(null, null, node("T")) ; }
+    @Test public void test_calc_rdfs_05a()      { test(null, null, node("T")) ; }
       
     @Test public void test_calc_rdfs_06()       { test(node("c"), rdfType, null) ; }
       
@@ -92,16 +101,13 @@ public abstract class AbstractTestRDFS extends BaseTest {
     
     protected void test(Node s, Node p, Node o) {
         Graph refGraph = getReferenceGraph() ;
-        Graph testGraph = getTestGraph() ;
         
         List<Triple> x0 = refGraph.find(s,p,o).toList() ;
         
         if ( removeVocabFromReferenceResults() )
             x0 = InfGlobal.removeRDFS(x0) ;
-        
-        List<Triple> x1 = testGraph.find(s,p,o).toList() ;
-        // This should not be necessary.
-        //x1 = Lib8.toList(x1.stream().distinct()) ;
+
+        List<Triple> x1 = findInTestGraph(s,p,o) ;
         
         if ( ! InfTestLib.sameElts(x0, x1) ) {
             out.println("Expected: find("+s+", "+p+", "+o+")") ;
@@ -114,7 +120,24 @@ public abstract class AbstractTestRDFS extends BaseTest {
         Assert.assertTrue(getTestLabel(), InfTestLib.sameElts(x0, x1)) ;
     }
 
+    protected List<Triple> findInTestGraph(Node s, Node p, Node o) {
+        return getTestGraph().find(s,p,o).toList() ;
+    }
 
+    protected static Graph createRulesGraph(Model data, Model vocab, String rulesFile) {
+        try {
+            String rules = FileUtils.readWholeFileAsUTF8(rulesFile) ;
+            rules = rules.replaceAll("#[^\\n]*", "") ;
+            Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules)) ;
+            // Model m = ModelFactory.createInfModel(reasoner, data);
+            /** Rules way */
+            InfModel m = ModelFactory.createInfModel(reasoner, vocab, data) ;
+            return m.getGraph() ;
+        }
+        catch (IOException ex) { IO.exception(ex) ; return null ; }
+    }
+
+    
     protected boolean removeVocabFromReferenceResults()      { return true ; } 
     protected abstract Graph getReferenceGraph() ;
     protected abstract Graph getTestGraph() ;
