@@ -41,6 +41,13 @@ public class DevRDFS {
     // Think through the cases.
     
     /*
+     * InferenceProcessorIteratorRDFS.java as Stream<Triple>
+     * <X> InfFind(X, X, X) ;
+     * 
+     * When to materialize? Recurive calls into the source. 
+     * GreadRDFS (stream version) needs cleaning.
+     *  
+     *  
      * coverage
      * Duplicates in (? ? ?)combined due to subClassOf
      *   Another rules file - RDFS graph without axioms.
@@ -77,16 +84,11 @@ public class DevRDFS {
 
         Model vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
         Model data = RDFDataMgr.loadModel(DATA_FILE) ;
-//        Model dataAndVocab = ModelFactory.createDefaultModel() ;
-//        dataAndVocab.add(vocab) ;
-//        dataAndVocab.add(data) ;
-        
         String rules = FileUtils.readWholeFileAsUTF8(RULES_FILE) ;
         rules = rules.replaceAll("#[^\\n]*", "") ;
 
         InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab, false) ;
         Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
-        //Model m = ModelFactory.createInfModel(reasoner, data);  
         InfModel m = ModelFactory.createInfModel(reasoner, vocab, data);
         inf = m.getGraph() ;
         g_rdfs2 = new GraphRDFS(setup, data.getGraph()) ;

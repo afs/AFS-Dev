@@ -23,7 +23,9 @@ import org.junit.runners.Suite ;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( {
-    TestRDFS.class
+    TestGraphRDFS.class
+    , TestGraphRDFS_Iter.class
+    , TestGraphRDFS_Original.class
     , TestExpandRDFS.class
     , TestCombinedRDFS.class
 })

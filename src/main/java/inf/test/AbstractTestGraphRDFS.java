@@ -18,7 +18,6 @@
 
 package inf.test;
 
-import inf.GraphRDFS ;
 import inf.InferenceSetupRDFS ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.junit.BeforeClass ;
@@ -27,7 +26,7 @@ import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.rdf.model.Model ;
 
 /** Test of RDFS, with separate data and vocabulary, no RDFS in the deductions. */
-public class TestRDFS extends AbstractTestRDFS {
+public abstract class AbstractTestGraphRDFS extends AbstractTestRDFS {
     static Model vocab ;
     static Model data ;
 
@@ -47,11 +46,14 @@ public class TestRDFS extends AbstractTestRDFS {
         vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
         data = RDFDataMgr.loadModel(DATA_FILE) ;
         setup = new InferenceSetupRDFS(vocab) ;
-        
         infGraph = createRulesGraph(data, vocab, RULES_FILE) ;
-        /** Compute way */
-        testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
     }
+    
+    protected AbstractTestGraphRDFS() {
+        testGraphRDFS = createGraphRDFS(setup, data.getGraph()) ;
+    }
+    
+    protected abstract Graph createGraphRDFS(InferenceSetupRDFS setup, Graph data) ; 
 
     @Override
     protected Graph getReferenceGraph() {

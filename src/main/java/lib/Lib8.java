@@ -37,6 +37,5 @@ public class Lib8 {
     public static <X> Set<X> toSet(Stream<X> stream) {
         return stream.collect(Collectors.toSet()) ;
     }
-
 }
 
