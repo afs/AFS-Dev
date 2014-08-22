@@ -28,9 +28,4 @@ import org.junit.runners.Suite ;
     , TestCombinedRDFS.class
 })
 
-
-
-public class TS_Inf {
-
-}
-
+public class TS_Inf { }
