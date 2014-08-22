@@ -37,5 +37,37 @@ public class Lib8 {
     public static <X> Set<X> toSet(Stream<X> stream) {
         return stream.collect(Collectors.toSet()) ;
     }
+    
+    /** Immutable list that adds an elemtn to the front of another list without coping */ 
+    static class ListFront<T> extends AbstractList<T> {
+        private final T elt ;
+        private final List<T> tail ;
+
+        ListFront(T elt, List<T> tail) {
+            this.elt = elt ;
+            this.tail = tail ;
+        }
+        
+        @Override
+        public T get(int index) {
+            if ( index < 0 )
+                throw new IndexOutOfBoundsException("Negative index") ;
+            if ( index == 0 )
+                return elt ;
+            
+            if ( index >= tail.size() )
+                throw new IndexOutOfBoundsException("Index: "+index+", Size: "+size()) ;
+
+            return null ;
+        }
+
+        @Override
+        public int size() {
+            return tail.size()+1 ;
+        }
+        
+    }
+    
+    public static <T> List<T> addHead(T elt, List<T> tail) { return new ListFront<>(elt, tail) ; }
 }
 
