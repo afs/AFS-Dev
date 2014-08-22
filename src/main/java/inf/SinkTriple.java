@@ -18,20 +18,10 @@
 
 package inf;
 
-import java.util.Collection ;
-
 import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.Triple ;
 
-class InferenceProcessorAccRDFS extends InferenceProcessorRDFS {
-    Collection<Triple> acc ;    
-    public InferenceProcessorAccRDFS(Collection<Triple> acc, InferenceSetupRDFS state) {
-        super(state) ;
-        this.acc = acc ;
-    }
-
-    @Override
-    public void derive(Node s, Node p, Node o) {
-        acc.add(Triple.create(s, p, o)) ;
-    }
+@FunctionalInterface
+interface SinkTriple {
+    public void receive(Node s, Node p, Node o) ;
 }
+

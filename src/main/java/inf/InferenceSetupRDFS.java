@@ -31,6 +31,10 @@ import com.hp.hpl.jena.rdf.model.ModelFactory ;
 public class InferenceSetupRDFS {
     public final Graph vocabGraph ;
     
+    // Variants for with and without the key in the value side.
+    // Adding to a list is cheap? List(elt, tail)
+    // LinkedList
+    
     public final Map<Node, List<Node>> superClasses    = new HashMap<>() ;
     public final Map<Node, List<Node>> subClasses      = new HashMap<>() ;
     public final Set<Node> classes                     = new HashSet<>() ;

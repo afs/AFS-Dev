@@ -27,8 +27,8 @@ import com.hp.hpl.jena.rdf.model.Model ;
 
 /** Test of RDFS, with separate data and vocabulary, no RDFS in the deductions. */
 public abstract class AbstractTestGraphRDFS extends AbstractTestRDFS {
-    static Model vocab ;
-    static Model data ;
+    protected static Model vocab ;
+    protected static Model data ;
 
     static InferenceSetupRDFS setup ;
     // Jena graph to check results against.

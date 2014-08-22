@@ -18,6 +18,7 @@
 
 package inf;
 
+import static lib.Lib8.stream ;
 import static inf.InfGlobal.rdfType ;
 import static inf.InfGlobal.rdfsDomain ;
 import static inf.InfGlobal.rdfsRange ;
@@ -25,7 +26,6 @@ import static inf.InfGlobal.rdfsSubClassOf ;
 
 import java.util.* ;
 import java.util.stream.Stream ;
-import java.util.stream.StreamSupport ;
 
 import org.apache.jena.atlas.iterator.Filter ;
 import org.apache.jena.atlas.iterator.SingletonIterator ;
@@ -68,11 +68,6 @@ public class GraphRDFS extends GraphWrapper {
         return WrappedIterator.create(iter) ;
     }
 
-    public static <T> Stream<T> stream(Iterator<? extends T> iterator) {
-        int characteristics = Spliterator.ORDERED | Spliterator.IMMUTABLE;
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, characteristics), false);
-    }
-    
     interface StreamGraph<Y, X> {
         // Stream?
         Stream<Y> find(X s, X p, X o) ;
@@ -81,11 +76,13 @@ public class GraphRDFS extends GraphWrapper {
     static class Find3_Graph implements StreamGraph<Triple, Node> {
         private final Graph graph ;
         private final InferenceSetupRDFS setup ;
+        private final InferenceProcessorRDFS engine ;
         private final boolean infRange ;
         private final boolean infDomain ;
 
         Find3_Graph(InferenceSetupRDFS setup, Graph graph) {
             this.setup = setup ;
+            this.engine = new InferenceProcessorRDFS(setup) ;
             this.graph = graph ;
             this.infRange =  ! setup.rangeList.isEmpty() ;
             this.infDomain = ! setup.domainList.isEmpty() ;
@@ -102,7 +99,6 @@ public class GraphRDFS extends GraphWrapper {
             ExtendedIterator<Triple> iter = graph.find(s,p,o) ;
             return stream(new ExtendedIteratorAutoClose<>(iter)) ;
         }
-
 
         private Stream<Triple> find2(Node _subject, Node _predicate, Node _object) {
             //log.info("find("+_subject+", "+_predicate+", "+_object+")") ;
@@ -175,6 +171,7 @@ public class GraphRDFS extends GraphWrapper {
 
         private Stream<Triple> find_X_type_T(Node subject, Node object) {
             // XXX Check if accumulation is the correct approach 
+            // Don't need to accumate. Find on insertion.
             if (graph.contains(subject, rdfType, object) )
                 return Stream.of(Triple.create(subject, rdfType, object)) ;
             Set<Node> types = new HashSet<>() ;
@@ -216,10 +213,10 @@ public class GraphRDFS extends GraphWrapper {
 
         private Stream<Triple> find_ANY_type_ANY() {
             // Better?
+            // Duplicates?
             // XXX InferenceProcessorStreamRDFS as a stream
             Stream<Triple> stream = sourceFind(Node.ANY, Node.ANY, Node.ANY) ;
-            stream = stream(new InferenceProcessorIteratorRDFS(setup, stream.iterator())) ;
-            stream = stream.filter(triple -> triple.getPredicate().equals(rdfType)) ;
+            stream = infFilter(stream, null, rdfType, null) ;
             return stream ;
         }
 
@@ -231,7 +228,7 @@ public class GraphRDFS extends GraphWrapper {
             // + reverse (used in object position and there is a range clause)
             if ( infRange )
                 stream = Stream.concat(stream, sourceFind(Node.ANY, Node.ANY, subject)) ;
-            return infFilterSubjObj(stream, subject, Node.ANY, object) ;
+            return infFilter(stream, subject, Node.ANY, object) ;
         }
 
         private Stream<Triple> find_X_ANY_ANY(Node subject) {
@@ -259,7 +256,7 @@ public class GraphRDFS extends GraphWrapper {
                 stream = Stream.concat(stream, sourceFind(object, rdfsSubClassOf, Node.ANY)) ;
                 stream = Stream.concat(stream, sourceFind(Node.ANY, rdfsSubClassOf, object)) ;
             }
-            return infFilterSubjObj(stream, Node.ANY, Node.ANY, object).distinct() ;
+            return infFilter(stream, Node.ANY, Node.ANY, object).distinct() ;
         }
 
         //    private static <X> Iterator<X> distinct(Iterator<X> iter) {
@@ -268,24 +265,33 @@ public class GraphRDFS extends GraphWrapper {
 
         private Stream<Triple> find_ANY_ANY_ANY() {
             Stream<Triple> stream = sourceFind(Node.ANY, Node.ANY, Node.ANY) ;
-            Stream<Triple> stream2 = stream(new InferenceProcessorIteratorRDFS(setup, stream.iterator())) ;
+            // XXX Rewrite
+            //engine.process
+            // sequential.
+            stream = inf(stream) ;
             if ( setup.includeDerivedDataRDFS )
-                stream2 = stream2.distinct() ;
-            return stream2 ;
+                stream = stream.distinct() ;
+            return stream ;
         }
 
-        private Stream<Triple> infFilterSubjObj(Stream<Triple> stream, Node subject, Node predicate, Node object) {
-            // XXX Rewrite
-            stream = stream(new InferenceProcessorIteratorRDFS(setup, stream.iterator())) ;
-            
+        private Stream<Triple> infFilter(Stream<Triple> stream, Node subject, Node predicate, Node object) {
+            // XXX Rewrite ??
+            stream = inf(stream) ;
             if ( isTerm(predicate) )
                 stream = stream.filter(triple -> { return triple.getPredicate().equals(predicate) ; } ) ;
-
             if ( isTerm(object) )
                 stream = stream.filter(triple -> { return triple.getObject().equals(object) ; } ) ;
             if ( isTerm(subject) )
                 stream = stream.filter(triple -> { return triple.getSubject().equals(subject) ; } ) ;
             return stream ;
+        }
+        
+        private Stream<Triple> inf(Stream<Triple> stream) {
+            return stream.flatMap(triple -> {
+                List<Triple> x = new ArrayList<>() ;
+                engine.process(x, triple) ;
+                return x.stream() ;
+            } ) ;
         }
 
         // XXX Rewrite ?? "Set" might mean this is best, as is materialization.

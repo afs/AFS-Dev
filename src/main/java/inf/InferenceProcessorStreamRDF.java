@@ -34,14 +34,14 @@ import com.hp.hpl.jena.sparql.core.Quad ;
 public class InferenceProcessorStreamRDF extends StreamRDFWrapper {
     // Combine into InferenceProcessorRDFS?
     private final InferenceSetupRDFS     rdfsSetup ;
-    private final InferenceProcessorRDFS rdfs ;
+    private final InferenceEngineRDFS    rdfs ;
     private boolean                      isTriple = true ;
     private Node                         g ;
 
     public InferenceProcessorStreamRDF(final StreamRDF output, InferenceSetupRDFS rdfsSetup) {
         super(output) ;
         this.rdfsSetup = rdfsSetup ;
-        this.rdfs = new InferenceProcessorRDFS(rdfsSetup) {
+        this.rdfs = new InferenceEngineRDFS(rdfsSetup, null) {
             @Override
             public void derive(Node s, Node p, Node o) {
                 if ( isTriple )

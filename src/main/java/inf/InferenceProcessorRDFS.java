@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,146 +16,87 @@
  * limitations under the License.
  */
 
-package inf ;
+package inf;
 
-import java.util.List ;
+import java.util.Collection ;
+import java.util.HashSet ;
+import java.util.Iterator ;
+import java.util.Set ;
+import java.util.stream.Stream ;
 
 import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.vocabulary.RDF ;
-import com.hp.hpl.jena.vocabulary.RDFS ;
+import com.hp.hpl.jena.graph.Triple ;
 
-/**
- * Apply a fixed set of inference rules to a stream of triples. This is
- * inference on the A-Box (the data) with respect to a fixed T-Box (the
- * vocabulary, ontology).
- * <ul>
- * <li>rdfs:subClassOf (transitive)</li>
- * <li>rdfs:subPropertyOf (transitive)</li>
- * <li>rdfs:domain</li>
- * <li>rdfs:range</li>
- * </ul>
- * 
- * Usage: call process(Node, Node, Node), outputs to derive(Node, Node, Node).
+/** An inference processor for RDFS.
+ * Adds derived triples to an accumulator.
  */
-
-abstract class InferenceProcessorRDFS {
-    // Todo:
-    // rdfs:member
-    // list:member ???
-
-    static final Node rdfType           = RDF.type.asNode() ;
-    static final Node rdfsSubClassOf    = RDFS.subClassOf.asNode() ;
-    static final Node rdfsSubPropertyOf = RDFS.subPropertyOf.asNode() ;
-    static final Node rdfsDomain        = RDFS.domain.asNode() ;
-    static final Node rdfsRange         = RDFS.range.asNode() ;
-
-    private final InferenceSetupRDFS setup ;
+public class InferenceProcessorRDFS {
+    private InferenceSetupRDFS setup ;
+    private Collection<Triple> acc = null ;
+    private final InferenceEngineRDFS engine ;
+    private SinkTriple sink ;
     
-    public InferenceProcessorRDFS(InferenceSetupRDFS state) {
-        this.setup = state ;
+    // Add iterator cases
+    
+    public InferenceProcessorRDFS(InferenceSetupRDFS setup) {
+        this.setup = setup ;
+        this.sink = new SinkTriple() {
+            @Override
+            public void receive(Node s, Node p, Node o) { acc.add(Triple.create(s, p, o)) ; } 
+        };
+        this.engine = new InferenceEngineRDFS(setup, sink) ;
     }
 
-    public void process(Node s, Node p, Node o) {
-        subClass(s, p, o) ;
-        subProperty(s, p, o) ;
-
-        // domain() and range() also go through subClass processing.
-        domain(s, p, o) ;
-        range(s, p, o) ;
+    /** Calculate the set of triples from processing an iterator of triples */
+    public Set<Triple> process(Stream<Triple> stream) {
+        Set<Triple> acc = new HashSet<>() ;
+        process(acc, stream) ;
+        return acc ;
     }
 
-    public abstract void derive(Node s, Node p, Node o) ;
-
-    /*
-     * [rdfs8: (?a rdfs:subClassOf ?b), (?b rdfs:subClassOf ?c) -> (?a rdfs:subClassOf ?c)]
-     * [rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
-     */
-    final private void subClass(Node s, Node p, Node o) {
-        if ( p.equals(rdfType) ) {
-            List<Node> x = setup.superClasses.get(o) ;
-            if ( x != null )
-                for ( Node c : x )
-                    derive(s, rdfType, c) ;
-            if ( setup.includeDerivedDataRDFS ) {
-                subClass(o, rdfsSubClassOf, o) ;    // Recurse
-            }
-        }
-        if ( setup.includeDerivedDataRDFS && p.equals(rdfsSubClassOf) ) {
-            List<Node> superClasses = setup.superClasses.get(o) ;
-            if ( superClasses != null )
-                for ( Node c : superClasses )
-                    derive(o, p, c) ;
-            List<Node> subClasses = setup.subClasses.get(o) ;
-            if ( subClasses != null )
-                for ( Node c : subClasses )
-                    derive(c, p, o) ;
-            derive(s, p, s) ;
-            derive(o, p, o) ;
-        }
+    /** Calculate the set of triples from processing an iterator of triples */
+    public void process(Collection<Triple> acc, Stream<Triple> stream) {
+        stream.forEach(triple ->
+            process(acc, triple.getSubject(), triple.getPredicate(), triple.getObject()) ) ;
     }
 
-    // Rule extracts from Jena's RDFS rules etc/rdfs.rules
-
-    /*
-     * [rdfs5a: (?a rdfs:subPropertyOf ?b), (?b rdfs:subPropertyOf ?c) -> (?a rdfs:subPropertyOf ?c)] 
-     * [rdfs6: (?a ?p ?b), (?p rdfs:subPropertyOf ?q) -> (?a ?q ?b)]
-     */
-    private void subProperty(Node s, Node p, Node o) {
-        List<Node> x = setup.superProperties.get(p) ;
-        if ( x != null ) {
-            for ( Node p2 : x )
-                derive(s, p2, o) ;
-            if ( setup.includeDerivedDataRDFS )
-                subProperty(p, rdfsSubPropertyOf, p) ;
-        }
-        if ( setup.includeDerivedDataRDFS && p.equals(rdfsSubPropertyOf) ) {
-            // ** RDFS extra
-            List<Node> superProperties = setup.superProperties.get(o) ;
-            if ( superProperties != null )
-                for ( Node c : superProperties )
-                    derive(o, p, c) ;
-            List<Node> subProperties = setup.subProperties.get(o) ;
-            if ( subProperties != null )
-                for ( Node c : subProperties )
-                    derive(c, p, o) ;
-            derive(s, p, s) ;
-            derive(o, p, o) ;
-        }
+    /** Calculate the set of triples from processing an iterator of triples */
+    public Set<Triple> process(Iterator<Triple> iter) {
+        Set<Triple> acc = new HashSet<>() ;
+        process(acc, iter) ;
+        return acc ;
     }
 
-    /*
-     * [rdfs2: (?p rdfs:domain ?c) -> [(?x rdf:type ?c) <- (?x ?p ?y)] ]
-     * [rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
-     */
-    final private void domain(Node s, Node p, Node o) {
-        List<Node> x = setup.domainList.get(p) ;
-        if ( x != null ) {
-            for ( Node c : x ) {
-                derive(s, rdfType, c) ;
-                subClass(s, rdfType, c) ;
-                if ( setup.includeDerivedDataRDFS )
-                    derive(p, rdfsDomain, c) ;
-            }
-        }
+    /** Calculate the set of triples from processing an iterator of triples */
+    public void process(Collection<Triple> acc, Iterator<Triple> iter) {
+        iter.forEachRemaining(triple ->
+            process(acc, triple.getSubject(), triple.getPredicate(), triple.getObject()) ) ;
+    }
+    
+    /** Calculate the set of triples from processing a triple */
+    public Set<Triple> process(Triple t) {
+        return process(t.getSubject(), t.getPredicate(), t.getObject()) ;
+    }
+    
+    /** Calculate the set of triples from processing a triple */
+    public Set<Triple> process(Node s, Node p, Node o) {
+        Set<Triple> acc = new HashSet<>() ;
+        process(acc, s, p, o) ;
+        return acc ;
     }
 
-    /*
-     * [rdfs3: (?p rdfs:range ?c) -> [(?y rdf:type ?c) <- (?x ?p ?y)] ]
-     * [rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
-     */
-    final private void range(Node s, Node p, Node o) {
-        // Mask out literal subjects
-        if ( o.isLiteral() )
-            return ;
-        // Range
-        List<Node> x = setup.rangeList.get(p) ;
-        if ( x != null ) {
-            for ( Node c : x ) {
-                derive(o, rdfType, c) ;
-                subClass(o, rdfType, c) ;
-                if ( setup.includeDerivedDataRDFS )
-                    derive(p, rdfsRange, c) ;
-            }
-        }
+    /** Accumulate the triples from processing triple t */
+    public void process(Collection<Triple> acc, Triple t) {
+        process(acc, t.getSubject(), t.getPredicate(), t.getObject()) ;
     }
+    
+    /** Accumulate the triples from processing triple t */
+    public void process(Collection<Triple> acc, Node s, Node p, Node o) {
+        // Threading!
+        acc.add(Triple.create(s,p,o)) ;
+        this.acc = acc ;
+        engine.process(s, p, o) ;
+        this.acc = null ;
+    }
+
 }

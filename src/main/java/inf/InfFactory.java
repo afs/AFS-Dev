@@ -28,17 +28,18 @@ public class InfFactory {
     public static Graph graphRDF(Graph data, Graph vocab) {
         return graphRDF(data, new InferenceSetupRDFS(vocab)) ;
     }
-    
-        public static Graph graphRDF(Graph data, InferenceSetupRDFS setup) {
-            return new GraphRDFS(setup, data) ;
-        }
-        
+
+    public static Graph graphRDF(Graph data, InferenceSetupRDFS setup) {
+        return new GraphRDFS(setup, data) ;
+    }
+
     public static StreamRDF inf(StreamRDF data, Model vocab) {
         InferenceSetupRDFS setup = new InferenceSetupRDFS(vocab) ;
         return inf(data, setup) ;
     }
 
     public static StreamRDF inf(StreamRDF data, InferenceSetupRDFS setup) {
-        return new InferenceProcessorStreamRDF(data, setup) ;
+        InferenceProcessorRDFS inf = new InferenceProcessorRDFS(setup) ;
+        return null ; // inf.process(null)
     }
 }

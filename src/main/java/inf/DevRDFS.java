@@ -41,12 +41,11 @@ public class DevRDFS {
     // Think through the cases.
     
     /*
-     * InferenceProcessorIteratorRDFS.java as Stream<Triple>
-     * <X> InfFind(X, X, X) ;
+     * StreamRDF versions of basic range/domain;
+     *   SubProperty -> R/D -> SubClass 
      * 
-     * When to materialize? Recurive calls into the source. 
-     * GreadRDFS (stream version) needs cleaning.
-     *  
+     * When to materialize? Recursive calls into the source. 
+     * GraphRDFS (stream version) needs cleaning.
      *  
      * coverage
      * Duplicates in (? ? ?)combined due to subClassOf

@@ -26,27 +26,13 @@ import java.util.List ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.junit.BeforeClass ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.rdf.model.Model ;
+import com.hp.hpl.jena.graph.* ;
 
 /** Test of RDFS, with combined data and vocabulary. */
-public class TestCombinedRDFS extends AbstractTestRDFS {
-    static Model vocab ;
-    static Model data ;
+public class TestCombinedRDFS extends AbstractTestGraphRDFS {
 
-    static InferenceSetupRDFS setup ;
-    // Jena graph to check results against.
-    static Graph infGraph ;
-    // The main test target
-    static Graph testGraphRDFS ;
-    
-    static final String DIR = "testing/Inf" ;
-    static final String DATA_FILE = DIR+"/rdfs-data.ttl" ;
-    static final String VOCAB_FILE = DIR+"/rdfs-vocab.ttl" ;
-    static final String RULES_FILE = DIR+"/rdfs-min.rules" ;
-    
+    static Graph testGraphRDFS_X ;
+
     @BeforeClass public static void setupClass() {
         vocab = RDFDataMgr.loadModel(VOCAB_FILE) ;
         data = RDFDataMgr.loadModel(DATA_FILE) ;
@@ -56,7 +42,12 @@ public class TestCombinedRDFS extends AbstractTestRDFS {
         infGraph = createRulesGraph(data, vocab, RULES_FILE) ;
         setup = new InferenceSetupRDFS(vocab, true) ;
         /** Compute way */
-        testGraphRDFS = new GraphRDFS(setup, data.getGraph()) ;
+        testGraphRDFS_X = new GraphRDFS(setup, data.getGraph()) ;
+    }
+    
+    @Override
+    protected Graph createGraphRDFS(InferenceSetupRDFS setup, Graph data) {
+        return testGraphRDFS_X ;
     }
     
     @Override
@@ -90,4 +81,5 @@ public class TestCombinedRDFS extends AbstractTestRDFS {
         return "Combined GraphRDFS" ;
     }
 }
+
 

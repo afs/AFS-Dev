@@ -24,21 +24,8 @@ import org.apache.jena.atlas.lib.Lib ;
 
 public class InfTestLib {
 
-    /** Collection equality regardless of order */
-    public static <X> boolean sameElts(Collection<X> items1, Collection<X> items2) {
-        if ( items1.size() != items2.size() ) 
-            return false ;
-        for ( X t : items1 )
-            if ( !items2.contains(t) )
-                return false ;
-        for ( X t : items2 )
-            if ( !items1.contains(t) )
-                return false ;
-        return true ;
-    }
-    
     /** Test whether 2 collection have the same elements regardless of order */
-    public static <X> boolean sameElts2(Collection<X> items1, Collection<X> items2) {
+    public static <X> boolean sameElts(Collection<X> items1, Collection<X> items2) {
         // Simple and inefficient.
         if ( items1.size() != items2.size() ) 
             return false ;
@@ -61,8 +48,6 @@ public class InfTestLib {
         }
         return i ;
     }
-    
-
 }
 
 
