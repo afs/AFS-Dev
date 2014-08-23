@@ -28,30 +28,32 @@ import com.hp.hpl.jena.query.* ;
 import com.hp.hpl.jena.rdf.model.Model ;
 import com.hp.hpl.jena.rdf.model.ModelFactory ;
 
-public class InferenceSetupRDFS {
+public class InferenceSetupRDFS implements InfSetupRDFS<Node>{
     public final Graph vocabGraph ;
     
     // Variants for with and without the key in the value side.
     // Adding to a list is cheap? List(elt, tail)
-    // LinkedList
     
-    public final Map<Node, List<Node>> superClasses    = new HashMap<>() ;
-    public final Map<Node, List<Node>> subClasses      = new HashMap<>() ;
-    public final Set<Node> classes                     = new HashSet<>() ;
+    private final Map<Node, Set<Node>> superClasses         = new HashMap<>() ;
+    private final Map<Node, Set<Node>> superClassesInc      = new HashMap<>() ;
+    private final Map<Node, Set<Node>> subClasses           = new HashMap<>() ;
+    private final Map<Node, Set<Node>> subClassesInc        = new HashMap<>() ;
+    private final Set<Node> classes                         = new HashSet<>() ;
 
-    public final Map<Node, List<Node>> superProperties = new HashMap<>() ;
-    public final Map<Node, List<Node>> subProperties   = new HashMap<>() ;
+    private final Map<Node, Set<Node>> superPropertiesInc   = new HashMap<>() ;
+    private final Map<Node, Set<Node>> superProperties      = new HashMap<>() ;
+    private final Map<Node, Set<Node>> subPropertiesInc     = new HashMap<>() ;
+    private final Map<Node, Set<Node>> subProperties        = new HashMap<>() ;
     
     // Predicate -> type 
-    public final Map<Node, List<Node>> domainList      = new HashMap<>() ;
-    public final Map<Node, List<Node>> rangeList       = new HashMap<>() ;
+    private final Map<Node, Set<Node>> propertyRange        = new HashMap<>() ;
+    private final Map<Node, Set<Node>> propertyDomain       = new HashMap<>() ;
     
     // Type -> predicate
-    public final Map<Node, List<Node>> domainPropertyList      = new HashMap<>() ;
-    public final Map<Node, List<Node>> rangePropertyList       = new HashMap<>() ;
+    private final Map<Node, Set<Node>> rangeToProperty      = new HashMap<>() ;
+    private final Map<Node, Set<Node>> domainToProperty     = new HashMap<>() ;
 
-    public final  boolean includeDerivedDataRDFS ;
-    
+    private final boolean includeDerivedDataRDFS$ ;
 
     private static String preamble = StrUtils.strjoinNL
         ("PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
@@ -73,7 +75,7 @@ public class InferenceSetupRDFS {
     }
     
     public InferenceSetupRDFS(Model vocab, boolean incDerivedDataRDFS) {
-        includeDerivedDataRDFS = incDerivedDataRDFS ;
+        includeDerivedDataRDFS$ = incDerivedDataRDFS ;
         vocabGraph = vocab.getGraph() ;
         
         // Find super classes - uses property paths
@@ -83,19 +85,42 @@ public class InferenceSetupRDFS {
         exec("SELECT ?x ?y { ?x rdfs:subPropertyOf+ ?y }", vocab, superProperties, subProperties) ;
 
         // Find domain
-        exec("SELECT ?x ?y { ?x rdfs:domain ?y }", vocab, domainList, domainPropertyList) ;
+        exec("SELECT ?x ?y { ?x rdfs:domain ?y }", vocab, propertyDomain, domainToProperty) ;
 
         // Find range
-        exec("SELECT ?x ?y { ?x rdfs:range ?y }", vocab, rangeList, rangePropertyList) ;
+        exec("SELECT ?x ?y { ?x rdfs:range ?y }", vocab, propertyRange, rangeToProperty) ;
         
         // All mentioned classes
-        superClasses.keySet().stream().forEach(n-> classes.add(n)) ;
-        subClasses.keySet().stream().forEach(n-> classes.add(n)) ;
-        domainList.values().stream().forEach(v-> classes.addAll(v)) ;
-        rangeList.values().stream().forEach(v-> classes.addAll(v)) ;
+        classes.addAll(superClasses.keySet()) ;
+        classes.addAll(subClasses.keySet()) ;
+        classes.addAll(rangeToProperty.keySet()) ;
+        classes.addAll(domainToProperty.keySet()) ;
+        
+        deepCopyInto(superClassesInc, superClasses) ;
+        addKeysToValues(superClassesInc) ;
+        
+        deepCopyInto(subClassesInc, subClasses) ;
+        addKeysToValues(subClassesInc) ;
+        
+        deepCopyInto(superPropertiesInc, superProperties) ;
+        addKeysToValues(superPropertiesInc) ;
+        
+        deepCopyInto(subPropertiesInc, subProperties) ;
+        addKeysToValues(subPropertiesInc) ;
     }
 
-    private static void exec(String qs, Model model, Map<Node, List<Node>> multimap1, Map<Node, List<Node>> multimap2) {
+    private void deepCopyInto(Map<Node, Set<Node>> dest, Map<Node, Set<Node>> src) {
+        src.entrySet().forEach(e -> {
+            Set<Node> x = new HashSet<>(e.getValue()) ;
+            dest.put(e.getKey(), x) ;
+        }) ;
+    }
+
+    private void addKeysToValues(Map<Node, Set<Node>> map) {
+        map.entrySet().forEach(e -> e.getValue().add(e.getKey()) ) ;
+    }
+
+    private static void exec(String qs, Model model, Map<Node, Set<Node>> multimap1, Map<Node, Set<Node>> multimap2) {
         Query query = QueryFactory.create(preamble + "\n" + qs, Syntax.syntaxARQ) ;
         QueryExecution qexec = QueryExecutionFactory.create(query, model) ;
         ResultSet rs = qexec.execSelect() ;
@@ -108,20 +133,90 @@ public class InferenceSetupRDFS {
         }
     }
     
-//    private static void exec(String qs, Model model, Set<Node> results) {
-//        Query query = QueryFactory.create(preamble + "\n" + qs, Syntax.syntaxARQ) ;
-//        QueryExecution qexec = QueryExecutionFactory.create(query, model) ;
-//        ResultSet rs = qexec.execSelect() ;
-//        for ( ; rs.hasNext() ; ) {
-//            QuerySolution soln = rs.next() ;
-//            Node x = soln.get("x").asNode() ;
-//            results.add(x) ;
-//        }
-//    }
-    
-    private static void put(Map<Node, List<Node>> multimap, Node n1, Node n2) {
+    public boolean includeDerivedDataRDFS() {
+        return includeDerivedDataRDFS$ ;
+    }
+
+    private static void put(Map<Node, Set<Node>> multimap, Node n1, Node n2) {
         if ( !multimap.containsKey(n1) )
-            multimap.put(n1, new ArrayList<Node>()) ;
+            multimap.put(n1, new HashSet<Node>()) ;
         multimap.get(n1).add(n2) ;
+    }
+
+    static private Set<Node> empty = Collections.emptySet() ;
+    
+    static private Set<Node> result(Map<Node, Set<Node>> map, Node elt) {
+        Set<Node> x = map.get(elt) ;
+        return x != null ? x : empty ;
+    }
+    
+    @Override
+    public Set<Node> getSuperClasses(Node elt) {
+        return result(superClasses, elt) ;
+    }
+
+    @Override
+    public Set<Node> getSuperClassesInc(Node elt) {
+        return result(superClassesInc, elt) ;
+    }
+
+    @Override
+    public Set<Node> getSubClasses(Node elt) {
+        return result(subClasses, elt) ;
+    }
+
+    @Override
+    public Set<Node> getSubClassesInc(Node elt) {
+        return result(subClassesInc, elt) ;
+    }
+
+    @Override
+    public Set<Node> getSuperProperties(Node elt) {
+        return result(superProperties, elt) ;
+    }
+
+    @Override
+    public Set<Node> getSuperPropertiesInc(Node elt) {
+        return result(superPropertiesInc, elt) ;
+    }
+
+    @Override
+    public Set<Node> getSubProperties(Node elt) {
+        return result(subProperties, elt) ;
+    }
+
+    @Override
+    public Set<Node> getSubPropertiesInc(Node elt) {
+        return result(subPropertiesInc, elt) ;
+    }
+
+    @Override
+    public boolean hasRangeDeclarations() {
+        return ! propertyRange.isEmpty() ;
+    }
+
+    @Override
+    public boolean hasDomainDeclarations() {
+        return ! propertyDomain.isEmpty() ;
+    }
+
+    @Override
+    public Set<Node> getRange(Node elt) {
+        return result(propertyRange, elt) ;
+    }
+
+    @Override
+    public Set<Node> getDomain(Node elt) {
+        return result(propertyDomain, elt) ;
+    }
+
+    @Override
+    public Set<Node> getPropertiesByRange(Node elt) {
+        return result(rangeToProperty, elt) ;
+    }
+
+    @Override
+    public Set<Node> getPropertiesByDomain(Node elt) {
+        return result(domainToProperty, elt) ;
     }
 }

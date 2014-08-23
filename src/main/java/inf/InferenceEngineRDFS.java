@@ -18,7 +18,7 @@
 
 package inf ;
 
-import java.util.List ;
+import java.util.Set ;
 
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.vocabulary.RDF ;
@@ -51,7 +51,7 @@ public class InferenceEngineRDFS {
 
     private final InferenceSetupRDFS setup ;
     private final SinkTriple dest ;
-    
+
     public InferenceEngineRDFS(InferenceSetupRDFS state, SinkTriple dest) {
         this.setup = state ;
         this.dest = dest ;
@@ -76,23 +76,17 @@ public class InferenceEngineRDFS {
      */
     final private void subClass(Node s, Node p, Node o) {
         if ( p.equals(rdfType) ) {
-            List<Node> x = setup.superClasses.get(o) ;
-            if ( x != null )
-                for ( Node c : x )
-                    derive(s, rdfType, c) ;
-            if ( setup.includeDerivedDataRDFS ) {
+            Set<Node> x = setup.getSuperClasses(o) ;
+            x.forEach(c -> derive(s, rdfType, c)) ;
+            if ( setup.includeDerivedDataRDFS() ) {
                 subClass(o, rdfsSubClassOf, o) ;    // Recurse
             }
         }
-        if ( setup.includeDerivedDataRDFS && p.equals(rdfsSubClassOf) ) {
-            List<Node> superClasses = setup.superClasses.get(o) ;
-            if ( superClasses != null )
-                for ( Node c : superClasses )
-                    derive(o, p, c) ;
-            List<Node> subClasses = setup.subClasses.get(o) ;
-            if ( subClasses != null )
-                for ( Node c : subClasses )
-                    derive(c, p, o) ;
+        if ( setup.includeDerivedDataRDFS() && p.equals(rdfsSubClassOf) ) {
+            Set<Node> superClasses = setup.getSuperClasses(o) ;
+            superClasses.forEach(c -> derive(o, p, c)) ;
+            Set<Node> subClasses = setup.getSubClasses(o) ;
+            subClasses.forEach(c -> derive(c, p, o)) ;
             derive(s, p, s) ;
             derive(o, p, o) ;
         }
@@ -105,25 +99,20 @@ public class InferenceEngineRDFS {
      * [rdfs6: (?a ?p ?b), (?p rdfs:subPropertyOf ?q) -> (?a ?q ?b)]
      */
     private void subProperty(Node s, Node p, Node o) {
-        List<Node> x = setup.superProperties.get(p) ;
-        if ( x != null ) {
-            for ( Node p2 : x )
-                derive(s, p2, o) ;
-            if ( setup.includeDerivedDataRDFS )
+        Set<Node> x = setup.getSuperProperties(p) ;
+        x.forEach(p2 -> derive(s, p2, o)) ;
+        if ( setup.includeDerivedDataRDFS() ) {
+            if ( ! x.isEmpty() )
                 subProperty(p, rdfsSubPropertyOf, p) ;
-        }
-        if ( setup.includeDerivedDataRDFS && p.equals(rdfsSubPropertyOf) ) {
-            // ** RDFS extra
-            List<Node> superProperties = setup.superProperties.get(o) ;
-            if ( superProperties != null )
-                for ( Node c : superProperties )
-                    derive(o, p, c) ;
-            List<Node> subProperties = setup.subProperties.get(o) ;
-            if ( subProperties != null )
-                for ( Node c : subProperties )
-                    derive(c, p, o) ;
-            derive(s, p, s) ;
-            derive(o, p, o) ;
+            if ( p.equals(rdfsSubPropertyOf) ) {
+                // ** RDFS extra
+                Set<Node> superProperties = setup.getSuperProperties(o) ;
+                superProperties.forEach( c -> derive(o, p, c)) ;
+                Set<Node> subProperties = setup.getSubProperties(o) ;
+                subProperties.forEach(c -> derive(c, p, o)) ;
+                derive(s, p, s) ;
+                derive(o, p, o) ;
+            }
         }
     }
 
@@ -132,15 +121,13 @@ public class InferenceEngineRDFS {
      * [rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
      */
     final private void domain(Node s, Node p, Node o) {
-        List<Node> x = setup.domainList.get(p) ;
-        if ( x != null ) {
-            for ( Node c : x ) {
-                derive(s, rdfType, c) ;
-                subClass(s, rdfType, c) ;
-                if ( setup.includeDerivedDataRDFS )
-                    derive(p, rdfsDomain, c) ;
-            }
-        }
+        Set<Node> x = setup.getDomain(p) ;
+        x.forEach(c -> {
+            derive(s, rdfType, c) ;
+            subClass(s, rdfType, c) ;
+            if ( setup.includeDerivedDataRDFS() )
+                derive(p, rdfsDomain, c) ;
+        }) ;
     }
 
     /*
@@ -152,14 +139,13 @@ public class InferenceEngineRDFS {
         if ( o.isLiteral() )
             return ;
         // Range
-        List<Node> x = setup.rangeList.get(p) ;
-        if ( x != null ) {
-            for ( Node c : x ) {
-                derive(o, rdfType, c) ;
-                subClass(o, rdfType, c) ;
-                if ( setup.includeDerivedDataRDFS )
-                    derive(p, rdfsRange, c) ;
-            }
-        }
+        Set<Node> x = setup.getRange(p) ;
+        x.forEach(c -> {
+            derive(o, rdfType, c) ;
+            subClass(o, rdfType, c) ;
+            if ( setup.includeDerivedDataRDFS() )
+                derive(p, rdfsRange, c) ;
+        }) ;
     }
 }
+

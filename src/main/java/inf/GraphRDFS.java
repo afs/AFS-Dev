@@ -18,16 +18,15 @@
 
 package inf;
 
-import static lib.Lib8.stream ;
 import static inf.InfGlobal.rdfType ;
 import static inf.InfGlobal.rdfsDomain ;
 import static inf.InfGlobal.rdfsRange ;
 import static inf.InfGlobal.rdfsSubClassOf ;
+import static lib.Lib8.stream ;
 
 import java.util.* ;
 import java.util.stream.Stream ;
 
-import org.apache.jena.atlas.iterator.Filter ;
 import org.apache.jena.atlas.iterator.SingletonIterator ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
@@ -46,14 +45,10 @@ public class GraphRDFS extends GraphWrapper {
     
     private Find3_Graph fGraph ;
     private InferenceSetupRDFS setup ;
-    private boolean infDomain ;
-    private boolean infRange ;
 
     public GraphRDFS(InferenceSetupRDFS setup, Graph graph) {
         super(graph) ;
         this.setup = setup ;
-        infDomain = ! setup.domainList.isEmpty() ;
-        infRange =  ! setup.rangeList.isEmpty() ;
         fGraph = new Find3_Graph(setup, graph) ;
     }
     
@@ -77,15 +72,11 @@ public class GraphRDFS extends GraphWrapper {
         private final Graph graph ;
         private final InferenceSetupRDFS setup ;
         private final InferenceProcessorRDFS engine ;
-        private final boolean infRange ;
-        private final boolean infDomain ;
 
         Find3_Graph(InferenceSetupRDFS setup, Graph graph) {
             this.setup = setup ;
             this.engine = new InferenceProcessorRDFS(setup) ;
             this.graph = graph ;
-            this.infRange =  ! setup.rangeList.isEmpty() ;
-            this.infDomain = ! setup.domainList.isEmpty() ;
         }
 
         @Override
@@ -143,8 +134,8 @@ public class GraphRDFS extends GraphWrapper {
         private Stream<Triple> find_subproperty(Node subject, Node predicate, Node object) {
             // Find with subproperty
             // We assume no subproperty of rdf:type
-            List<Node> predicates = setup.subProperties.get(predicate) ;
-            if ( predicates == null )
+            Set<Node> predicates = setup.getSubProperties(predicate) ;
+            if ( predicates == null || predicates.isEmpty() )
                 return sourceFind(subject, predicate, object) ;
 
             // Hard work, not scalable.
@@ -226,7 +217,8 @@ public class GraphRDFS extends GraphWrapper {
             // also (? ? X) if there is a range clause. 
             Stream<Triple> stream = sourceFind(subject, Node.ANY, Node.ANY) ;
             // + reverse (used in object position and there is a range clause)
-            if ( infRange )
+            // domain was taken care of above.
+            if ( setup.hasRangeDeclarations() )
                 stream = Stream.concat(stream, sourceFind(Node.ANY, Node.ANY, subject)) ;
             return infFilter(stream, subject, Node.ANY, object) ;
         }
@@ -247,7 +239,7 @@ public class GraphRDFS extends GraphWrapper {
             // and "some p range P"
             // Include from setup?
             boolean ensureDistinct = false ;
-            if ( setup.includeDerivedDataRDFS ) {
+            if ( setup.includeDerivedDataRDFS() ) {
                 // These cause duplicates.
                 ensureDistinct = true ;
                 stream = Stream.concat(stream, sourceFind(Node.ANY, rdfsRange, object)) ;
@@ -269,7 +261,7 @@ public class GraphRDFS extends GraphWrapper {
             //engine.process
             // sequential.
             stream = inf(stream) ;
-            if ( setup.includeDerivedDataRDFS )
+            if ( setup.includeDerivedDataRDFS() )
                 stream = stream.distinct() ;
             return stream ;
         }
@@ -304,7 +296,7 @@ public class GraphRDFS extends GraphWrapper {
 
         private void accInstancesDomain(Set<Triple> triples, Set<Node> types, Node requestedType) {
             for ( Node type : types ) {
-                List<Node> predicates = setup.domainPropertyList.get(type) ;
+                Set<Node> predicates = setup.getPropertiesByDomain(type) ;
                 if ( predicates == null )
                     continue ;
                 predicates.forEach(p -> {
@@ -316,7 +308,7 @@ public class GraphRDFS extends GraphWrapper {
 
         private void accInstancesRange(Set<Triple> triples, Set<Node> types, Node requestedType) {
             for ( Node type : types ) {
-                List<Node> predicates = setup.rangePropertyList.get(type) ;
+                Set<Node> predicates = setup.getPropertiesByRange(type) ;
                 if ( predicates == null )
                     continue ;
                 predicates.forEach(p -> {
@@ -335,9 +327,8 @@ public class GraphRDFS extends GraphWrapper {
             Stream<Triple> stream = sourceFind(node, Node.ANY, Node.ANY) ;
             stream.forEach(triple -> {
                 Node p = triple.getPredicate() ;
-                List<Node> x = setup.domainList.get(p) ;
-                if ( x != null )
-                    types.addAll(x) ;
+                Set<Node> x = setup.getDomain(p) ;
+                types.addAll(x) ;
             }) ;
         }
 
@@ -345,21 +336,16 @@ public class GraphRDFS extends GraphWrapper {
            Stream<Triple> stream = sourceFind(Node.ANY, Node.ANY, node) ;
             stream.forEach(triple -> {
                 Node p = triple.getPredicate() ;
-                List<Node> x = setup.rangeList.get(p) ;
-                if ( x != null )
-                    types.addAll(x) ;
-                x = setup.domainList.get(p) ;
-                if ( x != null )
-                    types.addAll(x) ;
+                Set<Node> x = setup.getRange(p) ;
+                types.addAll(x) ;
             }) ;
         }
 
         private Set<Node> subTypes(Set<Node> types) {
             Set<Node> x = new HashSet<>() ;
             for ( Node type : types ) {
-                List<Node> y = setup.subClasses.get(type) ;
-                if ( y != null )
-                    x.addAll(y) ;
+                Set<Node> y = setup.getSubClasses(type) ;
+                x.addAll(y) ;
                 x.add(type) ;
             }
             return x ;
@@ -368,9 +354,8 @@ public class GraphRDFS extends GraphWrapper {
         private Set<Node> superTypes(Set<Node> types) {
             Set<Node> x = new HashSet<>() ;
             for ( Node type : types ) {
-                List<Node> y = setup.superClasses.get(type) ;
-                if ( y != null )
-                    x.addAll(y) ;
+                Set<Node> y = setup.getSuperClasses(type) ;
+                x.addAll(y) ;
                 x.add(type) ;
             }
             return x ;
@@ -379,30 +364,20 @@ public class GraphRDFS extends GraphWrapper {
         private Set<Node> subTypes(Node type) {
             Set<Node> x = new HashSet<>() ;
             x.add(type) ;
-            List<Node> y = setup.subClasses.get(type) ;
-            if ( y != null )
-                x.addAll(y) ;
+            Set<Node> y = setup.getSubClasses(type) ;
+            x.addAll(y) ;
             return x ;
         }
 
         private Set<Node> superTypes(Node type) {
             Set<Node> x = new HashSet<>() ;
             x.add(type) ;
-            List<Node> y = setup.superClasses.get(type) ;
-            if ( y != null )
-                x.addAll(y) ;
+            Set<Node> y = setup.getSuperClasses(type) ;
+            x.addAll(y) ;
             return x ;
         }
     }
     
-    static private Filter<Triple> filterDropRdfType = new Filter<Triple>() {
-
-        @Override
-        public boolean accept(Triple triple) {
-            return ! triple.getPredicate().equals(rdfType) ;
-        } } ;
-    
-
     static public Iterator<Triple> print(Iterator<Triple> iter) {
         List<Triple> triples = new ArrayList<>() ; 
         for ( ; iter.hasNext() ;)
