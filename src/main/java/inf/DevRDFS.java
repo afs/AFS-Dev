@@ -41,6 +41,9 @@ public class DevRDFS {
     // Think through the cases.
     
     /*
+     * QueryExecutionDSG etc over Graphs/DatasetGraphs
+     * 
+     * Setup engine <X> -- abstract class with Node -> X function. 
      * StreamRDF versions of basic range/domain;
      *   SubProperty -> R/D -> SubClass 
      * 
