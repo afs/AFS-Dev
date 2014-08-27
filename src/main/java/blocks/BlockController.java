@@ -63,6 +63,21 @@ public class BlockController {
         
         return null ;
     }
+
+    public void freeBlock()  {
+        // Write to head.
+        // chain it.
+        // Destroy "Block"
+    }
+
+    public void sync() {
+        // Make sure 
+    }
+    
+    /** Write this block using a temporary file. */
+    public void writeVeryCarefully(Block block) {
+        
+    }
     
     static class BlockArea {
         BlockArea() {}
