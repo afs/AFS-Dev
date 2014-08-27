@@ -26,7 +26,7 @@ public class BlockController {
     // Named areas.
     //   Not contiguous.
     
-    Map<String, BlockArea> areas = new HashMap<>() ;
+    private Map<String, BlockArea> areas = new HashMap<>() ;
     
     // On-disk format.
     // This is Block 0.
@@ -45,14 +45,14 @@ public class BlockController {
     }
     
     public BlockArea getNamedArea(String name) {
-        byte[] nameBytes = StrUtils.asUTF8bytes(name) ; 
-        
-        
-        return null ;
-        
+        return areas.get(name) ;
     }
 
     public BlockArea createNamedArea(String name) {
+        if ( areas.containsKey(name)) {
+            
+        }
+        
         byte[] nameBytes = StrUtils.asUTF8bytes(name) ; 
         return null ;
     }
