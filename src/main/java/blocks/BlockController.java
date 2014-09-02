@@ -16,8 +16,7 @@
 
 package blocks;
 
-import java.util.HashMap ;
-import java.util.Map ;
+import java.util.* ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
 
@@ -27,6 +26,9 @@ public class BlockController {
     //   Not contiguous.
     
     private Map<String, BlockArea> areas = new HashMap<>() ;
+    
+    private List<Block> blocks = new ArrayList<>() ; 
+    private LinkedList<Block> freeChain = new LinkedList<>() ;
     
     // On-disk format.
     // This is Block 0.
@@ -39,9 +41,8 @@ public class BlockController {
     
     //1k block , => 
     
-    
-    public BlockController(String filename) {
-        
+    // Naming: database:filename:index.
+    public BlockController(String filename, int blockSize) {
     }
     
     public BlockArea getNamedArea(String name) {
@@ -56,17 +57,39 @@ public class BlockController {
         byte[] nameBytes = StrUtils.asUTF8bytes(name) ; 
         return null ;
     }
-
-    public Block allocBlock()  {
+    
+    public Block getBlock(long id) {
+        if ( id < 0 )
+            throw new BlockException("Negative block number: "+id) ;
+        if ( id >= blocks.size())
+            throw new BlockException("Block number out of range [0,"+(blocks.size()-1)+"] : "+id) ;
+        Block blk = blocks.get((int)id) ; 
+        if ( isFree(blk, id) )
+            throw new BlockException("Block not currently in use: "+id) ;
         
-        //if free chain
         
-        return null ;
+        return blk ;
     }
 
-    public void freeBlock()  {
-        // Write to head.
-        // chain it.
+    private boolean isFree(Block blk, long id) {
+        return freeChain.contains(blk) ;
+    }
+
+    public Block allocBlock()  {
+        if ( ! freeChain.isEmpty() ) {
+            Block blk = freeChain.removeFirst() ;
+            return blk ;
+        }
+        int x = blocks.size() ;
+        Block blk = new Block(x, null) ;
+        blocks.add(blk) ;
+        return blk ;
+    }
+
+    public void freeBlock(Block blk)  {
+        if ( isFree(blk, blk.getId()) )
+            throw new BlockException("Block already free: "+blk.getId()) ;
+        freeChain.addFirst(blk) ;
         // Destroy "Block"
     }
 
