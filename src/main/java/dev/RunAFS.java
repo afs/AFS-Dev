@@ -29,17 +29,33 @@ import com.hp.hpl.jena.sparql.sse.SSE ;
 import com.hp.hpl.jena.sparql.util.Timer ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
 import com.hp.hpl.jena.tdb.nodetable.NodeTable ;
-import com.hp.hpl.jena.tdb.setup.DatasetBuilder ;
-import com.hp.hpl.jena.tdb.setup.DatasetBuilderBasic ;
+import com.hp.hpl.jena.tdb.setup.* ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
 
 public class RunAFS
 {
+    static class  DatasetBuilderRadix extends DatasetBuilderStd {
+        DatasetBuilderRadix() { 
+            super() ;
+            setup() ;
+        }
+        
+        private void setup() {
+            ObjectFileBuilder objectFileBuilder = new Builder.ObjectFileBuilderStd()  ;
+            IndexBuilder indexBuilder = new IndexBuilderRadix() ;
+            RangeIndexBuilder rangeIndexBuilder = new RangeIndexBuilderRadix() ;
+            NodeTableBuilder nodeTableBuilder = new Builder.NodeTableBuilderStd(indexBuilder, objectFileBuilder) ;
+            TupleIndexBuilder tupleIndexBuilder = new Builder.TupleIndexBuilderStd(rangeIndexBuilder) ;
+            super.set(nodeTableBuilder, tupleIndexBuilder) ;
+        }
+    }
+    
+
     public static void main(String ...argv)
     {
         LogCtl.setLog4j() ;
-        DatasetBuilder builder = new DatasetBuilderBasic(new IndexBuilderRadix(), new RangeIndexBuilderRadix() ) ;
+        DatasetBuilder builder = new DatasetBuilderRadix() ;
         DatasetGraphTDB dsg = builder.build(Location.mem(), null) ;
         
         //Log.enable(NodeTable.class) ;
@@ -47,7 +63,7 @@ public class RunAFS
         //if ( false )
         Timer t = new Timer() ;
         t.startTimer() ;
-        RDFDataMgr.read(dsg, "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz") ;
+        RDFDataMgr.read(dsg, "/home/afs/Datasets/BSBM/bsbm-50k.nt.gz") ;
         long x = t.endTimer() ;
         System.out.println("load = "+Timer.timeStr(x)+"s") ;
         

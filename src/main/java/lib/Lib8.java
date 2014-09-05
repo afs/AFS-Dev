@@ -38,6 +38,20 @@ public class Lib8 {
         return stream.collect(Collectors.toSet()) ;
     }
     
+    public static <X> X first(Stream<X> stream) {
+        return stream.findFirst().orElse(null) ;
+    }
+    
+    public static <X> X element(Collection<X> collection) {
+        return first(collection.stream()) ;
+    }
+
+    public static <X> Stream<X> print(Stream<X> stream) {
+        stream = stream.map(item -> { System.out.println(item) ; return item ; }) ;
+        return toList(stream).stream() ;
+    }
+
+    
     /** Immutable list that adds an elemtn to the front of another list without coping */ 
     static class ListFront<T> extends AbstractList<T> {
         private final T elt ;
