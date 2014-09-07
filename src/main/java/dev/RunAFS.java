@@ -42,11 +42,12 @@ public class RunAFS
         }
         
         private void setup() {
-            ObjectFileBuilder objectFileBuilder = new Builder.ObjectFileBuilderStd()  ;
+            SystemParams params = SystemParams.getDftSystemParams() ;
+            ObjectFileBuilder objectFileBuilder = new BuilderIndex.ObjectFileBuilderStd()  ;
             IndexBuilder indexBuilder = new IndexBuilderRadix() ;
             RangeIndexBuilder rangeIndexBuilder = new RangeIndexBuilderRadix() ;
-            NodeTableBuilder nodeTableBuilder = new Builder.NodeTableBuilderStd(indexBuilder, objectFileBuilder) ;
-            TupleIndexBuilder tupleIndexBuilder = new Builder.TupleIndexBuilderStd(rangeIndexBuilder) ;
+            NodeTableBuilder nodeTableBuilder = new BuilderDB.NodeTableBuilderStd(indexBuilder, objectFileBuilder) ;
+            TupleIndexBuilder tupleIndexBuilder = new BuilderDB.TupleIndexBuilderStd(rangeIndexBuilder) ;
             super.set(nodeTableBuilder, tupleIndexBuilder) ;
         }
     }
@@ -56,7 +57,7 @@ public class RunAFS
     {
         LogCtl.setLog4j() ;
         DatasetBuilder builder = new DatasetBuilderRadix() ;
-        DatasetGraphTDB dsg = builder.build(Location.mem(), null) ;
+        DatasetGraphTDB dsg = builder.build(Location.mem()) ;
         
         //Log.enable(NodeTable.class) ;
         //dsg.add(SSE.parseQuad("(_ <s> <p> <o>)")) ;

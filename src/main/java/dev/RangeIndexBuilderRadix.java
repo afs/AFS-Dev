@@ -22,6 +22,7 @@ import structure.radix.RadixIndex ;
 
 import com.hp.hpl.jena.tdb.base.file.FileSet ;
 import com.hp.hpl.jena.tdb.base.record.RecordFactory ;
+import com.hp.hpl.jena.tdb.index.IndexParams ;
 import com.hp.hpl.jena.tdb.index.RangeIndex ;
 import com.hp.hpl.jena.tdb.setup.RangeIndexBuilder ;
 
@@ -29,7 +30,7 @@ class RangeIndexBuilderRadix implements RangeIndexBuilder
 {
 
     @Override
-    public RangeIndex buildRangeIndex(FileSet fileSet, RecordFactory recordfactory)
+    public RangeIndex buildRangeIndex(FileSet fileSet, RecordFactory recordfactory, IndexParams params)
     {
         return new RadixIndex(recordfactory) ;
     }
