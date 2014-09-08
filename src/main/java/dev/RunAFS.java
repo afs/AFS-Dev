@@ -57,7 +57,7 @@ public class RunAFS
     {
         LogCtl.setLog4j() ;
         DatasetBuilder builder = new DatasetBuilderRadix() ;
-        DatasetGraphTDB dsg = builder.build(Location.mem()) ;
+        DatasetGraphTDB dsg = builder.build(Location.mem(), SystemParams.getDftSystemParams()) ;
         
         //Log.enable(NodeTable.class) ;
         //dsg.add(SSE.parseQuad("(_ <s> <p> <o>)")) ;
