@@ -44,8 +44,10 @@ public class RunAFS
         private void setup() {
             SystemParams params = SystemParams.getDftSystemParams() ;
             ObjectFileBuilder objectFileBuilder = new BuilderIndex.ObjectFileBuilderStd()  ;
+            
             IndexBuilder indexBuilder = new IndexBuilderRadix() ;
             RangeIndexBuilder rangeIndexBuilder = new RangeIndexBuilderRadix() ;
+            
             NodeTableBuilder nodeTableBuilder = new BuilderDB.NodeTableBuilderStd(indexBuilder, objectFileBuilder) ;
             TupleIndexBuilder tupleIndexBuilder = new BuilderDB.TupleIndexBuilderStd(rangeIndexBuilder) ;
             super.set(nodeTableBuilder, tupleIndexBuilder) ;
