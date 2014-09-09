@@ -28,6 +28,8 @@ import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 import com.hp.hpl.jena.sparql.util.Timer ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
+import com.hp.hpl.jena.tdb.index.IndexBuilder ;
+import com.hp.hpl.jena.tdb.index.RangeIndexBuilder ;
 import com.hp.hpl.jena.tdb.setup.* ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
 import com.hp.hpl.jena.tdb.store.NodeId ;
@@ -43,13 +45,13 @@ public class RunAFS
         
         private void setup() {
             SystemParams params = SystemParams.getDftSystemParams() ;
-            ObjectFileBuilder objectFileBuilder = new BuilderIndex.ObjectFileBuilderStd()  ;
+            ObjectFileBuilder objectFileBuilder = new BuilderStdDB.ObjectFileBuilderStd()  ;
             
             IndexBuilder indexBuilder = new IndexBuilderRadix() ;
             RangeIndexBuilder rangeIndexBuilder = new RangeIndexBuilderRadix() ;
             
-            NodeTableBuilder nodeTableBuilder = new BuilderDB.NodeTableBuilderStd(indexBuilder, objectFileBuilder) ;
-            TupleIndexBuilder tupleIndexBuilder = new BuilderDB.TupleIndexBuilderStd(rangeIndexBuilder) ;
+            NodeTableBuilder nodeTableBuilder = new BuilderStdDB.NodeTableBuilderStd(indexBuilder, objectFileBuilder) ;
+            TupleIndexBuilder tupleIndexBuilder = new BuilderStdDB.TupleIndexBuilderStd(rangeIndexBuilder) ;
             super.set(nodeTableBuilder, tupleIndexBuilder) ;
         }
     }
