@@ -44,7 +44,7 @@ public class RunAFS
         }
         
         private void setup() {
-            SystemParams params = SystemParams.getDftSystemParams() ;
+            StoreParams params = StoreParams.getDftStoreParams() ;
             ObjectFileBuilder objectFileBuilder = new BuilderStdDB.ObjectFileBuilderStd()  ;
             
             IndexBuilder indexBuilder = new IndexBuilderRadix() ;
@@ -61,7 +61,7 @@ public class RunAFS
     {
         LogCtl.setLog4j() ;
         DatasetBuilder builder = new DatasetBuilderRadix() ;
-        DatasetGraphTDB dsg = builder.build(Location.mem(), SystemParams.getDftSystemParams()) ;
+        DatasetGraphTDB dsg = builder.build(Location.mem(), StoreParams.getDftStoreParams()) ;
         
         //Log.enable(NodeTable.class) ;
         //dsg.add(SSE.parseQuad("(_ <s> <p> <o>)")) ;
