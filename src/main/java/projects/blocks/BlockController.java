@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package blocks;
+package projects.blocks;
 
 import java.util.* ;
 

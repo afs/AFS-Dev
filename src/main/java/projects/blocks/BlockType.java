@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package blocks;
+package projects.blocks;
 
 import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.io.Printable ;

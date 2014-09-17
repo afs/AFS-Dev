@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package blocks;
+package projects.blocks;
 
 import com.hp.hpl.jena.tdb.base.file.FileException;
 

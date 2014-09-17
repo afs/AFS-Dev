@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package blocks ; 
+package projects.blocks ; 
 // From TDB.
 
 import java.io.ByteArrayOutputStream ;

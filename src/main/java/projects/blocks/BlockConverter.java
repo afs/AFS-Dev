@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package blocks;
+package projects.blocks;
 
 /** Interface for higher level abstractions */ 
 public interface BlockConverter<T>
