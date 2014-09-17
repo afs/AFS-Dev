@@ -35,6 +35,8 @@ import com.hp.hpl.jena.datatypes.RDFDatatype ;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.NodeFactory ;
+import com.hp.hpl.jena.graph.Triple ;
+import com.hp.hpl.jena.rdf.model.AnonId ;
 import com.hp.hpl.jena.sparql.resultset.ResultSetException ;
 import com.hp.hpl.jena.sparql.util.Context ;
 import com.hp.hpl.jena.vocabulary.RDF ;
@@ -91,7 +93,6 @@ public class ReaderTriX implements ReaderRIOT {
         try { 
             while(parser.hasNext()) {
                 int event = parser.next() ;
-                String tag = null ;
                 switch (event) {
                     case XMLStreamConstants.NAMESPACE:
                         System.out.println("namespace") ;
@@ -104,9 +105,9 @@ public class ReaderTriX implements ReaderRIOT {
                         if ( depth != 0 ) 
                             staxError(parser.getLocation(), "End of document while processing XML element: (depth="+depth+")") ;
                         return ;
-                    case XMLStreamConstants.END_ELEMENT :
+                    case XMLStreamConstants.END_ELEMENT : {
                         --depth ;
-                        tag = parser.getLocalName() ;
+                        String tag = parser.getLocalName() ;
 //                        System.out.print("End:   ") ;
 //                        for ( int i = 0 ; i < depth ; i++) System.out.print("  ") ;
 //                        System.out.println(parser.getPrefix()+":"+tag) ;
@@ -117,22 +118,9 @@ public class ReaderTriX implements ReaderRIOT {
                         }
                         
                         break ;
-                        
-                    case XMLStreamConstants.START_ELEMENT :
-                        // Namespaces.
-                        // Stack.
-                        
-                        int  j = parser.getNamespaceCount() ;
-                        for ( int i = 0 ; i < j ; i++ ) {
-                            String prefix = parser.getNamespacePrefix(i) ;
-                            if ( prefix == null )
-                                prefix = "" ;
-                            String nsUri = parser.getNamespaceURI(i) ;
-                            //output.prefix(prefix, nsUri) ;
-                            System.out.println(prefix+ ": "+nsUri) ; 
-                        }
-                        
-                        tag = parser.getLocalName() ;
+                    }
+                    case XMLStreamConstants.START_ELEMENT : {
+                        String tag = parser.getLocalName() ;
 //                        System.out.print("Start:   ") ;
 //                        for ( int i = 0 ; i < depth ; i++) System.out.print("  ") ;
 //                        String nsURI = parser.getNamespaceURI() ;
@@ -146,73 +134,28 @@ public class ReaderTriX implements ReaderRIOT {
                             // structure
                             case TriX.tagGraph:
                                 checkDepth(parser, qname, depth, DepthGraph) ;
+                                // URI?
                                 depth++ ;
                                 break ;
                             case TriX.tagTriple:
                                 checkDepth(parser, qname, depth, DepthTriple) ;
+                                Node s = term(parser) ;
+                                Node p = term(parser) ;
+                                if ( p.isLiteral() )
+                                    staxError(parser.getLocation(), "Predicate is a literal") ;
+                                Node o = term(parser) ;
+                                output.triple(Triple.create(s,p,o)) ;
                                 depth++ ;
                                 break ;
                             case TriX.tagTriX:
                                 checkDepth(parser, qname, depth, DepthTriX) ;
                                 depth++ ;
                                 break ;
-                            // nodes
-                            case TriX.tagURI: {
-                                // Two uses!
-                                //checkDepth(parser, qname, depth, DepthTerms) ;
-                                String x = parser.getElementText() ;
-                                Node n = NodeFactory.createURI(x) ;
-                                System.out.println("U ** "+x) ;
-                                break ;
-                            }
-                            case TriX.tagId: {
-                                checkDepth(parser, qname, depth, DepthTerms) ;
-                                String x = parser.getElementText() ;
-                                Node n = NodeFactory.createURI(x) ;
-                                System.out.println("B ** "+x) ;
-                                break ;
-                            }
-                            case TriX.tagPlainLiteral: {
-                                checkDepth(parser, qname, depth, DepthTerms) ;
-                                // xml:lang
-                                
-                                int x = parser.getAttributeCount() ;
-                                if ( x > 1 )
-                                    // Namespaces?
-                                    staxError(parser.getLocation(), "Multiple attributes : only one allowed") ;
-                                String lang = null ;
-                                if ( x == 1 )
-                                    lang = attribute(parser, nsXML0, TriX.attrXmlLang) ;
-//                                    String attrPX =  parser.getAttributePrefix(0) ;
-//                                    String attrLN = parser.getAttributeLocalName(0) ;
-//                                    String attrVal = parser.getAttributeValue(0) ;
-//                                    System.out.println("   Attr "+attrPX+":"+attrLN+"="+attrVal) ;
-                                
-                                
-                                String lex = parser.getElementText() ;
-                                Node n = (lang == null ) ? NodeFactory.createLiteral(lex) : NodeFactory.createLiteral(lex, lang, null) ; 
-                                System.out.println("L ** "+n) ;
-                                break ;
-                            }
-                            case TriX.tagTypedLiteral: {
-                                checkDepth(parser, qname, depth, DepthTerms) ;
-                                int nAttr = parser.getAttributeCount() ;
-                                if ( nAttr != 1 )
-                                    staxError(parser.getLocation(), "Multiple attributes : only one allowed") ;
-                                String dt = attribute(parser, TriX.NS, TriX.attrDatatype) ;
-                                if ( dt == null )
-                                    staxError(parser.getLocation(), "No datatype attribute") ;
-                                RDFDatatype rdt = NodeFactory.getType(dt) ;
-                                String lex = parser.getElementText() ;
-                                Node n = NodeFactory.createLiteral(lex, rdt) ;
-                                System.out.println("T ** "+n) ;
-                                break ;
-                            }
                             default:
-                                staxError(parser.getLocation(), "Unrecognized tag -- "+qname.getPrefix()+":"+qname.getLocalPart()) ;
                         }
-                        break ;
-                    default :
+                            
+                }
+
                 }
             }
             staxError(-1, -1, "Premature end of file") ;
@@ -221,6 +164,67 @@ public class ReaderTriX implements ReaderRIOT {
             ex.printStackTrace(System.err) ;
         }
     }
+
+    private Node term(XMLStreamReader parser) throws XMLStreamException {
+        int event = parser.next() ;
+        switch (event) {
+            // XXX ???
+        }
+
+        String tag = parser.getLocalName() ;
+        switch(tag) {
+            case TriX.tagURI: {
+                // Two uses!
+                String x = parser.getElementText() ;
+                Node n = NodeFactory.createURI(x) ;
+                return n ; 
+            }
+            case TriX.tagId: {
+                String x = parser.getElementText() ;
+                Node n = NodeFactory.createURI(x) ;
+                System.out.println("B ** "+x) ;
+                // XXX MAP bnode.
+                return NodeFactory.createAnon(new AnonId(x)) ;
+            }
+            case TriX.tagPlainLiteral: {
+                // xml:lang
+                int x = parser.getAttributeCount() ;
+                if ( x > 1 )
+                    // Namespaces?
+                    staxError(parser.getLocation(), "Multiple attributes : only one allowed") ;
+                String lang = null ;
+                if ( x == 1 )
+                    lang = attribute(parser, nsXML0, TriX.attrXmlLang) ;
+                //                String attrPX =  parser.getAttributePrefix(0) ;
+                //                String attrLN = parser.getAttributeLocalName(0) ;
+                //                String attrVal = parser.getAttributeValue(0) ;
+                //                System.out.println("   Attr "+attrPX+":"+attrLN+"="+attrVal) ;
+
+
+                String lex = parser.getElementText() ;
+                Node n = (lang == null ) ? NodeFactory.createLiteral(lex) : NodeFactory.createLiteral(lex, lang, null) ; 
+                return n ;
+            }
+            case TriX.tagTypedLiteral: {
+                int nAttr = parser.getAttributeCount() ;
+                if ( nAttr != 1 )
+                    staxError(parser.getLocation(), "Multiple attributes : only one allowed") ;
+                String dt = attribute(parser, TriX.NS, TriX.attrDatatype) ;
+                if ( dt == null )
+                    staxError(parser.getLocation(), "No datatype attribute") ;
+                RDFDatatype rdt = NodeFactory.getType(dt) ;
+                String lex = parser.getElementText() ;
+                Node n = NodeFactory.createLiteral(lex, rdt) ;
+                return n ; 
+            }
+            default: {
+                QName qname = parser.getName() ;
+                staxError(parser.getLocation(), "Unrecognized tag -- "+qname.getPrefix()+":"+qname.getLocalPart()) ;
+                return null ;
+            }
+        }
+    }
+
 
     private String attribute(XMLStreamReader parser, String nsURI, String localname) {
         int x = parser.getAttributeCount() ;
