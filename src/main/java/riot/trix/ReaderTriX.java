@@ -16,8 +16,15 @@
 
 package riot.trix;
 
+import static riot.trix.ReaderTriX.State.GRAPH ;
+import static riot.trix.ReaderTriX.State.OUTER ;
+import static riot.trix.ReaderTriX.State.TRIPLE ;
+import static riot.trix.ReaderTriX.State.TRIX ;
+
 import java.io.InputStream ;
 import java.io.Reader ;
+import java.util.ArrayList ;
+import java.util.List ;
 import java.util.Objects ;
 
 import javax.xml.namespace.QName ;
@@ -33,34 +40,20 @@ import org.apache.jena.riot.system.StreamRDF ;
 
 import com.hp.hpl.jena.datatypes.RDFDatatype ;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype ;
+import com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.NodeFactory ;
 import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.rdf.model.AnonId ;
+import com.hp.hpl.jena.sparql.core.Quad ;
 import com.hp.hpl.jena.sparql.resultset.ResultSetException ;
 import com.hp.hpl.jena.sparql.util.Context ;
 import com.hp.hpl.jena.vocabulary.RDF ;
 
+/** read TriX */
 public class ReaderTriX implements ReaderRIOT {
 
     private ErrorHandler errorHandler = ErrorHandlerFactory.errorHandlerStd ;
-    
-    // RIOTLang
-//    @Override
-//    public ParserProfile getProfile() {
-//        return null ;
-//    }
-//
-//    @Override
-//    public void setProfile(ParserProfile profile) {}
-//
-//    @Override
-//    public void parse() {}
-//
-//    @Override
-//    public Lang getLang() {
-//        return null ;
-//    }
 
     @Override
     public void read(InputStream in, String baseURI, ContentType ct, StreamRDF output, Context context) {
@@ -68,109 +61,143 @@ public class ReaderTriX implements ReaderRIOT {
         XMLStreamReader xReader ;
         try {
             xReader = xf.createXMLStreamReader(in) ;
-        } catch (XMLStreamException e) { throw new ResultSetException("Can't initialize StAX parsing engine", e) ; } 
-//        } catch (Exception ex) {
-//            throw new RiotException("Failed when initializing the StAX parsing engine", ex) ;
-//        }
+        } catch (XMLStreamException e) { throw new RiotException("Can't initialize StAX parsing engine", e) ; }
         read(xReader,  baseURI, output) ;
     }
         
     @Override
-    public void read(Reader reader, String baseURI, ContentType ct, StreamRDF output, Context context) {}
-
+    public void read(Reader reader, String baseURI, ContentType ct, StreamRDF output, Context context) {
+        XMLInputFactory xf = XMLInputFactory.newInstance() ;
+        XMLStreamReader xReader ;
+        try {
+            xReader = xf.createXMLStreamReader(reader) ;
+        } catch (XMLStreamException e) { throw new ResultSetException("Can't initialize StAX parsing engine", e) ; } 
+        read(xReader,  baseURI, output) ;
+    }
     
     private static String nsRDF = RDF.getURI() ;
     private static String nsXSD = XSDDatatype.XSD ; // No "#"
     private static String nsXML0 = "http://www.w3.org/XML/1998/namespace" ;
-    private static int DepthTriX    = 0 ;
-    private static int DepthGraph   = 1 ;
-    private static int DepthTriple  = 2 ;
-    private static int DepthTerms   = 3 ;
+    private static String rdfXMLLiteral = XMLLiteralType.theXMLLiteralType.getURI() ;
+    
+    enum State { OUTER, TRIX, GRAPH, TRIPLE }
     
     private void read(XMLStreamReader parser, String baseURI, StreamRDF output) {
-        int depth = 0 ;
+        State state = OUTER ;
+        Node g = null ;
+        List<Node> terms = new ArrayList<>() ; 
         
         try { 
             while(parser.hasNext()) {
                 int event = parser.next() ;
                 switch (event) {
                     case XMLStreamConstants.NAMESPACE:
-                        System.out.println("namespace") ;
                         break ;
                     case XMLStreamConstants.START_DOCUMENT :
-                        System.out.println("Start document") ;
                         break ;
                     case XMLStreamConstants.END_DOCUMENT :
-                        System.out.println("END document") ;
-                        if ( depth != 0 ) 
-                            staxError(parser.getLocation(), "End of document while processing XML element: (depth="+depth+")") ;
+                        if ( state != OUTER ) 
+                            staxError(parser.getLocation(), "End of document while processing XML element") ;
                         return ;
                     case XMLStreamConstants.END_ELEMENT : {
-                        --depth ;
                         String tag = parser.getLocalName() ;
-//                        System.out.print("End:   ") ;
-//                        for ( int i = 0 ; i < depth ; i++) System.out.print("  ") ;
-//                        System.out.println(parser.getPrefix()+":"+tag) ;
-                        
                         switch(tag) {
                             case TriX.tagTriple:
-                                //output.triple() or quad()
+                                if ( terms.size() != 3 )
+                                    staxError(parser.getLocation(), "Wriong number of terms for a triple. Got "+terms.size()) ;
+                                Node s = terms.get(0) ;
+                                Node p = terms.get(1) ;
+                                Node o = terms.get(2) ;
+                                if ( p.isLiteral() )
+                                    staxError(parser.getLocation(), "Predicate is a literal") ;
+                                if ( s.isLiteral() )
+                                    staxError(parser.getLocation(), "Subject is a literal") ;
+                                if ( g == null )
+                                    output.triple(Triple.create(s, p, o)) ;
+                                else {
+                                    if ( g.isLiteral() )
+                                        staxError(parser.getLocation(), "graph name is a literal") ;
+                                    output.quad(Quad.create(g, s, p, o)) ;
+                                }
+                                terms.clear();
+                                // Next is either end of <graph> or another <triple>
+                                state = GRAPH ; 
+                                break ;
+                            case TriX.tagGraph:
+                                state = TRIX ;
+                                g = null ;
+                                break ;
+                            case TriX.tagTriX:
+                                state = OUTER ;
+                                break ;
                         }
-                        
                         break ;
                     }
                     case XMLStreamConstants.START_ELEMENT : {
                         String tag = parser.getLocalName() ;
-//                        System.out.print("Start:   ") ;
-//                        for ( int i = 0 ; i < depth ; i++) System.out.print("  ") ;
-//                        String nsURI = parser.getNamespaceURI() ;
-//                        System.out.println(parser.getPrefix()+":"+tag) ;
-                        QName qname = parser.getName() ;
-                        //qname.getLocalPart() ;
-                        //qname.getNamespaceURI() ;
-                        //qname.getPrefix() ;
                         
                         switch (tag) {
+                            case TriX.tagTriX:
+                                if ( state != OUTER )
+                                    staxErrorOutOfPlaceElement(parser) ;
+                                state = TRIX ;
+                                break ;
                             // structure
                             case TriX.tagGraph:
-                                checkDepth(parser, qname, depth, DepthGraph) ;
+                                if ( state != TRIX )
+                                    staxErrorOutOfPlaceElement(parser) ;
                                 // URI?
-                                depth++ ;
+                                state = GRAPH ;
                                 break ;
-                            case TriX.tagTriple:
-                                checkDepth(parser, qname, depth, DepthTriple) ;
-                                Node s = term(parser) ;
-                                Node p = term(parser) ;
-                                if ( p.isLiteral() )
-                                    staxError(parser.getLocation(), "Predicate is a literal") ;
-                                Node o = term(parser) ;
-                                output.triple(Triple.create(s,p,o)) ;
-                                depth++ ;
+                            case TriX.tagTriple: {
+                                if ( state != GRAPH )
+                                    staxErrorOutOfPlaceElement(parser) ;
+                                state = TRIPLE ;
                                 break ;
-                            case TriX.tagTriX:
-                                checkDepth(parser, qname, depth, DepthTriX) ;
-                                depth++ ;
+                            }
+                            case TriX.tagQName:
+                            case TriX.tagURI: {
+                                if ( state != GRAPH && state != TRIPLE )
+                                    staxErrorOutOfPlaceElement(parser) ;
+                                Node n = term(parser) ;
+                                if ( state == GRAPH ) {
+                                    g = n ;
+                                    if ( g.isLiteral() )
+                                        staxError(parser.getLocation(), "graph name is a literal") ;
+                                }
+                                else
+                                    terms.add(n) ;
                                 break ;
+                            }
+                            case TriX.tagId:
+                            case TriX.tagPlainLiteral:
+                            case TriX.tagTypedLiteral: {    
+                                if ( state != TRIPLE )
+                                    staxErrorOutOfPlaceElement(parser) ;
+                                Node n = term(parser) ;
+                                terms.add(n) ;
+                                break ;
+                            }
                             default:
+                                staxError(parser.getLocation(), "Unrecognized XML element: "+qnameAsString(parser.getName())) ; 
+                                break ;
                         }
-                            
-                }
-
+                    }
                 }
             }
             staxError(-1, -1, "Premature end of file") ;
             return  ;
         } catch (XMLStreamException ex) {
-            ex.printStackTrace(System.err) ;
+            throw new RiotException("XML error", ex) ;
         }
     }
 
-    private Node term(XMLStreamReader parser) throws XMLStreamException {
-        int event = parser.next() ;
-        switch (event) {
-            // XXX ???
-        }
+    private void staxErrorOutOfPlaceElement(XMLStreamReader parser) {
+        QName qname = parser.getName() ;
+        staxError(parser.getLocation(), "Out of place XML element: "+qname.getPrefix()+":"+qname.getLocalPart()) ; 
+    }    
 
+    private Node term(XMLStreamReader parser) throws XMLStreamException {
         String tag = parser.getLocalName() ;
         switch(tag) {
             case TriX.tagURI: {
@@ -179,10 +206,24 @@ public class ReaderTriX implements ReaderRIOT {
                 Node n = NodeFactory.createURI(x) ;
                 return n ; 
             }
+            case TriX.tagQName: {
+                String x = parser.getElementText() ;
+                int idx = x.indexOf(':') ;
+                if ( idx == -1 )
+                    staxError(parser.getLocation(), "Expected ':' in prefixed name.  Found "+x) ;
+//                int idx2 = x.lastIndexOf(':') ;
+//                if ( idx != idx2 )
+//                    staxError(parser.getLocation(), "Exactly one ':' expected in prefixed name.  Found "+x) ;
+                String[] y = x.split(":", 2) ;  // Allows additional ':'
+                
+                String prefUri = parser.getNamespaceURI(y[0]) ;
+                String local = y[1] ; 
+                Node n = NodeFactory.createURI(prefUri+local) ;
+                return n ;
+            }
             case TriX.tagId: {
                 String x = parser.getElementText() ;
                 Node n = NodeFactory.createURI(x) ;
-                System.out.println("B ** "+x) ;
                 // XXX MAP bnode.
                 return NodeFactory.createAnon(new AnonId(x)) ;
             }
@@ -195,12 +236,6 @@ public class ReaderTriX implements ReaderRIOT {
                 String lang = null ;
                 if ( x == 1 )
                     lang = attribute(parser, nsXML0, TriX.attrXmlLang) ;
-                //                String attrPX =  parser.getAttributePrefix(0) ;
-                //                String attrLN = parser.getAttributeLocalName(0) ;
-                //                String attrVal = parser.getAttributeValue(0) ;
-                //                System.out.println("   Attr "+attrPX+":"+attrLN+"="+attrVal) ;
-
-
                 String lex = parser.getElementText() ;
                 Node n = (lang == null ) ? NodeFactory.createLiteral(lex) : NodeFactory.createLiteral(lex, lang, null) ; 
                 return n ;
@@ -213,16 +248,102 @@ public class ReaderTriX implements ReaderRIOT {
                 if ( dt == null )
                     staxError(parser.getLocation(), "No datatype attribute") ;
                 RDFDatatype rdt = NodeFactory.getType(dt) ;
-                String lex = parser.getElementText() ;
+
+                String lex = (rdfXMLLiteral.equals(dt)) 
+                    ? slurpRDFXMLLiteral(parser)
+                    : parser.getElementText() ;
                 Node n = NodeFactory.createLiteral(lex, rdt) ;
                 return n ; 
             }
             default: {
                 QName qname = parser.getName() ;
-                staxError(parser.getLocation(), "Unrecognized tag -- "+qname.getPrefix()+":"+qname.getLocalPart()) ;
+                staxError(parser.getLocation(), "Unrecognized tag -- "+qnameAsString(qname)) ;
                 return null ;
             }
         }
+    }
+    
+    private String slurpRDFXMLLiteral(XMLStreamReader parser) throws XMLStreamException {
+        StringBuffer content = new StringBuffer();
+        int depth = 0 ;
+        
+        while(parser.hasNext()) {
+            int event = parser.next();
+            switch (event) {
+                case XMLStreamConstants.START_ELEMENT: {
+                    QName qname = parser.getName() ;
+                    String x = qnameAsString(qname) ;
+                    content.append("<"+x+">") ;
+                    depth++ ;
+                    break ;
+                }
+                case XMLStreamConstants.END_ELEMENT: {
+                    depth-- ;
+                    if ( depth == -1 ) {
+                        // Close tag of typed Literal.
+                        return content.toString();
+                    }
+                    QName qname = parser.getName() ;
+                    String x = qnameAsString(qname) ;
+                    content.append(x) ;
+                    content.append("</"+x+">") ;
+                    // Final whitespace?
+                    break ;
+                }
+                case XMLStreamConstants.CHARACTERS:
+                case XMLStreamConstants.CDATA:
+                case XMLStreamConstants.SPACE:
+                case XMLStreamConstants.ENTITY_REFERENCE:
+                case XMLStreamConstants.PROCESSING_INSTRUCTION:
+                case XMLStreamConstants.COMMENT:
+                    content.append(parser.getText()) ;
+                    break ;
+                case XMLStreamConstants.END_DOCUMENT:
+                    staxError(parser.getLocation(), "End of file") ;
+            }
+        }
+        staxError(parser.getLocation(), "End of file") ;
+        return null ;
+    }
+    
+    
+//    public String getElementText() throws XMLStreamException {
+//
+//        if(getEventType() != XMLStreamConstants.START_ELEMENT) {
+//            throw new XMLStreamException(
+//            "parser must be on START_ELEMENT to read next text", getLocation());
+//        }
+//        int eventType = next();
+//        StringBuffer content = new StringBuffer();
+//        while(eventType != XMLStreamConstants.END_ELEMENT ) {
+//            if(eventType == XMLStreamConstants.CHARACTERS
+//            || eventType == XMLStreamConstants.CDATA
+//            || eventType == XMLStreamConstants.SPACE
+//            || eventType == XMLStreamConstants.ENTITY_REFERENCE) {
+//                content.append(getText());
+//            } else if(eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
+//            || eventType == XMLStreamConstants.COMMENT) {
+//                // skipping
+//            } else if(eventType == XMLStreamConstants.END_DOCUMENT) {
+//                throw new XMLStreamException("unexpected end of document when reading element text content");
+//            } else if(eventType == XMLStreamConstants.START_ELEMENT) {
+//                throw new XMLStreamException(
+//                "elementGetText() function expects text only elment but START_ELEMENT was encountered.", getLocation());
+//            } else {
+//                throw new XMLStreamException(
+//                "Unexpected event type "+ eventType, getLocation());
+//            }
+//            eventType = next();
+//        }
+//        return content.toString();
+//    }
+    
+    
+    private String qnameAsString(QName qname) {
+        String x = qname.getPrefix() ;
+        if ( x == null || x.isEmpty() )
+            return qname.getLocalPart() ;
+        return x+":"+qname.getLocalPart() ;
     }
 
 

@@ -19,15 +19,56 @@ package riot.trix;
 import java.io.InputStream ;
 
 import org.apache.jena.atlas.io.IO ;
-import org.apache.jena.riot.ReaderRIOT ;
+import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.riot.system.StreamRDFWriter ;
+
+import com.hp.hpl.jena.sparql.core.DatasetGraph ;
+import com.hp.hpl.jena.sparql.core.DatasetGraphFactory ;
+import com.hp.hpl.jena.sparql.sse.SSE ;
 
 public class MainTriX {
+    
+    // TODO
+    // <integer>??
+    // RDFXMLLiterals (ex-3)
+    // Namespaces in reader
+    // Error cases.
+    // Correct results.
+    // Writer escape XML
+    // tests
 
     public static void main(String[] args) {
-        ReaderRIOT r = new ReaderTriX() ;
-        InputStream in = IO.openFile("trix-ex-0.xml") ;
-        r.read(in, null, null, null, null) ;
-        System.out.println("DONE") ;
+        TriX.init() ;
+        // Does not override .xml.
+        // Strong and weak/default hints.
+        // DatasetGraph dsg = RDFDataMgr.loadDatasetGraph("trix-ex-2.xml", TriX.TRIX) ;
+        InputStream in = IO.openFile("trix-ex-2.xml") ;
+        DatasetGraph dsg = DatasetGraphFactory.createMem() ; 
+        RDFDataMgr.read(dsg, in, TriX.TRIX) ;
+        SSE.write(dsg) ;
+        System.out.println() ;
+        //RDFDataMgr.write(System.out, dsg, TriX.TRIX) ;
+        
+        
+        StreamRDFWriter.write(System.out, dsg, TriX.TRIX) ;
+        
+        
+//        ReaderRIOT r = new ReaderTriX() ;
+//        InputStream in = IO.openFile("trix-ex-2.xml") ;
+//        //StreamRDF stream = StreamRDFLib.writer(System.out) ;
+//        DatasetGraph dsg = DatasetGraphFactory.createMem() ;
+//        StreamRDF stream = StreamRDFLib.dataset(dsg) ;
+//        stream.start();
+//        r.read(in, null, null, stream, null) ;
+//        stream.finish();
+//        SSE.write(dsg) ;
+//        
+////        WriterGraphRIOT w = new WriterTriX() ;
+////        w.write(System.out, dsg.getDefaultGraph(), null, null, null) ;
+//        
+//      WriterDatasetRIOT w = new WriterTriX() ;
+//      w.write(System.out, dsg, null, null, null) ;
+//      System.out.println("DONE") ;
     }
 
 }

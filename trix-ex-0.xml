@@ -1,14 +1,14 @@
 <TriX xmlns="http://www.w3.org/2004/03/trix/trix-1/"
       xmlns:trix="http://www.w3.org/2004/03/trix/trix-1/">
   <trix:graph>
-<!--
     <uri>http://example.org/graph1</uri>
--->
     <triple>
       <uri>http://example.org/Bob</uri>
       <uri>http://example.org/wife</uri>
       <uri>http://example.org/Mary</uri>
     </triple>
+  </trix:graph>
+  <trix:graph>
     <triple>
       <uri>http://example.org/Bob</uri>
       <uri>http://example.org/name</uri>

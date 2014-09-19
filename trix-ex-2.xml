@@ -13,10 +13,5 @@
       <qname>eg:name</qname>
       <plainLiteral>Bob</plainLiteral>
     </triple>
-    <triple>
-      <qname>eg:Mary</qname>
-      <qname>eg:age</qname>
-      <integer>32</integer>
-    </triple>
   </graph>
 </TriX>
