@@ -7,8 +7,7 @@
       <uri>http://example.org/p</uri>
       <typedLiteral 
        datatype="http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"
-       xmlns:ex="http://example/ns#"
-      >A<ex:T>B</ex:T>C</typedLiteral>
+       >A<ex:T xmlns:ex="http://example/ns#">B</ex:T>C</typedLiteral>
     </triple>
   </graph>
 </TriX>

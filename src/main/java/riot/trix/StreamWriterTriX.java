@@ -28,6 +28,7 @@ import org.apache.jena.riot.system.StreamRDF ;
 import com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
+import com.hp.hpl.jena.rdf.model.impl.Util ;
 import com.hp.hpl.jena.sparql.core.Quad ;
 
 /** Write TriX. */
@@ -131,14 +132,14 @@ public class StreamWriterTriX implements StreamRDF {
                 String abbrev = prefixMap.abbreviate(uri) ;
                 if ( abbrev != null ) {
                     startTag(out, TriX.tagQName) ;
-                    writeStringEsc(out, abbrev) ;
+                    writeText(out, abbrev) ;
                     endTag(out, TriX.tagQName) ;
                     return ;
                 }
             }
             
             startTag(out, TriX.tagURI) ;
-            writeStringEsc(out, node.getURI()) ;
+            writeText(out, node.getURI()) ;
             endTag(out, TriX.tagURI) ;
             out.println() ;
             return ;
@@ -146,7 +147,7 @@ public class StreamWriterTriX implements StreamRDF {
         
         if ( node.isBlank() ) {
             startTag(out, TriX.tagId) ;
-            writeStringEsc(out, node.getBlankNodeLabel()) ;
+            writeText(out, node.getBlankNodeLabel()) ;
             endTag(out, TriX.tagId) ;
             out.println() ;
             return ;
@@ -160,8 +161,8 @@ public class StreamWriterTriX implements StreamRDF {
             
             String dt = node.getLiteralDatatypeURI() ;
             if ( lang != null ) {
-                startTag(out, TriX.tagPlainLiteral, TriX.attrXmlLang, lang) ;
-                writeStringEsc(out, node.getLiteralLexicalForm()) ;
+                startTag(out, TriX.tagPlainLiteral, "xml:lang", lang) ;
+                writeTextNoIndent(out, node.getLiteralLexicalForm()) ;
                 endTag(out, TriX.tagPlainLiteral) ;
                 out.println() ;
                 return ;
@@ -169,7 +170,7 @@ public class StreamWriterTriX implements StreamRDF {
             
             if ( dt == null ) {
                 startTag(out, TriX.tagPlainLiteral) ;
-                writeStringEsc(out, node.getLiteralLexicalForm()) ;
+                writeTextNoIndent(out, node.getLiteralLexicalForm()) ;
                 endTag(out, TriX.tagPlainLiteral) ;
                 out.println() ;
                 return ;
@@ -179,10 +180,14 @@ public class StreamWriterTriX implements StreamRDF {
     
             startTag(out, TriX.tagTypedLiteral, TriX.attrDatatype, dt) ;
             String lex = node.getLiteralLexicalForm() ;
-            if ( rdfXMLLiteral.equals(dt) )
+            if ( rdfXMLLiteral.equals(dt) ) {
+                int x = out.getAbsoluteIndent() ;
+                out.setAbsoluteIndent(0) ;
                 out.print(lex) ;    // Write raw
+                out.setAbsoluteIndent(x) ;
+            }
             else
-                writeStringEsc(out, lex) ;
+                writeTextNoIndent(out, lex) ;
             endTag(out, TriX.tagTypedLiteral) ;
             out.println() ;
             return ;
@@ -191,10 +196,20 @@ public class StreamWriterTriX implements StreamRDF {
         
         throw new RiotException("Not a concrete node: "+node) ;
     }
-    static void writeStringEsc(IndentedWriter out, String string) {
+    
+    static void writeText(IndentedWriter out, String string) {
         //throw new NotImplementedException() ;
+        string = Util.substituteEntitiesInElementContent(string) ;
         out.print(string) ;
     }
+    
+    static void writeTextNoIndent(IndentedWriter out, String string) {
+        int x = out.getAbsoluteIndent() ;
+        out.setAbsoluteIndent(0) ;
+        writeText(out, string) ;
+        out.setAbsoluteIndent(x) ;
+    }
+
     static void startXML(IndentedWriter out) {
         //out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>") ;
     }
@@ -210,7 +225,8 @@ public class StreamWriterTriX implements StreamRDF {
         out.print(" ") ;
         out.print(attr) ;
         out.print("=\"") ;
-        out.print(attrValue) ;  // No need to escape.
+        attrValue = Util.substituteStandardEntities(attrValue) ;
+        out.print(attrValue) ;
         out.print("\"") ;
         out.print(">") ;
         out.incIndent();

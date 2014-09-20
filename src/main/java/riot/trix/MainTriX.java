@@ -29,12 +29,7 @@ public class MainTriX {
     
     // TODO
     // Namespaces in reader
-    // Writer escape XML (x2)
-    //    tests
-    // writer tests
     // RDFDataMgr.parser - soft hints.
-    // Bug - trix-14 XML attributes 
-    /// Namespaces.
 
     public static void main(String[] args) {
         

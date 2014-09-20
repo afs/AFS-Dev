@@ -60,6 +60,7 @@ public class TestTriXReader extends BaseTest {
                   { DIR+"/trix-12.trix", DIR+"/trix-12.nq" } ,        
                   { DIR+"/trix-13.trix", DIR+"/trix-13.nq" } ,        
                   { DIR+"/trix-14.trix", DIR+"/trix-14.nq" } , 
+                  { DIR+"/trix-15.trix", DIR+"/trix-15.nq" } , 
                   // The example from HPL-2004-56
                   { DIR+"/trix-ex-1.trix", null },
 //                  //{ "trix-ex-2.trix", null },  // Contains <integer> 

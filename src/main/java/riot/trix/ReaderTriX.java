@@ -338,6 +338,10 @@ public class ReaderTriX implements ReaderRIOT {
                 case XMLStreamConstants.ENTITY_REFERENCE:
                 case XMLStreamConstants.PROCESSING_INSTRUCTION:
                 case XMLStreamConstants.COMMENT:
+//                    String $ = parser.getText() ;
+//                    System.out.println("----") ;
+//                    System.out.println($) ;
+//                    System.out.println("----") ;
                     content.append(parser.getText()) ;
                     break ;
                 case XMLStreamConstants.END_DOCUMENT:

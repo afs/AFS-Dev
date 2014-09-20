@@ -16,15 +16,21 @@
 
 package riot.trix;
 
+import java.io.ByteArrayInputStream ;
+import java.io.ByteArrayOutputStream ;
 import java.util.Arrays ;
 
 import org.apache.jena.atlas.junit.BaseTest ;
-import org.apache.jena.atlas.lib.NotImplemented ;
+import org.apache.jena.riot.RDFDataMgr ;
 import org.junit.Test ;
 import org.junit.runner.RunWith ;
 import org.junit.runners.Parameterized ;
 import org.junit.runners.Parameterized.Parameter ;
 import org.junit.runners.Parameterized.Parameters ;
+
+import com.hp.hpl.jena.sparql.core.DatasetGraph ;
+import com.hp.hpl.jena.sparql.core.DatasetGraphFactory ;
+import com.hp.hpl.jena.sparql.util.IsoMatcher ;
 
 @RunWith(Parameterized.class)
 public class TestTriXWriter extends BaseTest {
@@ -47,25 +53,25 @@ public class TestTriXWriter extends BaseTest {
             { DIR+"/trix-12.trix", DIR+"/trix-12.nq" } ,        
             { DIR+"/trix-13.trix", DIR+"/trix-13.nq" } ,        
             { DIR+"/trix-14.trix", DIR+"/trix-14.nq" } , 
-            // The example from HPL-2004-56
-            { DIR+"/trix-ex-1.trix", null },
-            //                      //{ "trix-ex-2.trix", null },  // Contains <integer> 
-            { DIR+"/trix-ex-3.trix", null },
-            { DIR+"/trix-ex-4.trix", null },
-            { DIR+"/trix-ex-5.trix", null }
+            { DIR+"/trix-15.trix", DIR+"/trix-15.nq" }  
         });
     }
     @Parameter(0)
-    public String fInput;
+    public String fTrix;
 
     @Parameter(1)
-    public String fExpected;
+    public String fNQuads ;
     
     @Test
     public void trix_writer() {
-        // read in NQ, write TriX, read TriX, check.
-        // Also add to "reader" loop
-        throw new NotImplemented() ;
+        DatasetGraph dsg = RDFDataMgr.loadDatasetGraph(fNQuads) ;
+        ByteArrayOutputStream bout = new ByteArrayOutputStream() ;
+        RDFDataMgr.write(bout, dsg, TriX.TRIX) ;
+        ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray()) ;
+        DatasetGraph dsg2 = DatasetGraphFactory.createMem() ;
+        RDFDataMgr.read(dsg2, bin, TriX.TRIX) ;
+        boolean b = IsoMatcher.isomorphic(dsg, dsg2) ;
+        assertTrue("Not isomorphic", b) ;
     }
 }
 
