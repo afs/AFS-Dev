@@ -21,8 +21,9 @@ import org.junit.runners.Suite ;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-   TestTriX.class,
-   TestBadTriX.class
+   TestTriXReader.class,
+   TestBadTriX.class,
+   TestTriXWriter.class,
 })                 
 public class TS_TriX { }
 

@@ -20,6 +20,7 @@ import java.io.InputStream ;
 import java.util.Arrays ;
 
 import org.apache.jena.atlas.io.IO ;
+import org.apache.jena.atlas.junit.BaseTest ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.apache.jena.riot.ReaderRIOT ;
 import org.apache.jena.riot.system.ErrorHandler ;
@@ -39,8 +40,7 @@ import com.hp.hpl.jena.sparql.core.DatasetGraphFactory ;
 import com.hp.hpl.jena.sparql.util.IsoMatcher ;
 
 @RunWith(Parameterized.class)
-
-public class TestTriX extends Assert /*BaseTest*/ {
+public class TestTriXReader extends BaseTest {
     
     static { TriX.init() ; }
     
@@ -109,7 +109,7 @@ public class TestTriX extends Assert /*BaseTest*/ {
             ErrorHandlerFactory.setDefaultErrorHandler(err) ;
         }
         if ( m2 != null )
-            assertTrue(m1.isIsomorphicWith(m2)) ;
+            assertTrue("Models not isomorphic", m1.isIsomorphicWith(m2)) ;
     }
     
     @Test

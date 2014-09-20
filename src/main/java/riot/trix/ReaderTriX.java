@@ -288,8 +288,35 @@ public class ReaderTriX implements ReaderRIOT {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT: {
                     QName qname = parser.getName() ;
-                    String x = qnameAsString(qname) ;
-                    content.append("<"+x+">") ;
+                    content.append("<") ;
+                    content.append(qnameAsString(qname)) ;
+                    int N = parser.getNamespaceCount() ;  
+                    for ( int i = 0 ; i < N ; i ++ ) {
+                        String p = parser.getNamespacePrefix(i) ;
+                        if ( p == null )
+                            p = "xmlns" ;
+                        else
+                            p = "xmlns:"+p ;
+                        String v = parser.getNamespaceURI(i) ;
+                        content.append(" ") ;
+                        content.append(p) ;
+                        content.append("=\"") ;
+                        content.append(v) ;
+                        content.append("\"") ;
+                    }
+                    
+                    N = parser.getAttributeCount() ;
+                    for ( int i = 0 ; i < N ; i ++ ) {
+                        QName name = parser.getAttributeName(i) ;
+                        String a = qnameAsString(name) ;
+                        String v = parser.getAttributeValue(i) ;
+                        content.append(" ") ;
+                        content.append(a) ;
+                        content.append("=\"") ;
+                        content.append(v) ;
+                        content.append("\"") ;
+                    }
+                    content.append(">") ;
                     depth++ ;
                     break ;
                 }
@@ -301,7 +328,6 @@ public class ReaderTriX implements ReaderRIOT {
                     }
                     QName qname = parser.getName() ;
                     String x = qnameAsString(qname) ;
-                    content.append(x) ;
                     content.append("</"+x+">") ;
                     // Final whitespace?
                     break ;

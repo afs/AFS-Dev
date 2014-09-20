@@ -34,6 +34,7 @@ public class MainTriX {
     // writer tests
     // RDFDataMgr.parser - soft hints.
     // Bug - trix-14 XML attributes 
+    /// Namespaces.
 
     public static void main(String[] args) {
         

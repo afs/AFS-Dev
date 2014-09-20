@@ -6,12 +6,12 @@
       <uri>http://example.org/s</uri>
       <uri>http://example.org/p</uri>
       <typedLiteral 
-       datatype="http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"
-       xmlns:ex="http://example/ns#">
-       A
-       <ex:T ex:a="a1" ex:b="b1">B1</ex:T>
-       <ex:T>B2</ex:T>
-       C
+       datatype="http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral">
+	<div xmlns:ex="http://example/ns#">
+	  A
+	  <ex:T a="V">B2</ex:T>
+	  C
+	</div>
        </typedLiteral>
     </triple>
   </graph>
