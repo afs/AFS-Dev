@@ -1,0 +1,18 @@
+<!-- rdf:XMLLiteral -->
+
+<TriX xmlns="http://www.w3.org/2004/03/trix/trix-1/">
+  <graph>
+    <triple>
+      <uri>http://example.org/s</uri>
+      <uri>http://example.org/p</uri>
+      <typedLiteral 
+       datatype="http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"
+       xmlns:ex="http://example/ns#">
+       A
+       <ex:T ex:a="a1" ex:b="b1">B1</ex:T>
+       <ex:T>B2</ex:T>
+       C
+       </typedLiteral>
+    </triple>
+  </graph>
+</TriX>

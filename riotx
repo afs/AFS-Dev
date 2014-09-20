@@ -1,0 +1,6 @@
+#!/bin/bash
+
+CP="$(jena)"
+CP="$HOME/Projects/AFS-Dev/target/classes:$CP"
+
+java -cp "$CP" riot.trix.riotx "$@"

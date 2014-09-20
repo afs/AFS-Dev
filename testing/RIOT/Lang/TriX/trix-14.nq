@@ -1,0 +1,1 @@
+<http://example.org/s> <http://example.org/p> "\n       A\n       <ex:T ex:a=\"a1\" ex:b=\"b1\">ex:T</ex:T>\n       <ex:T>B2ex:T</ex:T>\n       C\n       "^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral> .

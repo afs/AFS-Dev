@@ -22,6 +22,8 @@ import java.util.Arrays ;
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.apache.jena.riot.ReaderRIOT ;
+import org.apache.jena.riot.system.ErrorHandler ;
+import org.apache.jena.riot.system.ErrorHandlerFactory ;
 import org.apache.jena.riot.system.StreamRDF ;
 import org.apache.jena.riot.system.StreamRDFLib ;
 import org.junit.Assert ;
@@ -31,23 +33,39 @@ import org.junit.runners.Parameterized ;
 import org.junit.runners.Parameterized.Parameter ;
 import org.junit.runners.Parameterized.Parameters ;
 
+import com.hp.hpl.jena.rdf.model.Model ;
 import com.hp.hpl.jena.sparql.core.DatasetGraph ;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory ;
-import com.hp.hpl.jena.sparql.lib.DatasetLib ;
+import com.hp.hpl.jena.sparql.util.IsoMatcher ;
 
 @RunWith(Parameterized.class)
 
-public class TestTriX {
+public class TestTriX extends Assert /*BaseTest*/ {
+    
+    static { TriX.init() ; }
+    
+    static String DIR = "testing/RIOT/Lang/TriX" ;
     
     @Parameters(name="{0}")
     public static Iterable<Object[]> data() {
               return Arrays.asList(new Object[][] { 
-                  { "trix-ex-0.xml", null }, 
-                  { "trix-ex-1.xml", null },
-//                  //{ "trix-ex-2.xml", null },  // Contains <integer> 
-                  { "trix-ex-3.xml", null },
-                  { "trix-ex-4.xml", null },
-                  { "trix-ex-5.xml", null }
+                  { DIR+"/trix-01.trix", DIR+"/trix-01.nq" } ,
+                  { DIR+"/trix-02.trix", DIR+"/trix-02.nq" } ,
+                  { DIR+"/trix-03.trix", DIR+"/trix-03.nq" } ,
+                  { DIR+"/trix-04.trix", DIR+"/trix-04.nq" } ,
+                  { DIR+"/trix-05.trix", DIR+"/trix-05.nq" } ,
+                  { DIR+"/trix-06.trix", DIR+"/trix-06.nq" } ,
+                  { DIR+"/trix-10.trix", DIR+"/trix-10.nq" } ,        
+                  { DIR+"/trix-11.trix", DIR+"/trix-11.nq" } ,        
+                  { DIR+"/trix-12.trix", DIR+"/trix-12.nq" } ,        
+                  { DIR+"/trix-13.trix", DIR+"/trix-13.nq" } ,        
+                  { DIR+"/trix-14.trix", DIR+"/trix-14.nq" } , 
+                  // The example from HPL-2004-56
+                  { DIR+"/trix-ex-1.trix", null },
+//                  //{ "trix-ex-2.trix", null },  // Contains <integer> 
+                  { DIR+"/trix-ex-3.trix", null },
+                  { DIR+"/trix-ex-4.trix", null },
+                  { DIR+"/trix-ex-5.trix", null }
                   });
     }
     
@@ -58,7 +76,7 @@ public class TestTriX {
     public String fExpected;
     
     @Test
-    public void trix() {
+    public void trix_direct() {
         ReaderRIOT r = new ReaderTriX() ;
         InputStream in = IO.openFile(fInput) ;
         DatasetGraph dsg = DatasetGraphFactory.createMem() ;
@@ -69,11 +87,39 @@ public class TestTriX {
         stream.finish();
         if ( fExpected != null ) {
             DatasetGraph dsg2 = RDFDataMgr.loadDatasetGraph(fExpected) ;
-            boolean b = DatasetLib.isomorphic(dsg, dsg2) ;
-            if ( ! b )
+            boolean b = IsoMatcher.isomorphic(dsg, dsg2) ;
+            if ( ! b ) {
                 Assert.fail("Not isomorphic") ;
+            }
         }
     }
+
+    @Test
+    public void trix_model() {
+        // Ignore warnings of skipping quads reading into a model
+        Model m1 = null ;
+        Model m2 = null ;
+        ErrorHandler err = ErrorHandlerFactory.getDefaultErrorHandler() ;
+        try {
+            ErrorHandlerFactory.setDefaultErrorHandler(ErrorHandlerFactory.errorHandlerNoWarnings) ;
+            m1 = RDFDataMgr.loadModel(fInput) ;
+            if ( fExpected != null )
+                m2 = RDFDataMgr.loadModel(fExpected) ;
+        } finally {
+            ErrorHandlerFactory.setDefaultErrorHandler(err) ;
+        }
+        if ( m2 != null )
+            assertTrue(m1.isIsomorphicWith(m2)) ;
+    }
     
+    @Test
+    public void trix_dataset() {
+        DatasetGraph ds1 = RDFDataMgr.loadDatasetGraph(fInput) ;
+        DatasetGraph ds2 = null ;
+        if ( fExpected != null )
+            ds2 = RDFDataMgr.loadDatasetGraph(fExpected) ;
+        if ( ds2 != null )
+            assertTrue("Datasets not isomorphic", IsoMatcher.isomorphic(ds1, ds2)) ;
+    }
 }
 

@@ -82,6 +82,7 @@ public class TriX {
     public static final String contentTypeTriX      = "application/trix" ;
     public static final ContentType ctTriX          = ContentType.create(contentTypeTriX) ;
     
+    // ".xml" is RDF/XML.
     public static Lang TRIX = LangBuilder.create("TriX", contentTypeTriX)
                                          .addAltNames("TRIX", "trix")
                                          .addFileExtensions("trix")
