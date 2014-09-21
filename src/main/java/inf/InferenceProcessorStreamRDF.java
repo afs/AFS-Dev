@@ -25,9 +25,10 @@ import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.sparql.core.Quad ;
 
-/**
+/** StreamRDF that applies RDFS to the stream.
+ * 
  * Receive triples and quads (incoming because this is a StreamRDF); 
- * apply allow RDFS;
+ * apply RDFS;
  * output to the StreamRDF provided.
  * Stream output may include duplicates.
  */

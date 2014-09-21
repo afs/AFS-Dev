@@ -66,9 +66,14 @@ public class InferenceEngineRDFS {
         range(s, p, o) ;
     }
 
+    /** Any triple derived is sent to this method - does not include the trigger triple
+     * (but that might be derived as well as being concrete). 
+     */
     protected void derive(Node s, Node p, Node o) {
         dest.receive(s, p, o) ;
     }
+
+    // Rule extracts from Jena's RDFS rules etc/rdfs.rules
 
     /*
      * [rdfs8: (?a rdfs:subClassOf ?b), (?b rdfs:subClassOf ?c) -> (?a rdfs:subClassOf ?c)]
@@ -91,8 +96,6 @@ public class InferenceEngineRDFS {
             derive(o, p, o) ;
         }
     }
-
-    // Rule extracts from Jena's RDFS rules etc/rdfs.rules
 
     /*
      * [rdfs5a: (?a rdfs:subPropertyOf ?b), (?b rdfs:subPropertyOf ?c) -> (?a rdfs:subPropertyOf ?c)] 

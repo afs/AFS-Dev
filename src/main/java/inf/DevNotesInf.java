@@ -20,10 +20,6 @@ package inf;
 
 public class DevNotesInf {
     /*
-     * coverage
-     * Duplicates in (? ? ?)combined due to subClassOf
-     *   Another rules file - RDFS graph without axioms.
-     * 
      * rdfs:member, list:member
      * Remove rule rdfs5b ( P subPropertyOf P )
      *  
@@ -48,7 +44,21 @@ public class DevNotesInf {
         owl:SymmetricProperty
 
         owl:FunctionalProperty
-        owl:InverseFunctionalProperty 
+        owl:InverseFunctionalProperty
+     *
+Head is a single triple
+   Transitive reasoner
+   sameas
+   rules, single head
+     :C owl:hasValue v, :C owl:onProperty :p, ?x :p v => ?x a C
+     :C owl:hasValue v, :C owl:onProperty :p, ?x a C => ?x :p v
+       someValuesFrom
+       allValues
+     :p inverseOf :q, ?x :p ?y => ?y :q ?x .
+     :p symmetric , x :p ?y => ?y :p ?x .
+     rdf:_N processess => rdf:member
+     list:member => ????
+     OWL RL
 */
     
 }

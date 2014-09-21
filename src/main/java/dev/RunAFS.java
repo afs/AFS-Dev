@@ -18,13 +18,9 @@
 
 package dev;
 
-import java.util.Iterator ;
-
-import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
 
-import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.sparql.sse.SSE ;
 import com.hp.hpl.jena.sparql.util.Timer ;
 import com.hp.hpl.jena.tdb.base.file.Location ;
@@ -32,11 +28,11 @@ import com.hp.hpl.jena.tdb.index.IndexBuilder ;
 import com.hp.hpl.jena.tdb.index.RangeIndexBuilder ;
 import com.hp.hpl.jena.tdb.setup.* ;
 import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
-import com.hp.hpl.jena.tdb.store.NodeId ;
-import com.hp.hpl.jena.tdb.store.nodetable.NodeTable ;
 
 public class RunAFS
 {
+    static { LogCtl.setCmdLogging(); }
+    
     static class  DatasetBuilderRadix extends DatasetBuilderStd {
         DatasetBuilderRadix() { 
             super() ;
@@ -74,55 +70,6 @@ public class RunAFS
         
         if ( false )
             SSE.write(dsg) ;
-    }
-    
-    static class NodeTableRadix implements NodeTable
-    {
-
-        @Override
-        public void sync()
-        {}
-
-        @Override
-        public void close()
-        {}
-
-        @Override
-        public NodeId getNodeIdForNode(Node node)
-        {
-            return null ;
-        }
-
-        @Override
-        public Node getNodeForNodeId(NodeId id)
-        {
-            return null ;
-        }
-
-        @Override
-        public NodeId getAllocateNodeId(Node node)
-        {
-            return null ;
-        }
-
-        @Override
-        public Iterator<Pair<NodeId, Node>> all()
-        {
-            return null ;
-        }
-
-        @Override
-        public NodeId allocOffset()
-        {
-            return null ;
-        }
-
-        @Override
-        public boolean isEmpty()
-        {
-            return false ;
-        }
-        
     }
 }
 

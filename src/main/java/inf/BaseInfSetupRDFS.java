@@ -28,6 +28,10 @@ import com.hp.hpl.jena.query.* ;
 import com.hp.hpl.jena.rdf.model.Model ;
 import com.hp.hpl.jena.rdf.model.ModelFactory ;
 
+/** Core of datastructures needed for RDFS.
+ *  To be general, this is in X space (e.g. Node, NodeId). 
+ *  
+ */
 public abstract class BaseInfSetupRDFS<X> implements InfSetupRDFS<X>{
     public final Graph vocabGraph ;
     
@@ -53,6 +57,7 @@ public abstract class BaseInfSetupRDFS<X> implements InfSetupRDFS<X>{
     private final Map<X, Set<X>> rangeToProperty      = new HashMap<>() ;
     private final Map<X, Set<X>> domainToProperty     = new HashMap<>() ;
 
+    // Whether we include the RDFS data in the results (as if TBox (rules) and ABox (ground data) are one unit).
     private final boolean includeDerivedDataRDFS$ ;
 
     private static String preamble = StrUtils.strjoinNL
@@ -135,7 +140,12 @@ public abstract class BaseInfSetupRDFS<X> implements InfSetupRDFS<X>{
         }
     }
 
-    /** Go from Node space tX space */
+    /** Go from Node space to X space
+     * for a node that is in the RDFS vocabulary.
+     * Must not return null or "don't know". 
+     * @param node
+     * @return
+     */
     protected abstract X fromNode(Node node) ;
     
     public boolean includeDerivedDataRDFS() {
@@ -154,6 +164,9 @@ public abstract class BaseInfSetupRDFS<X> implements InfSetupRDFS<X>{
         Set<X> x = map.get(elt) ;
         return x != null ? x : empty ;
     }
+    
+    // get : return the Set corresponing to element elt  
+    // get..Inc : return the Set corresponing to element elt include self.  
     
     @Override
     public Set<X> getSuperClasses(X elt) {
