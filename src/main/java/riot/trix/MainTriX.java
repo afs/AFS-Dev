@@ -27,12 +27,7 @@ import com.hp.hpl.jena.sparql.sse.SSE ;
 
 public class MainTriX {
     
-    // TODO
-    // Namespaces in reader
-    // RDFDataMgr.parser - soft hints.
-
     public static void main(String[] args) {
-        
         riotx.main("trix-ex-0.trix") ;
         System.exit(0) ;
         TriX.init() ;
