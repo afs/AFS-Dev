@@ -47,9 +47,31 @@ import com.hp.hpl.jena.sparql.resultset.ResultSetException ;
 import com.hp.hpl.jena.sparql.util.Context ;
 import com.hp.hpl.jena.vocabulary.RDF ;
 
-/** read TriX */
+/** Read TriX.
+ *  See {@link TriX} for details. 
+ * @see TriX
+ * @see WriterTriX
+ * @see StreamWriterTriX
+ */
 public class ReaderTriX implements ReaderRIOT {
 
+    // DTD for TrIX : The schema is a much longer.
+/*
+<!-- TriX: RDF Triples in XML -->
+<!ELEMENT TriX (graph*)>
+<!ATTLIST TriX xmlns CDATA #FIXED "http://www.w3.org/2004/03/trix/trix-1/">
+<!ELEMENT graph (uri*, triple*)>
+<!ELEMENT triple ((id|uri|plainLiteral|typedLiteral), uri, (id|uri|plainLiteral|typedLiteral))>
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT uri (#PCDATA)>
+<!ELEMENT plainLiteral (#PCDATA)>
+<!ATTLIST plainLiteral xml:lang CDATA #IMPLIED>
+<!ELEMENT typedLiteral (#PCDATA)>
+<!ATTLIST typedLiteral datatype CDATA #REQUIRED> 
+     */
+    
+
+    
     private ErrorHandler errorHandler = ErrorHandlerFactory.getDefaultErrorHandler() ;
     private ParserProfile parserProfile = null ;
     

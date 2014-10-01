@@ -24,22 +24,29 @@ import org.apache.jena.riot.system.StreamRDF ;
 import org.apache.jena.riot.system.StreamRDFWriter ;
 import org.apache.jena.riot.system.StreamRDFWriterFactory ;
 
+/** TriX - see <a href="http://www.hpl.hp.com/techreports/2004/HPL-2004-56.html">HPL-2004-56</a> Jeremy Carroll and Patrick Stickler. 
+ * Supported:
+ * <li>Basic TriX as per the DTD in HPL-2004-56
+ * <li>Typed literal rdf:XMLLiteral with inline XML.
+ * <li>qname (on reading)
+ */
+    
+/* Constants for TriX */
 public class TriX {
+ // DTD for TrIX : The schema is a much longer.
     /*
-<!-- TriX: RDF Triples in XML -->
-<!ELEMENT TriX (graph*)>
-<!ATTLIST TriX xmlns CDATA #FIXED "http://www.w3.org/2004/03/trix/trix-1/">
-<!ELEMENT graph (uri*, triple*)>
-<!ELEMENT triple ((id|uri|plainLiteral|typedLiteral), uri, (id|uri|plainLiteral|typedLiteral))>
-<!ELEMENT id (#PCDATA)>
-<!ELEMENT uri (#PCDATA)>
-<!ELEMENT plainLiteral (#PCDATA)>
-<!ATTLIST plainLiteral xml:lang CDATA #IMPLIED>
-<!ELEMENT typedLiteral (#PCDATA)>
-<!ATTLIST typedLiteral datatype CDATA #REQUIRED> 
-          -----------------
-          
-     */
+    <!-- TriX: RDF Triples in XML -->
+    <!ELEMENT TriX (graph*)>
+    <!ATTLIST TriX xmlns CDATA #FIXED "http://www.w3.org/2004/03/trix/trix-1/">
+    <!ELEMENT graph (uri*, triple*)>
+    <!ELEMENT triple ((id|uri|plainLiteral|typedLiteral), uri, (id|uri|plainLiteral|typedLiteral))>
+    <!ELEMENT id (#PCDATA)>
+    <!ELEMENT uri (#PCDATA)>
+    <!ELEMENT plainLiteral (#PCDATA)>
+    <!ATTLIST plainLiteral xml:lang CDATA #IMPLIED>
+    <!ELEMENT typedLiteral (#PCDATA)>
+    <!ATTLIST typedLiteral datatype CDATA #REQUIRED> 
+         */
     
     public static void init() {
         RDFLanguages.register(TRIX) ;
@@ -87,6 +94,9 @@ public class TriX {
                                          .addAltNames("TRIX", "trix")
                                          .addFileExtensions("trix")
                                          .build() ;
+    
+    
+    
     
     public final static String NS              = "http://www.w3.org/2004/03/trix/trix-1/" ;
     public final static String tagTriX         = "TriX" ;

@@ -33,6 +33,11 @@ import com.hp.hpl.jena.sparql.core.DatasetGraph ;
 import com.hp.hpl.jena.sparql.util.Context ;
 
 /** Write TriX.
+ * See {@link TriX} for details.
+ * The writer defers to {@linkplain StreamWriterTriX}. 
+ * @see TriX
+ * @see ReaderTriX
+ * @see StreamWriterTriX
  */
 public class WriterTriX implements WriterDatasetRIOT, WriterGraphRIOT {
     private static String rdfXMLLiteral = XMLLiteralType.theXMLLiteralType.getURI() ;

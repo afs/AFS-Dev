@@ -31,7 +31,14 @@ import com.hp.hpl.jena.graph.Triple ;
 import com.hp.hpl.jena.rdf.model.impl.Util ;
 import com.hp.hpl.jena.sparql.core.Quad ;
 
-/** Write TriX. */
+
+/** Write TriX by streaming. 
+ * See {@link TriX} for details.
+ *
+ * @see TriX
+ * @see ReaderTriX
+ * @see WriterTriX
+ */
 public class StreamWriterTriX implements StreamRDF {
     private static String rdfXMLLiteral = XMLLiteralType.theXMLLiteralType.getURI() ;
     private IndentedWriter out ;
