@@ -28,7 +28,7 @@ import org.apache.jena.riot.system.StreamRDFWriterFactory ;
  * Supported:
  * <li>Basic TriX as per the DTD in HPL-2004-56
  * <li>Typed literal rdf:XMLLiteral with inline XML.
- * <li>qname (on reading)
+ * <li>&lt;qname&gt; (on reading)
  */
     
 /* Constants for TriX */
