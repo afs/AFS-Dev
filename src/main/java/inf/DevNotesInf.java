@@ -20,6 +20,9 @@ package inf;
 
 public class DevNotesInf {
     /*
+     * http://jena.apache.org/documentation/inference/#OWLcoverage
+     *   Micro
+     *   
      * rdfs:member, list:member
      * Remove rule rdfs5b ( P subPropertyOf P )
      *  
