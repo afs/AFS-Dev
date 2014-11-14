@@ -23,9 +23,7 @@ import com.hp.hpl.jena.tdb.store.Hash ;
 import org.apache.jena.atlas.logging.Log ;
 
 /** From Project Voldemort / Apache License / Thanks! 
- *  who in turn got it from 
- *  
- *  Taken from http://www.isthe.com/chongo/tech/comp/fnv
+ *  who in turn got it from http://www.isthe.com/chongo/tech/comp/fnv
  * 
  * hash = basis for each octet_of_data to be hashed hash 
  *      = hash * FNV_prime hash
