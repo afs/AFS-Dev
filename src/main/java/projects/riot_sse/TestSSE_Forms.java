@@ -134,11 +134,9 @@ public class TestSSE_Forms extends BaseTest
     
     @Test public void testTypedLit_r1()
     { 
-        Node node = NodeFactory.createLiteral("3", null, XSDDatatype.XSDinteger) ; 
+        Node node = NodeFactory.createLiteral("3", XSDDatatype.XSDinteger) ; 
         testItem("'3'^^xsd:integer", Item.createNode(node)) ;
     }
-
-
 
     @Test public void testBasePrefix_01()
     { 
