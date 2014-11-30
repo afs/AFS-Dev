@@ -156,7 +156,7 @@ public final class ZigZagInteger
      {
          // Convert to VarInteger 
          value = (value << 1) ^ (value >> 63) ;
-         return VarInteger.calcLengthTable(value) ;
+         return VarInt.calcLengthTable(value) ;
      }
      
 //     // By calculation.

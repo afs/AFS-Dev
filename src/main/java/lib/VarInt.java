@@ -24,19 +24,45 @@ import java.util.Arrays;
 /** Variable length integers for tight packing into byte arrays and ByteBuffers.
  *  Packing is 7bits per byte and is the same format as vints in Lucene. 
  */
-public final class VarInteger
+public final class VarInt
 {
     public static void main(String ... argv) { varint() ; } 
     private static void varint()
     {
         long[] testValues = {0, 1, 127, 128, 129, (1L<<63)-1} ; // { 0 , 5 , 127, 128 , 0x1000} ;
+        System.out.println("** Object") ;
         for ( long x : testValues )
         {
-            VarInteger vint = new VarInteger(x) ;
+            VarInt vint = new VarInt(x) ;
             System.out.printf("0x%04X => %s\n", x , vint) ;
             long z = vint.value() ;
             System.out.printf("0x%04X => %s ==> 0x%04X\n", x , vint, z) ;
         }
+        
+        System.out.println("** Relative byte buffer operations") ;
+        for ( long x : testValues )
+        {
+            ByteBuffer bb = ByteBuffer.allocate(16) ;
+            bb.position(3) ;
+            int len1 = VarInt.encode(bb, x) ;
+            System.out.printf("0x%04X -- [%d]\n", x , len1) ;
+            bb.position(0) ;
+            long z = VarInt.decode(bb) ;
+            System.out.printf("0x%04X -- [%d] --> 0x%04X\n", x , len1, z) ;
+        }
+        
+        System.out.println("** Absolute byte buffer operations") ;
+        for ( long x : testValues )
+        {
+            ByteBuffer bb = ByteBuffer.allocate(16) ;
+            bb.position(5) ;
+            int len1 = VarInt.encode(bb, 3, x) ;
+            System.out.printf("0x%04X -- [%d]\n", x , len1) ;
+            bb.position(0) ;
+            long z = VarInt.decode(bb, 3) ;
+            System.out.printf("0x%04X -- [%d] --> 0x%04X\n", x , len1, z) ;
+        }
+         
     }
     
     /* See:
@@ -73,10 +99,17 @@ public final class VarInteger
     }
     
     // Relative vs absolute put/get.
+    /** Put a VarInt into a buffer - relative operation  */
+    public static int encode(ByteBuffer bytes, long value) {
+        return encode$(bytes, bytes.position(), value, true) ;
+    }
     
-    public static int encode(ByteBuffer bytes, long value) { return encode(bytes, bytes.position(), value) ; }
+    /** Put a VarInt into a buffer at a specific place - absolute operation does not move position. */
+    public static int encode(ByteBuffer bytes, int startIdx, long value) {
+        return encode$(bytes, startIdx, value, false) ;
+    }
     
-    public static int encode(ByteBuffer bytes, int startIdx, long value)
+    private static int encode$(ByteBuffer bytes, int startIdx, long value, boolean updatePosn)
     {
         long N = value ;
         int idx = startIdx ;
@@ -91,16 +124,25 @@ public final class VarInteger
             idx ++ ;
         }
         bytes.put(idx, b) ;
-        return (idx+1)-startIdx ;
+        idx++ ;
+        if ( updatePosn )
+            bytes.position(idx) ;
+        return idx-startIdx ;
     }
 
     public static long decode(byte[] bytes, int idx)
     { return decode(ByteBuffer.wrap(bytes), idx) ; }
     
-    public static long decode(ByteBuffer bytes)
-    { return decode(bytes, 0) ; }
+    /** Extract a long - relative operation */ 
+    public static long decode(ByteBuffer bytes) { 
+        return decode$(bytes, bytes.position(), true) ;
+    }
     
-    public static long decode(ByteBuffer bytes, int idx)
+    public static long decode(ByteBuffer bytes, int idx) {
+        return decode$(bytes, idx, false) ;
+    }
+    
+    private static long decode$(ByteBuffer bytes, int idx, boolean updatePosn)
     {
         // Low to high
         long value = 0 ;
@@ -109,16 +151,19 @@ public final class VarInteger
         while (true)
         {
             byte b = bytes.get(idx) ;
+            idx++ ;
             value |= (b & 0x7FL) << shift ;
             if ( (b & 0x80) == 0 )
-                  return value ;
+                  break ;
             shift +=  7 ;
-            idx++ ;
         }
+        if ( updatePosn )
+            bytes.position(idx) ;
+        return value ;
     }
     
     /** Make a VarInteger from the bytes found start from idx */ 
-    public static VarInteger make(ByteBuffer bb, int idx)
+    public static VarInt make(ByteBuffer bb, int idx)
     {
         int start = idx ;
         while (true)
@@ -137,9 +182,9 @@ public final class VarInteger
     }
     
     /** Make a VarInteger from the bytes found start from idx */ 
-    public static VarInteger make(byte[] bytes)
+    public static VarInt make(byte[] bytes)
     {
-        return new VarInteger(bytes) ;
+        return new VarInt(bytes) ;
     }
     
     private static String toString(byte[] bytes) { return toString(bytes, 0) ; }
@@ -178,17 +223,17 @@ public final class VarInteger
     // ---- Factory
     
     // -- Some constants
-    public static VarInteger varint_0 = new VarInteger(0) ;
-    public static VarInteger varint_1 = new VarInteger(1) ;
-    public static VarInteger varint_2 = new VarInteger(2) ;
+    public static VarInt varint_0 = new VarInt(0) ;
+    public static VarInt varint_1 = new VarInt(1) ;
+    public static VarInt varint_2 = new VarInt(2) ;
 
     /** Return a VarInteger that encodes the value */
-    public static VarInteger valueOf(long value)
+    public static VarInt valueOf(long value)
     { 
         if ( value == 0 ) return varint_0 ;
         if ( value == 1 ) return varint_1 ;
         if ( value == 2 ) return varint_2 ;
-        return new VarInteger(value) ;
+        return new VarInt(value) ;
     }
     
     public static int lengthOf(long value)
@@ -201,7 +246,7 @@ public final class VarInteger
     byte[] bytes ;
     long value = -1 ;
     
-    private VarInteger(long value)
+    private VarInt(long value)
     {
         Integer.valueOf(0) ;
         if ( value < 0 )
@@ -209,7 +254,7 @@ public final class VarInteger
         bytes = encode(value) ;
     }
     
-    private VarInteger(byte[] bytes)
+    private VarInt(byte[] bytes)
     {
         if ( bytes.length == 0 )
             throw new IllegalArgumentException("Zero length byte[]") ;
@@ -233,8 +278,8 @@ public final class VarInteger
     @Override
     public boolean equals(Object other)
     {
-        if ( ! ( other instanceof VarInteger ) ) return false ;
-        VarInteger vint = (VarInteger)other ;
+        if ( ! ( other instanceof VarInt ) ) return false ;
+        VarInt vint = (VarInt)other ;
         return Arrays.equals(bytes, vint.bytes) ;
     }
     
