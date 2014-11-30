@@ -24,9 +24,9 @@ import java.util.Arrays ;
 import org.apache.jena.atlas.lib.NotImplemented ;
 
 /** ZigZag integers: map signed numbers onto unsigned numbers
- *  that can then be @plainlink{VarInteger} encoded.
+ *  that can then be {@plainlink VarInt} encoded.
  */
-public final class ZigZagInteger
+public final class ZigZagInt
 {
 	/*
 	  http://code.google.com/apis/protocolbuffers/docs/encoding.html
@@ -44,7 +44,7 @@ public final class ZigZagInteger
 	public static byte[] encode(long value)
 	{
 	    //return null ;
-	    throw new NotImplemented("ZigZagInteger.encode") ;
+	    throw new NotImplemented("ZigZagInt.encode") ;
 	}
 
 	public static int encode(ByteBuffer bytes, long value)
@@ -63,9 +63,9 @@ public final class ZigZagInteger
     { return -1 ; }
 	
     /** Make a VarInteger from the bytes found start from idx */ 
-    public static ZigZagInteger make(byte[] bytes)
+    public static ZigZagInt make(byte[] bytes)
     {
-        return new ZigZagInteger(bytes) ;
+        return new ZigZagInt(bytes) ;
     }
     
     private static String toString(byte[] bytes) { return toString(bytes, 0) ; }
@@ -84,19 +84,19 @@ public final class ZigZagInteger
     // ---- Factory
     
     // -- Some constants
-    public static ZigZagInteger zigzag_0 = new ZigZagInteger(0) ;
-    public static ZigZagInteger zigzag_1 = new ZigZagInteger(1) ;
-    public static ZigZagInteger zigzag_2 = new ZigZagInteger(2) ;
-    public static ZigZagInteger zigzag_minus_1 = new ZigZagInteger(-1) ;
+    public static ZigZagInt zigzag_0 = new ZigZagInt(0) ;
+    public static ZigZagInt zigzag_1 = new ZigZagInt(1) ;
+    public static ZigZagInt zigzag_2 = new ZigZagInt(2) ;
+    public static ZigZagInt zigzag_minus_1 = new ZigZagInt(-1) ;
 
     /** Return a ZigZagInteger that encodes the value */
-    public static ZigZagInteger valueOf(long value)
+    public static ZigZagInt valueOf(long value)
     { 
         if ( value == 0 ) return zigzag_0 ;
         if ( value == 1 ) return zigzag_1 ;
         if ( value == -1 ) return zigzag_minus_1 ;
         if ( value == 2 ) return zigzag_2 ;
-        return new ZigZagInteger(value) ;
+        return new ZigZagInt(value) ;
     }
     
     public static int lengthOf(long value)
@@ -109,14 +109,14 @@ public final class ZigZagInteger
     byte[] bytes ;
     long value = -1 ;
     
-    private ZigZagInteger(long value)
+    private ZigZagInt(long value)
     {
         if ( value < 0 )
             throw new IllegalArgumentException("Positive integers only") ;
         bytes = encode(value) ;
     }
     
-    private ZigZagInteger(byte[] bytes)
+    private ZigZagInt(byte[] bytes)
     {
         if ( bytes.length == 0 )
             throw new IllegalArgumentException("Zero length byte[]") ;
@@ -140,8 +140,8 @@ public final class ZigZagInteger
     @Override
     public boolean equals(Object other)
     {
-        if ( ! ( other instanceof ZigZagInteger ) ) return false ;
-        ZigZagInteger vint = (ZigZagInteger)other ;
+        if ( ! ( other instanceof ZigZagInt ) ) return false ;
+        ZigZagInt vint = (ZigZagInt)other ;
         return Arrays.equals(bytes, vint.bytes) ;
     }
     
