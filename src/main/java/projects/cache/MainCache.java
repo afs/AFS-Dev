@@ -21,7 +21,7 @@ package projects.cache;
 import org.apache.jena.atlas.lib.ActionKeyValue ;
 import org.apache.jena.atlas.lib.Cache ;
 
-import com.google.common.base.Objects ;
+import com.google.common.base.MoreObjects ;
 
 
 public class MainCache
@@ -81,7 +81,7 @@ public class MainCache
         
         @Override
         public String toString() {
-            return Objects.toStringHelper("CacheStats")
+            return MoreObjects.toStringHelper("CacheStats")
                 .add("hitCount", getHitCount())
                 .add("missCount", getMissCount())
                 .add("evictionCount", getEvictionCount())
