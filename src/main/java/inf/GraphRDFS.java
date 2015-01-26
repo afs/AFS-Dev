@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory ;
 import com.hp.hpl.jena.graph.Graph ;
 import com.hp.hpl.jena.graph.Node ;
 import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.graph.TripleMatch ;
 import com.hp.hpl.jena.sparql.graph.GraphWrapper ;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
 import com.hp.hpl.jena.util.iterator.NullIterator ;
@@ -53,7 +52,7 @@ public class GraphRDFS extends GraphWrapper {
     }
     
     @Override
-    public ExtendedIterator<Triple> find(TripleMatch m) {
+    public ExtendedIterator<Triple> find(Triple m) {
         return find(m.getMatchSubject(), m.getMatchPredicate(), m.getMatchObject()) ;
     }
 
