@@ -68,7 +68,7 @@ public class ExtHashMemTestBase
 //      System.err.printf("Warning: too many keys\n") ;
 
         int[] r1 = rand(numKeys, 0, maxValue) ;
-        int[] r2 = permute(r1, 4*numKeys) ;
+        int[] r2 = permute(r1) ;
         runTest(r1, r2) ;
     }
         

@@ -42,7 +42,7 @@ public class OrderedMapTestLib {
         // System.err.printf("Warning: too many keys\n") ;
         //
         int[] r1 = Gen.rand(numKeys, 0, maxValue) ;
-        int[] r2 = Gen.permute(r1, 4 * numKeys) ;
+        int[] r2 = Gen.permute(r1) ;
         try {
             OrderedMap<Integer, Integer> sIndx = factory.create(r1) ;
             check(sIndx, r1) ;

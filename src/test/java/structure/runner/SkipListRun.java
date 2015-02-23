@@ -184,7 +184,7 @@ public abstract class SkipListRun
     static void perfTest(int maxValue, int numKeys)
     {
         int[] keys1 = rand(numKeys, 0, maxValue) ;
-        int[] keys2 = permute(keys1, 4*numKeys) ;
+        int[] keys2 = permute(keys1) ;
         try {
             SkipList<Integer> skiplist = create(keys1);
             delete(skiplist, keys2) ;

@@ -115,7 +115,7 @@ public class SkipListTestBase extends BaseTest
             System.err.printf("Warning: too many recs\n") ;
             
         int[] recs1 = rand(numKeys, 0, maxValue) ;
-        int[] recs2 = permute(recs1, 4*numKeys) ;
+        int[] recs2 = permute(recs1) ;
         try {
             SkipList<Integer> skiplist = buildSkipList(maxLevel, recs1);
             if ( true )

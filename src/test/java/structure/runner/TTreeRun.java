@@ -191,7 +191,7 @@ public abstract class TTreeRun
             System.err.printf("Warning: too many keys\n") ;
             
         int[] r1 = rand(numKeys, 0, maxValue) ;
-        int[] r2 = permute(r1, numKeys) ;
+        int[] r2 = permute(r1) ;
         try {
             OrderedSet<Integer> avl = factory.create(r1) ;
             OrderedSetTestLib.delete(avl, r2) ;

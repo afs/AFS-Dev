@@ -129,7 +129,7 @@ public abstract class ExtHashMemRun
                 System.err.printf("Warning: too many keys\n") ;
                 
             int[] keys1 = rand(numKeys, 0, maxValue) ;
-            int[] keys2 = permute(keys1, numKeys) ;
+            int[] keys2 = permute(keys1) ;
             try {
                 ExtHashMem<Integer, String> table = ExtHashMemTestBase.create(keys1) ;
                 ExtHashMemTestBase.delete(table, keys2) ;
