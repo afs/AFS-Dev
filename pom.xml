@@ -70,16 +70,16 @@
 
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-core</artifactId>
-      <classifier>tests</classifier>
+      <artifactId>jena-shaded-guava</artifactId>
       <version>${ver.jena}</version>
     </dependency>    
 
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>18.0</version>
-    </dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <classifier>tests</classifier>
+      <version>${ver.jena}</version>
+    </dependency>    
 
     <dependency>
       <groupId>junit</groupId>

@@ -24,17 +24,16 @@ import java.util.concurrent.ExecutionException ;
 import org.apache.jena.atlas.lib.ActionKeyValue ;
 import org.apache.jena.atlas.lib.Cache ;
 import org.apache.jena.atlas.logging.Log ;
-
-import com.google.common.cache.CacheBuilder ;
-import com.google.common.cache.RemovalListener ;
-import com.google.common.cache.RemovalNotification ;
+import org.apache.jena.ext.com.google.common.cache.CacheBuilder ;
+import org.apache.jena.ext.com.google.common.cache.RemovalListener ;
+import org.apache.jena.ext.com.google.common.cache.RemovalNotification ;
 
 /** Wrapper around com.google.common.cache */
 final
 public class CacheGuava<K,V> implements Cache<K, V>
 {
     private ActionKeyValue<K, V> dropHandler = null ;
-    /*private*/ com.google.common.cache.Cache<K,V> cache ;
+    /*private*/ org.apache.jena.ext.com.google.common.cache.Cache<K,V> cache ;
     
     public CacheGuava(int size)
     {
@@ -49,17 +48,16 @@ public class CacheGuava<K,V> implements Cache<K, V>
         cache = CacheBuilder.newBuilder()
                             .maximumSize(size)
                             //.expireAfterWrite(10, TimeUnit.MINUTES)         // For write caches, set this so it automatcially flushes if left idle.
-                            // .expireAfterAccess(30, TimeUnit.MINUTES)
+                            //.expireAfterAccess(30, TimeUnit.MINUTES)
                             //.softValues() // ??
                             .removalListener(drop)
                             .recordStats()
                             .concurrencyLevel(4)
                             .build() ;
     }
-    
-    // Change the interface to be ... 
-    public V getFill(K key, Callable<V> filler)
-    {
+
+    // Change the interface to be ...
+    public V getFill(K key, Callable<V> filler) {
         try {
             return cache.get(key, filler) ;
         }
@@ -68,65 +66,55 @@ public class CacheGuava<K,V> implements Cache<K, V>
             return null ;
         }
     }
-    
+
     @Override
-    public V get(K key)
-    {
+    public V get(K key) {
         return cache.getIfPresent(key) ;
     }
 
     @Override
-    public V put(K key, V thing)
-    {
+    public V put(K key, V thing) {
         V old = get(key) ;
         cache.put(key, thing) ;
         return old ;
     }
 
     @Override
-    public boolean containsKey(K key)
-    {
+    public boolean containsKey(K key) {
         return cache.getIfPresent(key) != null ;
     }
 
     @Override
-    public boolean remove(K key)
-    {
+    public boolean remove(K key) {
         V old = get(key) ;
-        boolean r = ( old != null ) ; 
+        boolean r = (old != null) ;
         cache.invalidate(key) ;
         return r ;
     }
 
     @Override
-    public Iterator<K> keys()
-    {
+    public Iterator<K> keys() {
         return null ;
     }
 
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return cache.size() == 0 ;
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
         cache.invalidateAll() ;
     }
 
     @Override
-    public long size()
-    {
+    public long size() {
         return cache.size() ;
     }
 
     @Override
-    public void setDropHandler(ActionKeyValue<K, V> dropHandler)
-    {
+    public void setDropHandler(ActionKeyValue<K, V> dropHandler) {
         this.dropHandler = dropHandler ;
     }
 
 }
-

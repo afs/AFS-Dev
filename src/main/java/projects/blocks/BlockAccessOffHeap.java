@@ -21,7 +21,7 @@ import java.nio.ByteBuffer ;
 import java.util.Deque ;
 import java.util.LinkedList ;
 
-import com.google.common.cache.* ;
+import org.apache.jena.ext.com.google.common.cache.* ;
 import com.hp.hpl.jena.tdb.base.block.Block ;
 import com.hp.hpl.jena.tdb.base.file.BlockAccessDirect ;
 import com.hp.hpl.jena.tdb.base.file.FileException ;

@@ -20,8 +20,6 @@ package projects.cache;
 import org.apache.jena.atlas.lib.ActionKeyValue ;
 import org.apache.jena.atlas.lib.Cache ;
 
-import com.google.common.base.MoreObjects ;
-
 
 public class MainCache
 {
@@ -42,8 +40,8 @@ public class MainCache
 //        cache.put("2", "X") ;
 //        cache.put("3", "C") ;
 //        cache.put("4", "D") ;
-        com.google.common.cache.Cache<String, String> gcache = ((CacheGuava<String, String>)cache).cache ;
-        com.google.common.cache.CacheStats _stats = gcache.stats() ;
+        org.apache.jena.ext.com.google.common.cache.Cache<String, String> gcache = ((CacheGuava<String, String>)cache).cache ;
+        org.apache.jena.ext.com.google.common.cache.CacheStats _stats = gcache.stats() ;
         
         CacheStats stats = CacheStats$convert(_stats) ;
         
@@ -51,15 +49,15 @@ public class MainCache
         System.out.println(stats.toString()) ;
     }
     
-    static CacheStats CacheStats$convert(com.google.common.cache.CacheStats _stats) {
+    static CacheStats CacheStats$convert(org.apache.jena.ext.com.google.common.cache.CacheStats _stats) {
         return new CacheStatsGuava(_stats) ;
     }
 
     static class CacheStatsGuava implements CacheStats {
         
-        private final com.google.common.cache.CacheStats _stats ;
+        private final org.apache.jena.ext.com.google.common.cache.CacheStats _stats ;
         
-        private CacheStatsGuava(com.google.common.cache.CacheStats _stats) {
+        private CacheStatsGuava(org.apache.jena.ext.com.google.common.cache.CacheStats _stats) {
             this._stats = _stats ;
         }
 
@@ -80,12 +78,9 @@ public class MainCache
         
         @Override
         public String toString() {
-            return MoreObjects.toStringHelper("CacheStats")
-                .add("hitCount", getHitCount())
-                .add("missCount", getMissCount())
-                .add("evictionCount", getEvictionCount())
-                .toString() ;
-                
+            return 
+                String.format("CacheStats: hitCount=%d, missCount=%d, evictionCount=%d",
+                              getHitCount(), getMissCount(), getEvictionCount()) ;
         }
     }
 
