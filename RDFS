@@ -1,0 +1,40 @@
+
+{ X rdf:type T }
+==>
+{
+  { X ?p [] . ?p rdfs:domain ?T1 }
+    UNION
+  { [] ?p X. ?p rdfs:range ?T1 }
+    UNION
+  { X rdf:type ?T1 }
+}
+{ ?T1 rdfs:subClassOf T } -- maybe optional?
+
+-------------------------------
+
+{ X P Y }
+==>
+{ ?Q rdfs:subProperty P } . { X ?Q Y }
+
+--------------------------------
+
+{ X ?p Y }
+
+subproperty
+subclass.
+Also domain and range.
+
+--------------------------------
+
+{ X rdfs:domain Y }
+==>
+{ X rdfs:domain ?Z } {?Z rdfs:subClassOf Y }
+
+--------------------------------
+
+{ X rdfs:range Y }
+==>
+{ X rdfs:range ?Z } {?Z rdfs:subClassOf Y }
+
+--------------------------------
+
