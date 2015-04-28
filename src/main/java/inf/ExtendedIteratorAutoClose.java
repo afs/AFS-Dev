@@ -20,7 +20,7 @@ package inf;
 import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 
-import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
+import org.apache.jena.util.iterator.ExtendedIterator ;
 
 /** Provide autoclose to an ExtendedIterator */ 
 public class ExtendedIteratorAutoClose<T> implements Iterator<T> {

@@ -21,7 +21,7 @@ import java.util.Iterator ;
 
 import org.apache.jena.atlas.lib.Pair ;
 
-import com.hp.hpl.jena.graph.Node ;
+import org.apache.jena.graph.Node ;
 
 /** Like PrefixMapping, only for a dataset which can have different prefix maps for different graphs */
 

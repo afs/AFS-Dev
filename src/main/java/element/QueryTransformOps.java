@@ -19,17 +19,17 @@ package element ;
 
 import java.util.Map ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.query.Query ;
-import com.hp.hpl.jena.query.QueryVisitor ;
-import com.hp.hpl.jena.query.SortCondition ;
-import com.hp.hpl.jena.shared.PrefixMapping ;
-import com.hp.hpl.jena.shared.impl.PrefixMappingImpl ;
-import com.hp.hpl.jena.sparql.ARQException ;
-import com.hp.hpl.jena.sparql.core.* ;
-import com.hp.hpl.jena.sparql.expr.* ;
-import com.hp.hpl.jena.sparql.graph.NodeTransform ;
-import com.hp.hpl.jena.sparql.syntax.Element ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.query.Query ;
+import org.apache.jena.query.QueryVisitor ;
+import org.apache.jena.query.SortCondition ;
+import org.apache.jena.shared.PrefixMapping ;
+import org.apache.jena.shared.impl.PrefixMappingImpl ;
+import org.apache.jena.sparql.ARQException ;
+import org.apache.jena.sparql.core.* ;
+import org.apache.jena.sparql.expr.* ;
+import org.apache.jena.sparql.graph.NodeTransform ;
+import org.apache.jena.sparql.syntax.Element ;
 
 /** Support for transformation of query abstract syntax. */ 
 

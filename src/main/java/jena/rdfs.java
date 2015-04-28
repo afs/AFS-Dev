@@ -17,19 +17,14 @@
 
 package jena;
 
-import java.util.Iterator;
+import java.util.Iterator ;
 
-import arq.cmdline.CmdMain;
-
-import com.hp.hpl.jena.rdf.model.InfModel;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.reasoner.Reasoner;
-import com.hp.hpl.jena.reasoner.ReasonerRegistry;
-import com.hp.hpl.jena.sparql.util.Utils;
-import com.hp.hpl.jena.util.FileManager;
+import org.apache.jena.atlas.lib.Lib ;
+import org.apache.jena.rdf.model.* ;
+import org.apache.jena.reasoner.Reasoner ;
+import org.apache.jena.reasoner.ReasonerRegistry ;
+import org.apache.jena.util.FileManager ;
+import arq.cmdline.CmdMain ;
 
 /** Apply RDFS reasoning to data and schema */
 
@@ -113,6 +108,6 @@ public class rdfs extends CmdMain
     @Override
     protected String getCommandName()
     {
-        return Utils.className(this) ;
+        return Lib.className(this) ;
     } 
 }

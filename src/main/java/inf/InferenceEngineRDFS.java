@@ -19,9 +19,9 @@ package inf ;
 
 import java.util.Set ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.vocabulary.RDF ;
-import com.hp.hpl.jena.vocabulary.RDFS ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.vocabulary.RDF ;
+import org.apache.jena.vocabulary.RDFS ;
 
 /**
  * Apply a fixed set of inference rules to a stream of triples. This is

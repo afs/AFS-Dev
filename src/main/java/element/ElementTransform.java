@@ -19,11 +19,11 @@ package element;
 
 import java.util.List ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.query.Query ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.expr.Expr ;
-import com.hp.hpl.jena.sparql.syntax.* ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.query.Query ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.expr.Expr ;
+import org.apache.jena.sparql.syntax.* ;
 
 /** Transformation function on an Element
  *  @see ElementTransformer

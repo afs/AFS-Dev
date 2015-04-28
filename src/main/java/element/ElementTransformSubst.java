@@ -19,14 +19,14 @@ package element ;
 
 import java.util.Map ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.sparql.core.TriplePath ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.graph.NodeTransform ;
-import com.hp.hpl.jena.sparql.syntax.Element ;
-import com.hp.hpl.jena.sparql.syntax.ElementPathBlock ;
-import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.Triple ;
+import org.apache.jena.sparql.core.TriplePath ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.graph.NodeTransform ;
+import org.apache.jena.sparql.syntax.Element ;
+import org.apache.jena.sparql.syntax.ElementPathBlock ;
+import org.apache.jena.sparql.syntax.ElementTriplesBlock ;
 
 /** An ElementTransform which replaces occurences of a variable with a Node value.*/
 public class ElementTransformSubst extends ElementTransformCopyBase {

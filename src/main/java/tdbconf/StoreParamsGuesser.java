@@ -24,15 +24,12 @@ import java.nio.file.Paths ;
 import java.util.Arrays ;
 import java.util.List ;
 
-import org.apache.jena.atlas.iterator.Action ;
-import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.DS ;
 import org.apache.jena.atlas.lib.FileOps ;
 import org.apache.jena.atlas.lib.MultiMap ;
-
-import com.hp.hpl.jena.tdb.base.file.Location ;
-import com.hp.hpl.jena.tdb.setup.StoreParams ;
-import com.hp.hpl.jena.tdb.sys.Names ;
+import org.apache.jena.tdb.base.file.Location ;
+import org.apache.jena.tdb.setup.StoreParams ;
+import org.apache.jena.tdb.sys.Names ;
 
 /** Build a TDB system parameters object based on a location */  
 public class StoreParamsGuesser {
@@ -76,18 +73,13 @@ public class StoreParamsGuesser {
         
         // Name to extensions found.
         final MultiMap<String, String> fileParts = MultiMap.createMapList() ;
-        Action<File> splitter = new Action<File>() {
-            @Override
-            public void apply(File item) {
-                String name = item.getName() ;
-                String base = FileOps.basename(name) ;
-                String ext = FileOps.extension(name) ;
-                fileParts.put(base, ext) ;
-            }
-        } ;
-        
         // Map base name to extensions found 
-        Iter.apply(files, splitter) ;
+        files.stream().forEachOrdered((item)->{
+            String name = item.getName() ;
+            String base = FileOps.basename(name) ;
+            String ext = FileOps.extension(name) ;
+            fileParts.put(base, ext) ;
+        }) ;
         
         List<String> indexesTriples = DS.list() ;
         List<String> indexesQuads = DS.list() ;

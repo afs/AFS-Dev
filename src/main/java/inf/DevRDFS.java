@@ -23,18 +23,18 @@ import java.util.List ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.NodeFactory ;
-import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.rdf.model.InfModel ;
-import com.hp.hpl.jena.rdf.model.Model ;
-import com.hp.hpl.jena.rdf.model.ModelFactory ;
-import com.hp.hpl.jena.reasoner.Reasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.Rule ;
-import com.hp.hpl.jena.util.FileUtils ;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator ;
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
+import org.apache.jena.graph.Triple ;
+import org.apache.jena.rdf.model.InfModel ;
+import org.apache.jena.rdf.model.Model ;
+import org.apache.jena.rdf.model.ModelFactory ;
+import org.apache.jena.reasoner.Reasoner ;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner ;
+import org.apache.jena.reasoner.rulesys.Rule ;
+import org.apache.jena.util.FileUtils ;
+import org.apache.jena.util.iterator.ExtendedIterator ;
 public class DevRDFS {
     static { LogCtl.setLog4j() ; }
     // Think through the cases.

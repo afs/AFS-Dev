@@ -21,12 +21,12 @@ import java.util.Iterator ;
 
 import org.apache.jena.atlas.lib.Tuple ;
 
-import com.hp.hpl.jena.tdb.base.file.Location ;
-import com.hp.hpl.jena.tdb.base.record.Record ;
-import com.hp.hpl.jena.tdb.index.RangeIndex ;
-import com.hp.hpl.jena.tdb.store.NodeId ;
-import com.hp.hpl.jena.tdb.store.tupletable.TupleIndex ;
-import com.hp.hpl.jena.tdb.sys.SetupTDB ;
+import org.apache.jena.tdb.base.file.Location ;
+import org.apache.jena.tdb.base.record.Record ;
+import org.apache.jena.tdb.index.RangeIndex ;
+import org.apache.jena.tdb.store.NodeId ;
+import org.apache.jena.tdb.store.tupletable.TupleIndex ;
+import org.apache.jena.tdb.sys.SetupTDB ;
 
 public class IndexLib
 {

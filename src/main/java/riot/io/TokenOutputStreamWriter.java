@@ -31,8 +31,8 @@ import org.apache.jena.riot.tokens.Token ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.sparql.util.FmtUtils ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.util.FmtUtils ;
 
 public class TokenOutputStreamWriter implements TokenOutputStream
 {

@@ -21,11 +21,11 @@ import java.util.* ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.query.* ;
-import com.hp.hpl.jena.rdf.model.Model ;
-import com.hp.hpl.jena.rdf.model.ModelFactory ;
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.query.* ;
+import org.apache.jena.rdf.model.Model ;
+import org.apache.jena.rdf.model.ModelFactory ;
 
 /** Core of datastructures needed for RDFS.
  *  To be general, this is in X space (e.g. Node, NodeId). 

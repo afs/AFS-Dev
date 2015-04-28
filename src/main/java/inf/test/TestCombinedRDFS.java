@@ -25,7 +25,7 @@ import java.util.List ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.junit.BeforeClass ;
 
-import com.hp.hpl.jena.graph.* ;
+import org.apache.jena.graph.* ;
 
 /** Test of RDFS, with combined data and vocabulary. */
 public class TestCombinedRDFS extends AbstractTestGraphRDFS {

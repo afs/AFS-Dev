@@ -23,8 +23,8 @@ import java.util.Iterator ;
 import java.util.Set ;
 import java.util.stream.Stream ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.Triple ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.Triple ;
 
 /** An inference processor for RDFS.
  * Adds derived triples to an accumulator.

@@ -23,7 +23,7 @@ import org.apache.jena.atlas.lib.Closeable ;
 import org.apache.jena.atlas.lib.Sync ;
 import org.apache.jena.riot.tokens.Token ;
 
-import com.hp.hpl.jena.graph.Node ;
+import org.apache.jena.graph.Node ;
 
 public interface TokenOutputStream extends Closeable, Sync
 {

@@ -25,7 +25,7 @@ import org.apache.jena.atlas.lib.ActionKeyValue ;
 import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.iri.IRI ;
 
-import com.hp.hpl.jena.shared.PrefixMapping ;
+import org.apache.jena.shared.PrefixMapping ;
 
 /** Converted from PrefixMap (a used by the parsers) to Jena's inferface PrefixMapping
  * (which is a bit XML-centric for historical reasons).

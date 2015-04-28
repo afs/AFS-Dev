@@ -20,13 +20,13 @@ package projects.riot_sse;
 import org.apache.jena.atlas.junit.BaseTest ;
 import org.junit.Test ;
 
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.NodeFactory ;
-import com.hp.hpl.jena.shared.PrefixMapping ;
-import com.hp.hpl.jena.shared.impl.PrefixMappingImpl ;
-import com.hp.hpl.jena.sparql.sse.Item ;
-import com.hp.hpl.jena.vocabulary.XSD ;
+import org.apache.jena.datatypes.xsd.XSDDatatype ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
+import org.apache.jena.shared.PrefixMapping ;
+import org.apache.jena.shared.impl.PrefixMappingImpl ;
+import org.apache.jena.sparql.sse.Item ;
+import org.apache.jena.vocabulary.XSD ;
 
 public class TestSSE_Forms extends BaseTest
 {

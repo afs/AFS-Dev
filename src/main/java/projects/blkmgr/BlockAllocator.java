@@ -17,7 +17,7 @@
 
 package projects.blkmgr;
 
-import com.hp.hpl.jena.tdb.base.block.Block ;
+import org.apache.jena.tdb.base.block.Block ;
 
 /** Manage and handout blocks */
 public interface BlockAllocator

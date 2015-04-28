@@ -26,8 +26,8 @@ import org.apache.jena.atlas.lib.Pair ;
 import org.junit.Test ;
 import projects.prefixes.DatasetPrefixes ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.NodeFactory ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
 
 public abstract class AbstractTestDatasetPrefixes extends BaseTest
 {

@@ -20,8 +20,8 @@ package structure.radix;
 import org.junit.Test ;
 import org.apache.jena.atlas.junit.BaseTest ;
 
-import com.hp.hpl.jena.tdb.base.record.Record ;
-import com.hp.hpl.jena.tdb.base.record.RecordFactory ;
+import org.apache.jena.tdb.base.record.Record ;
+import org.apache.jena.tdb.base.record.RecordFactory ;
 
 public class TestRadixIndex extends BaseTest//extends TestIndex //extends TestRangeIndex
 {

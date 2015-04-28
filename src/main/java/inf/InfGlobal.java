@@ -22,10 +22,10 @@ import static lib.Lib8.toList ;
 import java.util.List ;
 import java.util.function.Predicate ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.sparql.graph.NodeConst ;
-import com.hp.hpl.jena.vocabulary.RDFS ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.Triple ;
+import org.apache.jena.sparql.graph.NodeConst ;
+import org.apache.jena.vocabulary.RDFS ;
 
 public class InfGlobal {
     public static final Node        rdfType                = NodeConst.nodeRDFType ;

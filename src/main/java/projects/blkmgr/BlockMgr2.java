@@ -30,9 +30,9 @@ import org.apache.jena.atlas.lib.NotImplemented ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
-import com.hp.hpl.jena.tdb.base.block.Block ;
-import com.hp.hpl.jena.tdb.base.block.BlockMgr ;
-import com.hp.hpl.jena.tdb.base.file.ChannelManager ;
+import org.apache.jena.tdb.base.block.Block ;
+import org.apache.jena.tdb.base.block.BlockMgr ;
+import org.apache.jena.tdb.base.file.ChannelManager ;
 
 public class BlockMgr2 implements BlockMgr
 {

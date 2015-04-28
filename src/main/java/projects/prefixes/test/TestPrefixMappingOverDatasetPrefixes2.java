@@ -19,10 +19,10 @@ package projects.prefixes.test;
 
 import projects.prefixes.* ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.NodeFactory ;
-import com.hp.hpl.jena.shared.PrefixMapping ;
-import com.hp.hpl.jena.sparql.graph.AbstractTestPrefixMapping2 ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
+import org.apache.jena.shared.PrefixMapping ;
+import org.apache.jena.sparql.graph.AbstractTestPrefixMapping2 ;
 
 public class TestPrefixMappingOverDatasetPrefixes2 extends AbstractTestPrefixMapping2
 {

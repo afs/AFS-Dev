@@ -20,8 +20,8 @@ package projects.prefixes.test;
 import projects.prefixes.PrefixMapI ;
 import projects.prefixes.PrefixesFactory ;
 
-import com.hp.hpl.jena.shared.PrefixMapping ;
-import com.hp.hpl.jena.sparql.graph.AbstractTestPrefixMapping2 ;
+import org.apache.jena.shared.PrefixMapping ;
+import org.apache.jena.sparql.graph.AbstractTestPrefixMapping2 ;
 
 public class TestPrefixMappingOverPrefixMap extends AbstractTestPrefixMapping2
 {

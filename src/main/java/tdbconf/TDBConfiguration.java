@@ -29,10 +29,10 @@ import org.apache.jena.atlas.lib.FileOps ;
 import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.atlas.logging.Log ;
 
-import com.hp.hpl.jena.tdb.base.file.Location ;
-import com.hp.hpl.jena.tdb.setup.StoreParams ;
-import com.hp.hpl.jena.tdb.sys.Names ;
-import com.hp.hpl.jena.util.FileUtils ;
+import org.apache.jena.tdb.base.file.Location ;
+import org.apache.jena.tdb.setup.StoreParams ;
+import org.apache.jena.tdb.sys.Names ;
+import org.apache.jena.util.FileUtils ;
 
 // SOME OLD CODE
 

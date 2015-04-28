@@ -21,8 +21,8 @@ import inf.InferenceSetupRDFS ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.junit.BeforeClass ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.rdf.model.Model ;
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.rdf.model.Model ;
 
 /** Test of RDFS, with separate data and vocabulary, no RDFS in the deductions. */
 public abstract class AbstractTestGraphRDFS extends AbstractTestRDFS {

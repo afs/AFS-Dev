@@ -23,23 +23,23 @@ import org.junit.AfterClass ;
 import org.junit.BeforeClass ;
 import org.junit.Test ;
 
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.sparql.ARQConstants ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.graph.NodeConst ;
-import com.hp.hpl.jena.sparql.sse.Item ;
-import com.hp.hpl.jena.sparql.sse.ItemException ;
-import com.hp.hpl.jena.sparql.util.NodeFactoryExtra ;
+import org.apache.jena.datatypes.xsd.XSDDatatype ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.ARQConstants ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.graph.NodeConst ;
+import org.apache.jena.sparql.sse.Item ;
+import org.apache.jena.sparql.sse.ItemException ;
+import org.apache.jena.sparql.util.NodeFactoryExtra ;
 
 public class TestSSE_Basic extends BaseTest
 {
     // Tests not requiring URI resolution or prefix name handling.
     
-    static Node int1 = com.hp.hpl.jena.graph.NodeFactory.createLiteral("1", XSDDatatype.XSDinteger) ;
-    static Node int2 = com.hp.hpl.jena.graph.NodeFactory.createLiteral("2", XSDDatatype.XSDinteger) ;
-    static Node int3 = com.hp.hpl.jena.graph.NodeFactory.createLiteral("3", XSDDatatype.XSDinteger) ;
-    static Node strLangEN = com.hp.hpl.jena.graph.NodeFactory.createLiteral("xyz", "en") ;
+    static Node int1 = org.apache.jena.graph.NodeFactory.createLiteral("1", XSDDatatype.XSDinteger) ;
+    static Node int2 = org.apache.jena.graph.NodeFactory.createLiteral("2", XSDDatatype.XSDinteger) ;
+    static Node int3 = org.apache.jena.graph.NodeFactory.createLiteral("3", XSDDatatype.XSDinteger) ;
+    static Node strLangEN = org.apache.jena.graph.NodeFactory.createLiteral("xyz", "en") ;
 
     static Node typeLit1 = NodeFactoryExtra.createLiteralNode("123", null, "http://example/type") ;
     
@@ -90,11 +90,11 @@ public class TestSSE_Basic extends BaseTest
     @Test(expected=RiotException.class) public void testLit_09() { parse("'''") ; } 
     @Test(expected=RiotException.class) public void testLit_10() { parse("''@") ; }
     
-    @Test public void testLit_11() { testNode("'''abc\\ndef'''", com.hp.hpl.jena.graph.NodeFactory.createLiteral("abc\ndef")) ; }
+    @Test public void testLit_11() { testNode("'''abc\\ndef'''", org.apache.jena.graph.NodeFactory.createLiteral("abc\ndef")) ; }
     
     @Test public void testLit_12()
     { 
-        Node n = com.hp.hpl.jena.graph.NodeFactory.createLiteral("A\tB") ;
+        Node n = org.apache.jena.graph.NodeFactory.createLiteral("A\tB") ;
         testNode("'''A\\tB'''", n) ;
     }
     
@@ -114,7 +114,7 @@ public class TestSSE_Basic extends BaseTest
     @Test public void testURI_3() { parseNode("<http://example/ space>") ; }
     
     // Four \ is two \ in the lexical URI string (java escape) is one in the URI (SSE esscape).  
-    @Test public void testURI_4() { testNode("<http://example/base\\\\name>", com.hp.hpl.jena.graph.NodeFactory.createURI("http://example/base\\name")) ; }
+    @Test public void testURI_4() { testNode("<http://example/base\\\\name>", org.apache.jena.graph.NodeFactory.createURI("http://example/base\\name")) ; }
     
     @Test public void testVar_01() { testVar("?x") ; }
     @Test public void testVar_02() { testVar("?") ; }
@@ -151,7 +151,7 @@ public class TestSSE_Basic extends BaseTest
     // ---- Nodes
     
     @Test public void testNode_1()    { testNode("3", int3) ; }
-    @Test public void testNode_2()    { testNode("<http://example/node1>", com.hp.hpl.jena.graph.NodeFactory.createURI("http://example/node1")) ; } 
+    @Test public void testNode_2()    { testNode("<http://example/node1>", org.apache.jena.graph.NodeFactory.createURI("http://example/node1")) ; } 
     @Test public void testTypedLit_1() { testNode("\"123\"^^<http://example/type>", typeLit1) ; }
     @Test public void testTypedLit_2() { testNode("'123'^^<http://example/type>", typeLit1) ; }
     @Test public void testTypedLit_3() { testNode("'3'^^<"+XSDDatatype.XSDinteger.getURI()+">", int3) ; }

@@ -20,7 +20,7 @@ package structure.radix;
 import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 
-import com.hp.hpl.jena.tdb.base.record.Record ;
+import org.apache.jena.tdb.base.record.Record ;
 
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.iterator.Transform ;

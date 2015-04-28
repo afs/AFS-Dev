@@ -24,9 +24,9 @@ import org.apache.jena.riot.system.StreamRDF ;
 import org.apache.jena.riot.system.StreamRDFLib ;
 import org.junit.BeforeClass ;
 
-import com.hp.hpl.jena.graph.Factory ;
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.rdf.model.Model ;
+import org.apache.jena.graph.Factory ;
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.rdf.model.Model ;
 
 /** Test of RDFS, with separate data and vocabulary, no RDFS in the deductions. */
 public class TestExpandRDFS extends AbstractTestRDFS {

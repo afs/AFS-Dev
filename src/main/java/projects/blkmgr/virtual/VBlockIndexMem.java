@@ -21,7 +21,7 @@ import java.nio.ByteBuffer ;
 import java.util.ArrayList ;
 import java.util.List ;
 
-import static com.hp.hpl.jena.tdb.sys.SystemTDB.* ;
+import static org.apache.jena.tdb.sys.SystemTDB.* ;
 
 import storage.StorageException ;
 

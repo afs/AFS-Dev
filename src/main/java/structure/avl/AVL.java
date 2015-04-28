@@ -727,7 +727,7 @@ public class AVL<T extends Comparable<? super T>> implements Printable, OrderedS
     
     public Iterable<T> records()                { return records(null, null) ; }
     
-    public Iterable<T> records(T r1, T r2)      { return Iter.iter(AvlIterator.iterator(this, r1, r2)) ; }
+    public Iterable<T> records(T r1, T r2)      { return ()->Iter.iter(AvlIterator.iterator(this, r1, r2)) ; }
 
     public List<T> calcRecords()                { return calcRecords(null, null) ; }
     

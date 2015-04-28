@@ -22,8 +22,8 @@ import java.util.* ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.Pair ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.sparql.core.Quad ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.core.Quad ;
 
 /** In-memory dataset prefixes */ 
 

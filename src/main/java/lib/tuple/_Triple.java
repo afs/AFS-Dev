@@ -17,7 +17,7 @@
 
 package lib.tuple;
 
-import com.hp.hpl.jena.graph.Node;
+import org.apache.jena.graph.Node;
 
 public class _Triple extends Tuple3<Node>
 {

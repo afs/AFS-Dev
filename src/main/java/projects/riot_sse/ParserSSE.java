@@ -27,15 +27,14 @@ import org.apache.jena.riot.system.ParserProfile ;
 import org.apache.jena.riot.system.RiotLib ;
 import org.apache.jena.riot.tokens.Tokenizer ;
 import org.apache.jena.riot.tokens.TokenizerFactory ;
-
-import com.hp.hpl.jena.shared.PrefixMapping ;
-import com.hp.hpl.jena.shared.impl.PrefixMappingImpl ;
-import com.hp.hpl.jena.sparql.ARQConstants ;
-import com.hp.hpl.jena.sparql.core.Prologue ;
-import com.hp.hpl.jena.sparql.sse.Item ;
-import com.hp.hpl.jena.sparql.sse.lang.ParseHandler ;
-import com.hp.hpl.jena.sparql.sse.lang.ParseHandlerPlain ;
-import com.hp.hpl.jena.sparql.sse.lang.ParseHandlerResolver ;
+import org.apache.jena.shared.PrefixMapping ;
+import org.apache.jena.shared.impl.PrefixMappingImpl ;
+import org.apache.jena.sparql.ARQConstants ;
+import org.apache.jena.sparql.core.Prologue ;
+import org.apache.jena.sparql.sse.Item ;
+import org.apache.jena.sparql.sse.lang.ParseHandler ;
+import org.apache.jena.sparql.sse.lang.ParseHandlerPlain ;
+import org.apache.jena.sparql.sse.lang.ParseHandlerResolver ;
 
 public class ParserSSE
 {
@@ -55,6 +54,7 @@ public class ParserSSE
     
     public static Item parse(Reader reader, Prologue prologue)
     {
+        @SuppressWarnings("deprecation")
         Tokenizer tokenizer = TokenizerFactory.makeTokenizer(reader) ;
         return parseWorker(tokenizer, prologue) ;
     }

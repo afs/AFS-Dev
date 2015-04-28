@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.jena.atlas.logging.LogCtl ;
 
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.shared.LockMRSW;
+import org.apache.jena.shared.Lock;
+import org.apache.jena.shared.LockMRSW;
 
 public class TestMRSW
 {

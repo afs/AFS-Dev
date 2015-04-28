@@ -19,8 +19,8 @@ package inf ;
 
 import org.apache.jena.riot.system.StreamRDF ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.rdf.model.Model ;
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.rdf.model.Model ;
 
 public class InfFactory {
     

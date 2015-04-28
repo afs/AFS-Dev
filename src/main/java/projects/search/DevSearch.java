@@ -19,7 +19,7 @@ package projects.search;
 
 import java.util.Iterator;
 
-import com.hp.hpl.jena.util.FileUtils;
+import org.apache.jena.util.FileUtils;
 
 
 public class DevSearch

@@ -17,7 +17,7 @@
 
 package inf;
 
-import com.hp.hpl.jena.graph.Node ;
+import org.apache.jena.graph.Node ;
 
 @FunctionalInterface
 interface SinkTriple {

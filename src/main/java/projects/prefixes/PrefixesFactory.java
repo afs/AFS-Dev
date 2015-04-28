@@ -22,8 +22,8 @@ import java.util.Iterator ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.Pair ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.shared.PrefixMapping ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.shared.PrefixMapping ;
 
 public class PrefixesFactory
 {

@@ -33,17 +33,17 @@ import org.apache.jena.atlas.lib.SetUtils ;
 import org.junit.Assert ;
 import org.junit.Test ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.NodeFactory ;
-import com.hp.hpl.jena.graph.Triple ;
-import com.hp.hpl.jena.rdf.model.InfModel ;
-import com.hp.hpl.jena.rdf.model.Model ;
-import com.hp.hpl.jena.rdf.model.ModelFactory ;
-import com.hp.hpl.jena.reasoner.Reasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner ;
-import com.hp.hpl.jena.reasoner.rulesys.Rule ;
-import com.hp.hpl.jena.util.FileUtils ;
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
+import org.apache.jena.graph.Triple ;
+import org.apache.jena.rdf.model.InfModel ;
+import org.apache.jena.rdf.model.Model ;
+import org.apache.jena.rdf.model.ModelFactory ;
+import org.apache.jena.reasoner.Reasoner ;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner ;
+import org.apache.jena.reasoner.rulesys.Rule ;
+import org.apache.jena.util.FileUtils ;
 
 public abstract class AbstractTestRDFS extends BaseTest {
     private static PrintStream      out = System.err ;
@@ -129,7 +129,7 @@ public abstract class AbstractTestRDFS extends BaseTest {
             print(out, x1) ;
             out.println() ;
             out.println("Diff:") ;
-            printDiff(out, Iter.toSet(x0), Iter.toSet(x1)) ;
+            printDiff(out, Iter.toSet(x0.iterator()), Iter.toSet(x1.iterator())) ;
         }
         
         Assert.assertTrue(getTestLabel(), InfTestLib.sameElts(x0, x1)) ;

@@ -41,8 +41,8 @@ import org.junit.Before ;
 import org.junit.BeforeClass ;
 import org.junit.Test ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.sparql.sse.SSE ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.sse.SSE ;
 
 public class TestTokenIO extends BaseTest
 {

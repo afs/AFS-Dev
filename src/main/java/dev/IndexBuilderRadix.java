@@ -19,11 +19,11 @@ package dev;
 
 import structure.radix.RadixIndex ;
 
-import com.hp.hpl.jena.tdb.base.file.FileSet ;
-import com.hp.hpl.jena.tdb.base.record.RecordFactory ;
-import com.hp.hpl.jena.tdb.index.Index ;
-import com.hp.hpl.jena.tdb.index.IndexBuilder ;
-import com.hp.hpl.jena.tdb.index.IndexParams ;
+import org.apache.jena.tdb.base.file.FileSet ;
+import org.apache.jena.tdb.base.record.RecordFactory ;
+import org.apache.jena.tdb.index.Index ;
+import org.apache.jena.tdb.index.IndexBuilder ;
+import org.apache.jena.tdb.index.IndexParams ;
 
 class IndexBuilderRadix implements IndexBuilder
 {

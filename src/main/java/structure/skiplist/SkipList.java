@@ -261,12 +261,12 @@ public class SkipList <R extends Comparable<? super R>> implements Printable, It
     
     public Iterable<R> records()
     {
-        return Iter.iter(iterator()) ;
+        return ()->Iter.iter(iterator()) ;
     }
 
     public Iterable<R> records(R min, R max)
     {
-        return Iter.iter(iterator(min, max)) ;
+        return ()->Iter.iter(iterator(min, max)) ;
     }
     
     @Override

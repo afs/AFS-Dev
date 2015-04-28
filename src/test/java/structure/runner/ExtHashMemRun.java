@@ -33,8 +33,8 @@ import org.apache.jena.atlas.test.RepeatExecution ;
 import structure.exthash.ExtHashMem ;
 import structure.exthash.ExtHashMemTestBase ;
 
-import com.hp.hpl.jena.tdb.index.ext.ExtHash ;
-import com.hp.hpl.jena.tdb.sys.SystemTDB ;
+import org.apache.jena.tdb.index.ext.ExtHash ;
+import org.apache.jena.tdb.sys.SystemTDB ;
 
 public abstract class ExtHashMemRun
 {

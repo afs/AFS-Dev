@@ -20,7 +20,7 @@ package inf.test;
 import inf.GraphRDFS ;
 import inf.InferenceSetupRDFS ;
 
-import com.hp.hpl.jena.graph.Graph ;
+import org.apache.jena.graph.Graph ;
 
 public class TestGraphRDFS extends AbstractTestGraphRDFS {
 

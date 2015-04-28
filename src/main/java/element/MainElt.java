@@ -23,14 +23,14 @@ import java.util.Map ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.NodeFactory ;
-import com.hp.hpl.jena.query.Query ;
-import com.hp.hpl.jena.query.QueryFactory ;
-import com.hp.hpl.jena.query.Syntax ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.update.UpdateFactory ;
-import com.hp.hpl.jena.update.UpdateRequest ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
+import org.apache.jena.query.Query ;
+import org.apache.jena.query.QueryFactory ;
+import org.apache.jena.query.Syntax ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.update.UpdateFactory ;
+import org.apache.jena.update.UpdateRequest ;
 
 public class MainElt
 {

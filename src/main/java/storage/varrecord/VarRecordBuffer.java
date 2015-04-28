@@ -24,8 +24,8 @@ import java.util.Arrays ;
 import org.apache.jena.atlas.lib.ByteBufferLib ;
 import org.apache.jena.atlas.lib.InternalErrorException ;
 
-import com.hp.hpl.jena.tdb.base.record.Record ;
-import com.hp.hpl.jena.tdb.sys.SystemTDB ;
+import org.apache.jena.tdb.base.record.Record ;
+import org.apache.jena.tdb.sys.SystemTDB ;
 
 /** Pack variable length items into a fixed size block */ 
 public final class VarRecordBuffer

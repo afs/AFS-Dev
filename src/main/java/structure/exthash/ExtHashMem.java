@@ -30,7 +30,7 @@ import org.apache.jena.atlas.lib.BitsLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.tdb.base.StorageException;
+import org.apache.jena.tdb.base.StorageException;
 
 /** Extensible hashing  
  * http://en.wikipedia.org/wiki/Extendible_hashing

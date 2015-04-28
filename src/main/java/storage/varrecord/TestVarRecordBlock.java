@@ -19,7 +19,7 @@ package storage.varrecord;
 
 import java.nio.ByteBuffer;
 
-import com.hp.hpl.jena.tdb.base.record.Record;
+import org.apache.jena.tdb.base.record.Record;
 
 import org.junit.Test;
 import org.apache.jena.atlas.junit.BaseTest ;

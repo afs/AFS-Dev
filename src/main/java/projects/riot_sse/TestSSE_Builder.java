@@ -21,13 +21,13 @@ package projects.riot_sse;
 import org.apache.jena.atlas.junit.BaseTest ;
 import org.junit.Test ;
 
-import com.hp.hpl.jena.sparql.algebra.Op ;
-import com.hp.hpl.jena.sparql.algebra.op.OpLabel ;
-import com.hp.hpl.jena.sparql.algebra.op.OpNull ;
-import com.hp.hpl.jena.sparql.algebra.op.OpTable ;
-import com.hp.hpl.jena.sparql.sse.Item ;
-import com.hp.hpl.jena.sparql.sse.SSE ;
-import com.hp.hpl.jena.sparql.sse.builders.BuilderNode ;
+import org.apache.jena.sparql.algebra.Op ;
+import org.apache.jena.sparql.algebra.op.OpLabel ;
+import org.apache.jena.sparql.algebra.op.OpNull ;
+import org.apache.jena.sparql.algebra.op.OpTable ;
+import org.apache.jena.sparql.sse.Item ;
+import org.apache.jena.sparql.sse.SSE ;
+import org.apache.jena.sparql.sse.builders.BuilderNode ;
 
 public class TestSSE_Builder extends BaseTest
 {

@@ -17,16 +17,15 @@
 
 package dev;
 
+import org.apache.jena.atlas.lib.Timer ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.RDFDataMgr ;
-
-import com.hp.hpl.jena.sparql.sse.SSE ;
-import com.hp.hpl.jena.sparql.util.Timer ;
-import com.hp.hpl.jena.tdb.base.file.Location ;
-import com.hp.hpl.jena.tdb.index.IndexBuilder ;
-import com.hp.hpl.jena.tdb.index.RangeIndexBuilder ;
-import com.hp.hpl.jena.tdb.setup.* ;
-import com.hp.hpl.jena.tdb.store.DatasetGraphTDB ;
+import org.apache.jena.sparql.sse.SSE ;
+import org.apache.jena.tdb.base.file.Location ;
+import org.apache.jena.tdb.index.IndexBuilder ;
+import org.apache.jena.tdb.index.RangeIndexBuilder ;
+import org.apache.jena.tdb.setup.* ;
+import org.apache.jena.tdb.store.DatasetGraphTDB ;
 
 public class RunAFS
 {

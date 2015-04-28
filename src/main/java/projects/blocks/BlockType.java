@@ -20,8 +20,8 @@ package projects.blocks;
 import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.io.Printable ;
 
-import com.hp.hpl.jena.sparql.util.Named ;
-import com.hp.hpl.jena.tdb.TDBException ;
+import org.apache.jena.sparql.util.Named ;
+import org.apache.jena.tdb.TDBException ;
 
 public enum BlockType implements Printable, Named
 {

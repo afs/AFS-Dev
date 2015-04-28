@@ -17,7 +17,7 @@
 
 package projects.blocks;
 
-import com.hp.hpl.jena.tdb.base.file.FileException;
+import org.apache.jena.tdb.base.file.FileException;
 
 public class BlockException extends FileException
 {

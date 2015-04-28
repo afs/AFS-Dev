@@ -20,7 +20,7 @@ package projects.blkmgr.virtual;
 import java.nio.LongBuffer ;
 
 
-import com.hp.hpl.jena.tdb.base.StorageException ;
+import org.apache.jena.tdb.base.StorageException ;
 
 /* Maps long to long */
 public class Indirection 

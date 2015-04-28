@@ -27,9 +27,9 @@ import org.apache.jena.riot.tokens.Tokenizer ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.sparql.sse.lang.ParseHandler ;
+import org.apache.jena.datatypes.xsd.XSDDatatype ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.sse.lang.ParseHandler ;
 
 /** Parse the SSE (SPARQL/Lisp) syntax */
 

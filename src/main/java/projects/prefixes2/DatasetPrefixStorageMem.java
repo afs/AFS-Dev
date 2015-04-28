@@ -25,10 +25,10 @@ import java.util.Set ;
 import org.apache.jena.riot.system.PrefixMap ;
 import org.apache.jena.riot.system.PrefixMapFactory ;
 
-import com.hp.hpl.jena.shared.PrefixMapping ;
-import com.hp.hpl.jena.sparql.core.DatasetPrefixStorage ;
-import com.hp.hpl.jena.sparql.core.Quad ;
-import com.hp.hpl.jena.sparql.graph.GraphPrefixesProjection ;
+import org.apache.jena.shared.PrefixMapping ;
+import org.apache.jena.sparql.core.DatasetPrefixStorage ;
+import org.apache.jena.sparql.core.Quad ;
+import org.apache.jena.sparql.graph.GraphPrefixesProjection ;
 
 /** Abstract of prefix storage for graphs in an RDF dataset */
 

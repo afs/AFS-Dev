@@ -17,9 +17,9 @@
 
 package inf ;
 
-import com.hp.hpl.jena.graph.Graph ;
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.rdf.model.Model ;
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.rdf.model.Model ;
 
 /** RDFS setup in Node space */
 public class InferenceSetupRDFS extends BaseInfSetupRDFS<Node>{

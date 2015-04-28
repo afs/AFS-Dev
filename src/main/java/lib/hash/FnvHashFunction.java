@@ -17,7 +17,7 @@
 
 package lib.hash;
 
-import com.hp.hpl.jena.tdb.store.Hash ;
+import org.apache.jena.tdb.store.Hash ;
 
 import org.apache.jena.atlas.logging.Log ;
 

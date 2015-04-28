@@ -19,12 +19,12 @@ package element ;
 
 import org.apache.jena.atlas.lib.InternalErrorException ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.sparql.algebra.Op ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.expr.* ;
-import com.hp.hpl.jena.sparql.graph.NodeTransform ;
-import com.hp.hpl.jena.sparql.syntax.Element ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.algebra.Op ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.expr.* ;
+import org.apache.jena.sparql.graph.NodeTransform ;
+import org.apache.jena.sparql.syntax.Element ;
 
 /**
  * Special version of ExprTransform for applying a node transform on syntax

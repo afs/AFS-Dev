@@ -19,12 +19,12 @@ package tdbconf;
 
 import java.io.File ;
 
-import com.hp.hpl.jena.query.ARQ ;
-import com.hp.hpl.jena.sparql.engine.ExecutionContext ;
-import com.hp.hpl.jena.sparql.expr.Expr ;
-import com.hp.hpl.jena.sparql.expr.NodeValue ;
-import com.hp.hpl.jena.sparql.function.FunctionEnv ;
-import com.hp.hpl.jena.sparql.util.ExprUtils ;
+import org.apache.jena.query.ARQ ;
+import org.apache.jena.sparql.engine.ExecutionContext ;
+import org.apache.jena.sparql.expr.Expr ;
+import org.apache.jena.sparql.expr.NodeValue ;
+import org.apache.jena.sparql.function.FunctionEnv ;
+import org.apache.jena.sparql.util.ExprUtils ;
 import com.typesafe.config.Config ;
 import com.typesafe.config.ConfigFactory ;
 

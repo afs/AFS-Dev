@@ -21,7 +21,7 @@ import java.io.Writer ;
 
 import org.apache.jena.riot.tokens.Token ;
 
-import com.hp.hpl.jena.graph.Node ;
+import org.apache.jena.graph.Node ;
 
 
 public class TokenOutputStreamWrapper implements TokenOutputStream

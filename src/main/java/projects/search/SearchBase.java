@@ -27,7 +27,7 @@ import java.util.Iterator ;
 import org.apache.jena.atlas.iterator.NullIterator ;
 import org.apache.jena.atlas.lib.StrUtils ;
 
-import com.hp.hpl.jena.sparql.util.Convert ;
+import org.apache.jena.sparql.util.Convert ;
 
 public abstract class SearchBase implements Search 
 {

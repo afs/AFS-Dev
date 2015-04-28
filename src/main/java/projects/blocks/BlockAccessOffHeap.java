@@ -22,9 +22,9 @@ import java.util.Deque ;
 import java.util.LinkedList ;
 
 import org.apache.jena.ext.com.google.common.cache.* ;
-import com.hp.hpl.jena.tdb.base.block.Block ;
-import com.hp.hpl.jena.tdb.base.file.BlockAccessDirect ;
-import com.hp.hpl.jena.tdb.base.file.FileException ;
+import org.apache.jena.tdb.base.block.Block ;
+import org.apache.jena.tdb.base.file.BlockAccessDirect ;
+import org.apache.jena.tdb.base.file.FileException ;
 
 /** Direct ByteBuffers - normal Java I/O.
  *  Associated cache.

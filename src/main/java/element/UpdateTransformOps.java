@@ -23,15 +23,15 @@ import java.util.Map ;
 
 import org.apache.jena.atlas.lib.Sink ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.sparql.core.Quad ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.expr.ExprTransform ;
-import com.hp.hpl.jena.sparql.graph.NodeTransform ;
-import com.hp.hpl.jena.sparql.modify.request.* ;
-import com.hp.hpl.jena.sparql.syntax.Element ;
-import com.hp.hpl.jena.update.Update ;
-import com.hp.hpl.jena.update.UpdateRequest ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.core.Quad ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.expr.ExprTransform ;
+import org.apache.jena.sparql.graph.NodeTransform ;
+import org.apache.jena.sparql.modify.request.* ;
+import org.apache.jena.sparql.syntax.Element ;
+import org.apache.jena.update.Update ;
+import org.apache.jena.update.UpdateRequest ;
 
 /** Support for transformation of update abstract syntax. */ 
 public class UpdateTransformOps {

@@ -22,18 +22,18 @@ import java.util.Iterator ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.iterator.Transform ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.graph.NodeFactory ;
-import com.hp.hpl.jena.query.QueryExecException ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.engine.ExecutionContext ;
-import com.hp.hpl.jena.sparql.engine.QueryIterator ;
-import com.hp.hpl.jena.sparql.engine.binding.Binding ;
-import com.hp.hpl.jena.sparql.engine.binding.BindingFactory ;
-import com.hp.hpl.jena.sparql.engine.iterator.QueryIterPlainWrapper ;
-import com.hp.hpl.jena.sparql.pfunction.PropFuncArg ;
-import com.hp.hpl.jena.sparql.pfunction.PropFuncArgType ;
-import com.hp.hpl.jena.sparql.pfunction.PropertyFunctionEval ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
+import org.apache.jena.query.QueryExecException ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.engine.ExecutionContext ;
+import org.apache.jena.sparql.engine.QueryIterator ;
+import org.apache.jena.sparql.engine.binding.Binding ;
+import org.apache.jena.sparql.engine.binding.BindingFactory ;
+import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper ;
+import org.apache.jena.sparql.pfunction.PropFuncArg ;
+import org.apache.jena.sparql.pfunction.PropFuncArgType ;
+import org.apache.jena.sparql.pfunction.PropertyFunctionEval ;
 
 public abstract class BaseSearchPF extends PropertyFunctionEval
 {

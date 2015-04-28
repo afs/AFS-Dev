@@ -26,9 +26,9 @@ import java.util.concurrent.atomic.AtomicLong ;
 
 import org.apache.jena.atlas.lib.Chars ;
 
-import com.hp.hpl.jena.tdb.base.block.Block ;
-import com.hp.hpl.jena.tdb.base.block.BlockException ;
-import com.hp.hpl.jena.tdb.base.file.BlockAccess ;
+import org.apache.jena.tdb.base.block.Block ;
+import org.apache.jena.tdb.base.block.BlockException ;
+import org.apache.jena.tdb.base.file.BlockAccess ;
 
 public class BlockAllocatorAccess implements BlockAllocator
 {

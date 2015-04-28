@@ -23,14 +23,14 @@ import java.util.List ;
 
 import org.apache.jena.atlas.logging.Log ;
 
-import com.hp.hpl.jena.graph.Node ;
-import com.hp.hpl.jena.query.Query ;
-import com.hp.hpl.jena.sparql.core.Var ;
-import com.hp.hpl.jena.sparql.expr.Expr ;
-import com.hp.hpl.jena.sparql.expr.ExprList ;
-import com.hp.hpl.jena.sparql.expr.ExprTransform ;
-import com.hp.hpl.jena.sparql.expr.ExprTransformer ;
-import com.hp.hpl.jena.sparql.syntax.* ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.query.Query ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.expr.Expr ;
+import org.apache.jena.sparql.expr.ExprList ;
+import org.apache.jena.sparql.expr.ExprTransform ;
+import org.apache.jena.sparql.expr.ExprTransformer ;
+import org.apache.jena.sparql.syntax.* ;
 
 /** A bottom-up application of a transformation of SPARQL syntax Elements. 
  * {@linkplain QueryTransformOps#transform} provides the mechanism
