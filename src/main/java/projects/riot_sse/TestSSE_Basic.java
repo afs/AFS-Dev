@@ -18,19 +18,16 @@
 package projects.riot_sse;
 
 import org.apache.jena.atlas.junit.BaseTest ;
-import org.apache.jena.riot.RiotException ;
-import org.junit.AfterClass ;
-import org.junit.BeforeClass ;
-import org.junit.Test ;
-
 import org.apache.jena.datatypes.xsd.XSDDatatype ;
 import org.apache.jena.graph.Node ;
+import org.apache.jena.riot.RiotException ;
 import org.apache.jena.sparql.ARQConstants ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.graph.NodeConst ;
 import org.apache.jena.sparql.sse.Item ;
 import org.apache.jena.sparql.sse.ItemException ;
 import org.apache.jena.sparql.util.NodeFactoryExtra ;
+import org.junit.Test ;
 
 public class TestSSE_Basic extends BaseTest
 {
@@ -47,9 +44,6 @@ public class TestSSE_Basic extends BaseTest
     static Item int2i = Item.createNode(int2) ;
     static Item int3i = Item.createNode(int3) ;
     
-    static public @BeforeClass  void beforeClass() { setTestLogging() ; }  
-    static public @AfterClass   void afterClass()  { unsetTestLogging() ; }
-   
     // ---- Parsing : not check for the correct outcome
     @Test public void testParseTerm_01() { parse("'xyz'") ; }
     @Test public void testParseTerm_02() { parse("'xyz'@en") ; }

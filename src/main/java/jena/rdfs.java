@@ -19,12 +19,13 @@ package jena;
 
 import java.util.Iterator ;
 
+import arq.cmd.CmdMain ;
+
 import org.apache.jena.atlas.lib.Lib ;
 import org.apache.jena.rdf.model.* ;
 import org.apache.jena.reasoner.Reasoner ;
 import org.apache.jena.reasoner.ReasonerRegistry ;
 import org.apache.jena.util.FileManager ;
-import arq.cmdline.CmdMain ;
 
 /** Apply RDFS reasoning to data and schema */
 
