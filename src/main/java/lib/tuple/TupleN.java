@@ -18,6 +18,7 @@
 package lib.tuple;
 
 import java.util.Arrays ;
+import java.util.Objects ;
 
 import org.apache.jena.atlas.lib.Lib ;
 
@@ -41,7 +42,7 @@ public final class TupleN<T> extends ZTuple<T>
         {
             Object obj1 = x1.tuple[i] ;
             Object obj2 = tuple[i] ;
-            if ( ! Lib.equal(obj1, obj2) )
+            if ( ! Objects.equals(obj1, obj2) )
                 return false ;
         }
         return true ;

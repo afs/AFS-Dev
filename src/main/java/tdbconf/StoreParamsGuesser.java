@@ -26,7 +26,8 @@ import java.util.List ;
 
 import org.apache.jena.atlas.lib.DS ;
 import org.apache.jena.atlas.lib.FileOps ;
-import org.apache.jena.atlas.lib.MultiMap ;
+import org.apache.jena.ext.com.google.common.collect.ArrayListMultimap ;
+import org.apache.jena.ext.com.google.common.collect.ListMultimap ;
 import org.apache.jena.tdb.base.file.Location ;
 import org.apache.jena.tdb.setup.StoreParams ;
 import org.apache.jena.tdb.sys.Names ;
@@ -72,7 +73,7 @@ public class StoreParamsGuesser {
         List<File> files = Arrays.asList(path.toFile().listFiles(fnf)) ;
         
         // Name to extensions found.
-        final MultiMap<String, String> fileParts = MultiMap.createMapList() ;
+        final ListMultimap<String, String> fileParts = ArrayListMultimap.create() ;
         // Map base name to extensions found 
         files.stream().forEachOrdered((item)->{
             String name = item.getName() ;
@@ -86,7 +87,7 @@ public class StoreParamsGuesser {
         
         // Index seeking.
         for ( String base : fileParts.keys() ) {
-            List<String> exts = (List<String>)fileParts.get(base) ;
+            List<String> exts = fileParts.get(base) ;
             
             if ( base.length() == 3 && tripleIndex(base, exts) ) {
                 indexesTriples.add(base) ;

@@ -20,11 +20,8 @@ package projects.prefixes;
 import java.util.HashMap ;
 import java.util.Map ;
 
-import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.lib.ActionKeyValue ;
 import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.iri.IRI ;
-
 import org.apache.jena.shared.PrefixMapping ;
 
 /** Converted from PrefixMap (a used by the parsers) to Jena's inferface PrefixMapping
@@ -102,16 +99,8 @@ public class PrefixMappingOverPrefixMapI implements PrefixMapping
     public Map<String, String> getNsPrefixMap()
     {
         Map<String, IRI> map = pmap.getMapping() ;
-        final Map<String, String> smap = new HashMap<String, String>() ;
-        ActionKeyValue<String, IRI> action = new ActionKeyValue<String, IRI>(){
-            @Override
-            public void apply(String key, IRI value)
-            {
-                String str = value.toString() ;
-                smap.put(key, str) ;
-            }
-        } ;
-        Iter.apply(map, action) ;
+        Map<String, String> smap = new HashMap<String, String>() ;
+        map.forEach((key, value)->smap.put(key, value.toString()));
         return smap  ;
     }
 

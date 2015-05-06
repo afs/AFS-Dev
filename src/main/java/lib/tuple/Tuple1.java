@@ -17,7 +17,9 @@
 
 package lib.tuple;
 
-import org.apache.jena.atlas.lib.Lib;
+import java.util.Objects ;
+
+import org.apache.jena.atlas.lib.Lib ;
 
 public class Tuple1<T> extends ZTuple<T>
 {
@@ -32,7 +34,7 @@ public class Tuple1<T> extends ZTuple<T>
     protected final boolean equalElements(ZTuple<?> x)
     {
         Tuple1<?> z = (Tuple1<?>)x ;
-        return Lib.equal(z.item, item) ; 
+        return Objects.equals(z.item, item) ; 
     }
     
     @Override

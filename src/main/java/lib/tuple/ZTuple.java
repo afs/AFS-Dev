@@ -17,12 +17,12 @@
 
 package lib.tuple;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Arrays ;
+import java.util.List ;
+import java.util.Objects ;
 
-import org.apache.jena.atlas.lib.ColumnMap;
-import org.apache.jena.atlas.lib.Lib;
-import org.apache.jena.atlas.lib.NotImplemented;
+import org.apache.jena.atlas.lib.ColumnMap ;
+import org.apache.jena.atlas.lib.NotImplemented ;
 
 /** Tuples - use less space by specific implementations for 
  *  various sizes.  Saves the array overhead of 3 slots.  
@@ -95,7 +95,7 @@ public abstract class ZTuple<T>
         {
             Object obj1 = get(i) ;
             Object obj2 = tuple.get(i) ;
-            if ( ! Lib.equal(obj1, obj2) )
+            if ( ! Objects.equals(obj1, obj2) )
                 return false ;
         }
         return true ; 

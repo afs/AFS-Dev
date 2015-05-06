@@ -17,11 +17,11 @@
 
 package structure.ttree;
 
+import java.util.Arrays ;
 import java.util.Iterator ;
 import java.util.NoSuchElementException ;
 
 import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.iterator.IteratorArray ;
 import org.apache.jena.atlas.lib.Alg ;
 
 public class TTreeIterator<T extends Comparable<? super T>> implements Iterator<T>
@@ -58,10 +58,10 @@ public class TTreeIterator<T extends Comparable<? super T>> implements Iterator<
                 if ( idx > node.nodeSize )
                     nodeIter = null ;
                 else
-                    nodeIter = IteratorArray.create(node.elements, idx, node.nodeSize) ; 
+                    nodeIter = Arrays.asList(node.elements).subList(idx, node.nodeSize).iterator() ; 
             }
             else
-                nodeIter = IteratorArray.create(node.elements, idx, node.nodeSize) ;
+                nodeIter = Arrays.asList(node.elements).subList(idx, node.nodeSize).iterator() ;
         }
         else
         {
@@ -69,7 +69,7 @@ public class TTreeIterator<T extends Comparable<? super T>> implements Iterator<
             node = ttree.root ;
             while(node.left != null)
                 node = node.left ;
-            nodeIter = IteratorArray.create(node.elements, 0, node.nodeSize) ;
+            nodeIter = Arrays.asList(node.elements).iterator() ;
         }
         
     }
@@ -140,7 +140,7 @@ public class TTreeIterator<T extends Comparable<? super T>> implements Iterator<
         // Yield it's elements 
         
         node = nextNode ;
-        nodeIter = IteratorArray.create(node.elements, 0, node.nodeSize) ;
+        nodeIter = Arrays.asList(node.elements).iterator() ;
         // And try again.
         // Rafactor.
         if ( ! nodeIter.hasNext() )

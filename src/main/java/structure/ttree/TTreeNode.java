@@ -21,13 +21,14 @@ import static structure.ttree.TTree.Checking ;
 import static structure.ttree.TTree.error ;
 
 import java.util.List ;
+import java.util.Objects ;
 
 import lib.ArrayOps ;
+
 import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.io.PrintUtils ;
 import org.apache.jena.atlas.io.Printable ;
 import org.apache.jena.atlas.lib.Alg ;
-import org.apache.jena.atlas.lib.Lib ;
 
 final
 class TTreeNode<T extends Comparable<? super T>> implements Printable
@@ -88,7 +89,7 @@ class TTreeNode<T extends Comparable<? super T>> implements Printable
         else
         {
             T orig = elements[idx] ;
-            if ( Lib.equal(item, orig) )
+            if ( Objects.equals(item, orig) )
                 return false ;
             elements[idx] = item ;
             return true ;

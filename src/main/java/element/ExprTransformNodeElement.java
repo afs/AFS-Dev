@@ -41,7 +41,7 @@ public class ExprTransformNodeElement extends ExprTransformCopy {
 
     @Override
     public Expr transform(ExprVar nv) {
-        Node n = nodeTransform.convert(nv.getAsNode()) ;
+        Node n = nodeTransform.apply(nv.getAsNode()) ;
         if ( n == nv.getAsNode() )
             return nv ;
         if ( n instanceof Var ) {
@@ -53,7 +53,7 @@ public class ExprTransformNodeElement extends ExprTransformCopy {
 
     @Override
     public Expr transform(NodeValue nv) {
-        Node n = nodeTransform.convert(nv.asNode()) ;
+        Node n = nodeTransform.apply(nv.asNode()) ;
         if ( n == nv.asNode() )
             return nv ;
         return NodeValue.makeNode(n) ;

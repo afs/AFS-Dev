@@ -32,7 +32,7 @@ public class NodeTransformSubst implements NodeTransform {
     }
 
     @Override
-    public Node convert(Node node) {
+    public Node apply(Node node) {
         Node n = map.get(node) ;
         if ( n == null )
             return node ;

@@ -53,7 +53,7 @@ public final class Block
         this.underlyingByteBuffer = null ;
     }
     
-    public <T> T convert(BlockConverter<T> converter)
+    public <T> T apply(BlockConverter<T> converter)
     {
         // converter.checkType(type) ; 
         return converter.fromBlock(this) ;

@@ -17,12 +17,12 @@
 
 package lib ;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList ;
+import java.util.Arrays ;
+import java.util.Iterator ;
+import java.util.List ;
 
-import org.apache.jena.atlas.iterator.IteratorArray;
-import org.apache.jena.atlas.lib.Bytes;
+import org.apache.jena.atlas.lib.Bytes ;
 
 /** Utilities for working with arrays including especially for working with a slice in a larger array. 
  *  This avoids the need to copy/move data outside the slice. 
@@ -239,9 +239,10 @@ public class ArrayOps
 
     // ----
     
-    public static <T> IteratorArray<T> iterator(T[] array)
+    @SafeVarargs
+    public static <T> Iterator<T> iterator(T... things)
     {
-        return IteratorArray.create(array) ;
+        return Arrays.asList(things).iterator() ;
     }
     
     public static <T> String toString(T[] array)

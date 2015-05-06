@@ -51,7 +51,7 @@ public class Lib8 {
     }
 
     
-    /** Immutable list that adds an elemtn to the front of another list without coping */ 
+    /** Immutable list that adds an element to the front of another list without copying */ 
     static class ListFront<T> extends AbstractList<T> {
         private final T elt ;
         private final List<T> tail ;

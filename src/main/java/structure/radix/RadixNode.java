@@ -20,10 +20,10 @@ package structure.radix;
 import java.util.Arrays ;
 import java.util.HashSet ;
 import java.util.Set ;
+import java.util.function.Function ;
 
 import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.iterator.Transform ;
 import org.apache.jena.atlas.lib.Bytes ;
 import org.apache.jena.atlas.logging.Log ;
 
@@ -498,13 +498,7 @@ public final class RadixNode
                 n._check(nextStartLen, seen) ;
     }
     
-    static Transform<RadixNode, Integer> idOfNode = new Transform<RadixNode, Integer>(){
-
-        @Override
-        public Integer convert(RadixNode item)
-        {
-            return item.id ;
-        }} ; 
+    static Function<RadixNode, Integer> idOfNode = (item)->item.id ;
 
     /** is this node a leaf?  isleaf => isValue */
     public boolean isLeaf()

@@ -19,10 +19,8 @@ package projects.prefixes.atlas;
 
 import java.util.Iterator ;
 import java.util.Map ;
-import java.util.Map.Entry ;
 
 import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.iterator.Transform ;
 import org.apache.jena.atlas.lib.Pair ;
 
 /** Adapter */ 
@@ -50,22 +48,13 @@ public class SimpleMapOfMap<K,V> implements SimpleMap<K, V>
     @Override
     public boolean isEmpty()            { return map.isEmpty() ; }
 
-    private Transform<Entry<K,V>, Pair<K,V>> transform = new Transform<Entry<K,V>, Pair<K,V>>() {
-        @Override
-        public Pair<K, V> convert(Entry<K, V> item)
-        {
-            return Pair.create(item.getKey(), item.getValue()) ;
-        } } ; 
-    
     @Override
-    public Iterator<Pair<K, V>> iterator()
-    {
-        return Iter.map(map.entrySet().iterator(), transform) ;
+    public Iterator<Pair<K, V>> iterator() {
+        return Iter.map(map.entrySet().iterator(), (item)->Pair.create(item.getKey(), item.getValue())) ;
     }
 
     @Override
-    public Iterator<K> keys()
-    {
+    public Iterator<K> keys() {
         return map.keySet().iterator() ;
     }
 }

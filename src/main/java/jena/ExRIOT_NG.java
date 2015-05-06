@@ -17,18 +17,18 @@
 
 package jena ;
 
-import org.apache.jena.atlas.lib.Lib ;
-import org.apache.jena.riot.Lang ;
-import org.apache.jena.riot.RDFDataMgr ;
-import org.apache.jena.riot.system.StreamRDF ;
-import org.apache.jena.riot.system.StreamRDFBase ;
-import org.apache.jena.riot.system.StreamRDFLib ;
+import java.util.Objects ;
 
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
 import org.apache.jena.graph.Triple ;
 import org.apache.jena.rdf.model.Model ;
 import org.apache.jena.rdf.model.ModelFactory ;
+import org.apache.jena.riot.Lang ;
+import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.riot.system.StreamRDF ;
+import org.apache.jena.riot.system.StreamRDFBase ;
+import org.apache.jena.riot.system.StreamRDFLib ;
 import org.apache.jena.sparql.core.Quad ;
 
 /** Reading one named graph from a N-Quads/TriG/JSON-LD source */ 
@@ -72,7 +72,7 @@ public class ExRIOT_NG {
 
         @Override
         public void quad(Quad quad) {
-            if ( Lib.equal(graphName, quad.getGraph()) )
+            if ( Objects.equals(graphName, quad.getGraph()) )
                 dest.triple(quad.asTriple()) ;
         }
 

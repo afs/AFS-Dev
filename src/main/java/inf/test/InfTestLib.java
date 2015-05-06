@@ -18,8 +18,7 @@
 package inf.test;
 
 import java.util.Collection ;
-
-import org.apache.jena.atlas.lib.Lib ;
+import java.util.Objects ;
 
 public class InfTestLib {
 
@@ -42,7 +41,7 @@ public class InfTestLib {
     private static <X> int countElts(Collection<X> items, X item) {
         int i = 0 ;
         for ( X x : items ) {
-            if ( Lib.equal(x, item) )
+            if ( Objects.equals(x, item) )
                 i++ ;
         }
         return i ;

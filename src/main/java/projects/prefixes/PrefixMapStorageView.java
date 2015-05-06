@@ -21,9 +21,7 @@ import java.util.Iterator ;
 import java.util.List ;
 
 import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.iterator.Transform ;
 import org.apache.jena.atlas.lib.Pair ;
-
 import org.apache.jena.graph.Node ;
 import org.apache.jena.sparql.core.Quad ;
 
@@ -81,17 +79,10 @@ public class PrefixMapStorageView implements PrefixMapStorage
         return dsgPrefixes.get(graphName) ;
     }
     
-    
     @Override
     public Iterator<String> keys()
     {
-        Iterator<Node> iter = dsgPrefixes.listGraphNodes() ;
-        return Iter.map(iter, new Transform<Node, String>(){
-            @Override
-            public String convert(Node item)
-            {
-                return item.getURI() ;
-            }}) ;
+        return Iter.map(dsgPrefixes.listGraphNodes(), Node::getURI) ;
     }
     
     @Override

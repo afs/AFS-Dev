@@ -20,7 +20,6 @@ package structure.radix;
 import java.util.Iterator ;
 
 import org.apache.jena.atlas.iterator.Iter ;
-
 import org.apache.jena.tdb.base.record.Record ;
 import org.apache.jena.tdb.base.record.RecordFactory ;
 import org.apache.jena.tdb.index.RangeIndex ;
@@ -69,7 +68,7 @@ public class RadixIndex implements RangeIndex
     @Override
     public Iterator<Record> iterator()
     {
-        return Iter.map(radix.iterator(null, null), RLib.entryToRecord) ;
+        return Iter.map(radix.iterator(null, null), (entry)->new Record(entry.key, entry.value)) ;
     }
 
     @Override
@@ -77,8 +76,7 @@ public class RadixIndex implements RangeIndex
     {
         byte[] s = (recordMin==null)?null:recordMin.getKey() ;
         byte[] f = (recordMax==null)?null:recordMax.getKey() ;
-        
-        return Iter.map(radix.iterator(s,f), RLib.entryToRecord) ;
+        return Iter.map(radix.iterator(s,f), (entry)->new Record(entry.key, entry.value)) ;
     }
 
     @Override

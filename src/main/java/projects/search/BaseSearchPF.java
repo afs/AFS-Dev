@@ -20,8 +20,6 @@ package projects.search;
 import java.util.Iterator ;
 
 import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.iterator.Transform ;
-
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
 import org.apache.jena.query.QueryExecException ;
@@ -61,16 +59,9 @@ public abstract class BaseSearchPF extends PropertyFunctionEval
         Search search = searchEngine() ;
         Iterator<String> x = search.search(searchTerm) ;
         Iter<String> iter = Iter.iter(x) ;
-        
-        Transform<String , Binding> converter = new Transform<String , Binding>(){
-
-            @Override
-            public Binding convert(String item)
-            {
-                return BindingFactory.binding(binding, var, NodeFactory.createURI(item)) ;
-            }} ;
-        QueryIterator qIter = new QueryIterPlainWrapper(iter.map(converter)) ;
+        QueryIterator qIter = new QueryIterPlainWrapper(iter.map((item)-> {
+            return BindingFactory.binding(binding, var, NodeFactory.createURI(item)) ;
+        })) ;
         return qIter ;
     }
-
 }

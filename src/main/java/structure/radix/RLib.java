@@ -20,32 +20,17 @@ package structure.radix;
 import java.nio.ByteBuffer ;
 import java.util.Iterator ;
 
-import org.apache.jena.tdb.base.record.Record ;
-
 import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.iterator.Transform ;
 
 public class RLib
 {
-    static Transform<RadixEntry, Record> entryToRecord = new Transform<RadixEntry, Record>() {
-        @Override
-        public Record convert(RadixEntry item)
-        {
-            return new Record(item.key, item.value) ;
-        }} ;
-    
     // Collect all str(X) into a single class
     // See also ByteBufferLib
     // Bytes, Chars, StrUtils.
         
     private static String str(RadixTree rt)
     {
-        Iterator<String> iter = Iter.map(rt.iterator(), new Transform<RadixEntry, String>(){
-            @Override
-            public String convert(RadixEntry item)
-            {
-                return "["+item+"]" ;
-            }}) ;
+        Iterator<String> iter = Iter.map(rt.iterator(), (item)->"["+item+"]") ;
         return Iter.asString(iter, ", ") ;
     }
 

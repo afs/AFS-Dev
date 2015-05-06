@@ -98,6 +98,6 @@ public class ElementTransformSubst extends ElementTransformCopyBase {
     }
 
     private Node transform(Node n) {
-        return nodeTransform.convert(n) ;
+        return nodeTransform.apply(n) ;
     }
 }
