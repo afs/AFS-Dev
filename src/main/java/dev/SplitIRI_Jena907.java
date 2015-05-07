@@ -50,16 +50,20 @@ public class SplitIRI_Jena907
     @Test public void localname_05() { testPrefixLocalname("http://example/1abc",           "http://example/",      "1abc"      ) ; }
     @Test public void localname_06() { testPrefixLocalname("http://example/1.2.3.4",        "http://example/",      "1.2.3.4"   ) ; }
     @Test public void localname_07() { testPrefixLocalname("http://example/xyz#1.2.3.4",    "http://example/xyz#",  "1.2.3.4"   ) ; }
-    @Test public void localname_08() { testPrefixLocalname("http://example/xyz#_abc",       "http://example/xyz#",  "_abc"       ) ; }
+    @Test public void localname_08() { testPrefixLocalname("http://example/xyz#_abc",       "http://example/xyz#",  "_abc"      ) ; }
     @Test public void localname_09() { testPrefixLocalname("http://example/xyz/_1.2.3.4",   "http://example/xyz/", "_1.2.3.4"   ) ; }
     
+    // Work on relative URIs and bizarre URIs.
+    @Test public void localname_10() { testPrefixLocalname("xyz/_1.2.3.4",  "xyz/", "_1.2.3.4" ) ; }
+    @Test public void localname_11() { testPrefixLocalname("xyz",           "",     "xyz" ) ; }
+    @Test public void localname_12() { testPrefixLocalname("abc:def",       "abc:", "def" ) ; }
+    
     // URNs split differently.
-    @Test public void localname_20() { testPrefixLocalname("urn:foo:bar",                   "urn:foo",              "bar"       ) ; }
+    @Test public void localname_20() { testPrefixLocalname("urn:foo:bar",                   "urn:foo:",              "bar"       ) ; }
 
     // Splitting rules - no escapes? 
 
-    @Test public void localname_30() { testPrefixLocalname("http://example/id=89",        "http://example/",      "id=89"   ) ; }
-    @Test public void localnameEsc_30() { testPrefixLocalnameEsc("http://example/id=89",  "id\\=89"   ) ; }
+    @Test public void localname_30() { testPrefixLocalname("http://example/id=89",          "http://example/",      "id=89"   ) ; }
     
     @Test public void localname_40() { testPrefixLocalname("http://example/foo#bar:baz",    "http://example/foo#",  "bar:baz"   ) ; }
     @Test public void localname_41() { testPrefixLocalname("http://example/a:b:c",          "http://example/",      "a:b:c"     ) ; }
@@ -69,8 +73,7 @@ public class SplitIRI_Jena907
 
     
     // Test for PrefixLocalnameEsc
-    
-    
+    @Test public void localnameEsc_30() { testPrefixLocalnameEsc("http://example/id=89",  "id\\=89"   ) ; }
     
     @Test public void split() { testSplit("http://example/foo", "http://example/".length()) ; }
     
@@ -79,10 +82,27 @@ public class SplitIRI_Jena907
         Assert.assertEquals(expected, i) ;
     }
 
+    // ??
+    private void testTurtle(String string, String expectedPrefix, String expectedLocalname) {
+        int i = splitpoint(string) ;
+        String ns = string ;
+        String ln = "" ;
+        if ( i > 0 ) {
+            ns = string.substring(0, i) ;
+            ln = string.substring(i) ;
+        }
+        
+        if ( expectedPrefix != null )
+            Assert.assertEquals(expectedPrefix, ns);
+        if ( expectedLocalname != null )
+            Assert.assertEquals(expectedLocalname, ln);
+        if (  expectedPrefix != null && expectedLocalname != null ) {
+            String x = ns+ln ;
+            Assert.assertEquals(string, x) ;
+        }
+    }
+
     private void testPrefixLocalname(String string, String expectedPrefix, String expectedLocalname) {
-//        Node n = NodeFactory.createURI(string) ;
-//        String ns = n.getNameSpace() ;
-//        String ln = n.getLocalName() ;
         String ns = namespace(string) ;
         String ln = localname(string) ;
 
@@ -97,9 +117,6 @@ public class SplitIRI_Jena907
     }
 
     private void testPrefixLocalnameEsc(String string, String expectedLocalname) {
-//      Node n = NodeFactory.createURI(string) ;
-//      String ns = n.getNameSpace() ;
-//      String ln = n.getLocalName() ;
       String ln = localnameEsc(string) ;
       Assert.assertEquals(expectedLocalname, ln);
   }
@@ -133,7 +150,7 @@ public class SplitIRI_Jena907
     private String localname(String string) {
         int i = splitpoint(string) ;
         if ( i < 0 )
-            return string ;
+            return "" ;
         return string.substring(i) ;
     }
     
@@ -142,9 +159,26 @@ public class SplitIRI_Jena907
         String x = localname(string) ;
         return escape_PN_LOCAL_ESC(x) ;
     }
+    
+    //TODO  Turtle additional check: %XX and \ u \ U
+/*
+            // %  - just need to check that it is followed by two hex. 
+            if ( ch == '%' ) {
+                if ( i+2 >= uri.length() ) {
+                    // Too short
+                    return -1 ;
+                }
+                if ( ! checkhex(uri, i+1) || ! checkhex(uri, i+2) )
+                    return -1 ;
+                
+                // special case.
+            }
+     
+ */
+    
 
     private String escape_PN_LOCAL_ESC(String x) {
-        // Asusme that escapes are rare so scan once to make sure there
+        // Assume that escapes are rare so scan once to make sure there
         // is work to do then scan again doing the work.
         //'\' ('_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%')
         
@@ -200,13 +234,20 @@ Productions for terminals
     
     // Special cases: : 
     // a:b:c is legal.
-    // PLX
+    // PLX : %
+    
     
     // Try # and /, then work harder.
     // Some light URI parsing?
     
+    // The local name rules are quite complicated:
+    // (PN_CHARS_U | ':' | [0-9] | PLX)
+    // ((PN_CHARS | '.' | ':' | PLX)*  Includes "-" and 0-9
+    // (PN_CHARS | ':' | PLX))?
+    
     static int splitpoint(String uri) {
-        // Fast track.
+        boolean isURN = uri.startsWith("urn:") ;
+        // Fast track.  Still need to check validity of the prefix part.
         int idx1 = uri.lastIndexOf('#') ;
 //        if ( idx1 >= 0 ) {
 //            // If legal URI.
@@ -214,31 +255,60 @@ Productions for terminals
 //        }
 //        
         // Not so simple - \/ in local names 
-        int idx2 = uri.lastIndexOf('/') ;
+        int idx2 = 
+            isURN ? uri.lastIndexOf(':') : uri.lastIndexOf('/') ;
 //        if ( idx2 >= 0 ) {
 //            if ( idx1 < 0 || idx2 > idx1 ) 
 //                // If legal URI.
 //                return idx2+1 ;
 //        }
-        
+
+        // If absolute.
+        int idx3 = uri.indexOf(':') ; 
+
+            
         // Test the discovered local part.
+        // Limit is exclusive.
         int limit = Math.max(idx1, idx2) ;
-        limit = Math.max(0, limit) ;
+        limit = Math.max(limit, idx3) ;
+        limit = Math.max(-1, limit) ;
         
         // Work harder.
-        for ( int i = uri.length()-1 ; i >= limit ; i-- ) {
+        int splitPoint = -1 ;
+        for ( int i = uri.length()-1 ; i > limit ; i-- ) {
             char ch = uri.charAt(i) ;
-            // Temp
-            // XXX
-            // Does not consider '.' and '-' which can't be leading.
-            //
-            // TODO Better
+            
             if ( RiotChars.isPNChars_U_N(ch) || isPN_LOCAL_ESC(ch) || ch == ':' || ch == '-' || ch == '.' ) 
                 continue ;
-            return i+1 ; 
+            splitPoint = i+1 ;
+            break ;
         }
-        // Should not happen?
-        return limit+1 ;
+        if ( splitPoint == -1 )
+            splitPoint = limit+1 ;
+        if ( splitPoint >= uri.length() )
+            return -1 ;
+        
+        // Check the first character of the local name.
+        
+        int ch = uri.charAt(splitPoint) ;
+        while ( ch == '.' || ch == '-' ) {
+            splitPoint++ ;
+            if ( splitPoint >= uri.length() )
+                return -1 ;
+            ch = uri.charAt(splitPoint) ;
+        }
+        
+        // Check the last.  Not a dot.
+        // This could be done earlier.
+        ch = uri.charAt(uri.length()-1) ;
+        if ( ch == '.' )
+            return -1 ;
+        
+        return splitPoint ;
+    }
+    
+    private static boolean checkhex(String uri, int i) {
+        return RiotChars.isHexChar(uri.charAt(i)) ;
     }
     
     
