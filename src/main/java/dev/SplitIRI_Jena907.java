@@ -50,7 +50,7 @@ public class SplitIRI_Jena907
     @Test public void localname_05() { testPrefixLocalname("http://example/1abc",           "http://example/",      "1abc"      ) ; }
     @Test public void localname_06() { testPrefixLocalname("http://example/1.2.3.4",        "http://example/",      "1.2.3.4"   ) ; }
     @Test public void localname_07() { testPrefixLocalname("http://example/xyz#1.2.3.4",    "http://example/xyz#",  "1.2.3.4"   ) ; }
-    @Test public void localname_08() { testPrefixLocalname("http://example/xyz#_abc",       "http://example/xyz#",  "abc"       ) ; }
+    @Test public void localname_08() { testPrefixLocalname("http://example/xyz#_abc",       "http://example/xyz#",  "_abc"       ) ; }
     @Test public void localname_09() { testPrefixLocalname("http://example/xyz/_1.2.3.4",   "http://example/xyz/", "_1.2.3.4"   ) ; }
     
     // URNs split differently.
@@ -58,7 +58,8 @@ public class SplitIRI_Jena907
 
     // Splitting rules - no escapes? 
 
-    @Test public void localname_30() { testPrefixLocalname("http://example/id\\=89",        "http://example/",      "id\\=89"   ) ; }
+    @Test public void localname_30() { testPrefixLocalname("http://example/id=89",        "http://example/",      "id=89"   ) ; }
+    @Test public void localnameEsc_30() { testPrefixLocalnameEsc("http://example/id=89",  "id\\=89"   ) ; }
     
     @Test public void localname_40() { testPrefixLocalname("http://example/foo#bar:baz",    "http://example/foo#",  "bar:baz"   ) ; }
     @Test public void localname_41() { testPrefixLocalname("http://example/a:b:c",          "http://example/",      "a:b:c"     ) ; }
@@ -66,6 +67,9 @@ public class SplitIRI_Jena907
     
     @Test public void localname_51() { testPrefixLocalnameNot("http://example/foo#bar:baz", "http://example/foo#bar", "baz"     ) ; }
 
+    
+    // Test for PrefixLocalnameEsc
+    
     
     
     @Test public void split() { testSplit("http://example/foo", "http://example/".length()) ; }
@@ -82,11 +86,23 @@ public class SplitIRI_Jena907
         String ns = namespace(string) ;
         String ln = localname(string) ;
 
-        Assert.assertEquals(expectedPrefix, ns); 
-        Assert.assertEquals(expectedLocalname, ln);
-        String x = ns+ln ;
-        Assert.assertEquals(string, x) ;
+        if ( expectedPrefix != null )
+            Assert.assertEquals(expectedPrefix, ns);
+        if ( expectedLocalname != null )
+            Assert.assertEquals(expectedLocalname, ln);
+        if (  expectedPrefix != null && expectedLocalname != null ) {
+            String x = ns+ln ;
+            Assert.assertEquals(string, x) ;
+        }
     }
+
+    private void testPrefixLocalnameEsc(String string, String expectedLocalname) {
+//      Node n = NodeFactory.createURI(string) ;
+//      String ns = n.getNameSpace() ;
+//      String ln = n.getLocalName() ;
+      String ln = localnameEsc(string) ;
+      Assert.assertEquals(expectedLocalname, ln);
+  }
 
     private void testPrefixLocalnameNot(String string, String expectedPrefix, String expectedLocalname) {
 //      Node n = NodeFactory.createURI(string) ;
@@ -112,12 +128,58 @@ public class SplitIRI_Jena907
         return string.substring(0, i) ;
     }
     
+    
+    /** Calculate a localname - do not escape PN_LOCAL_ESC */
     private String localname(String string) {
         int i = splitpoint(string) ;
         if ( i < 0 )
             return string ;
         return string.substring(i) ;
     }
+    
+    /** Calculate a localname - escape PN_LOCAL_ESC */
+    private String localnameEsc(String string) {
+        String x = localname(string) ;
+        return escape_PN_LOCAL_ESC(x) ;
+    }
+
+    private String escape_PN_LOCAL_ESC(String x) {
+        // Asusme that escapes are rare so scan once to make sure there
+        // is work to do then scan again doing the work.
+        //'\' ('_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%')
+        
+        int N = x.length() ;
+        boolean escchar = false ;
+        for ( int i = 0 ; i < N ; i++ ) {
+            char ch = x.charAt(i) ;
+            if ( isPN_LOCAL_ESC(ch) ) {
+                escchar = true ;
+                break ;
+            }
+        }
+        if ( ! escchar )
+            return x ;
+        StringBuilder sb = new StringBuilder(N+10) ;
+        for ( int i = 0 ; i < N ; i++ ) {
+            char ch = x.charAt(i) ;
+            if ( isPN_LOCAL_ESC(ch) )
+                sb.append('\\') ;
+            sb.append(ch) ;
+        }
+        return sb.toString() ; 
+    }
+    
+    public static boolean /*RiotChars.*/isPN_LOCAL_ESC(char ch) {
+        switch (ch) {
+            case '\\': case '_':  case '~': case '.': case '-': case '!': case '$':
+            case '&':  case '\'': case '(': case ')': case '*': case '+': case ',':
+            case ';':  case '=':  case '/': case '?': case '#': case '@': case '%':
+                return true ;
+            default:
+                return false ;
+        }
+    }
+    
     
     /*
 [136s]  PrefixedName    ::=     PNAME_LN | PNAME_NS
@@ -145,31 +207,38 @@ Productions for terminals
     
     static int splitpoint(String uri) {
         // Fast track.
-//        int idx = uri.lastIndexOf('#') ;
-//        if ( idx > 0 ) {
+        int idx1 = uri.lastIndexOf('#') ;
+//        if ( idx1 >= 0 ) {
 //            // If legal URI.
-//            return idx+1 ;
+//            return idx1+1 ;
 //        }
 //        
-//        idx = uri.lastIndexOf('/') ;
-//        if ( idx > 0 ) {
-//            // If legal URI.
-//            return idx+1 ;
+        // Not so simple - \/ in local names 
+        int idx2 = uri.lastIndexOf('/') ;
+//        if ( idx2 >= 0 ) {
+//            if ( idx1 < 0 || idx2 > idx1 ) 
+//                // If legal URI.
+//                return idx2+1 ;
 //        }
         
         // Test the discovered local part.
+        int limit = Math.max(idx1, idx2) ;
+        limit = Math.max(0, limit) ;
         
         // Work harder.
-        for ( int i = uri.length()-1 ; i >= 0 ; i-- ) {
+        for ( int i = uri.length()-1 ; i >= limit ; i-- ) {
             char ch = uri.charAt(i) ;
             // Temp
+            // XXX
             // Does not consider '.' and '-' which can't be leading.
-            if ( RiotChars.isPNChars_U_N(ch) || ch == '-' || ch == '.' )
+            //
+            // TODO Better
+            if ( RiotChars.isPNChars_U_N(ch) || isPN_LOCAL_ESC(ch) || ch == ':' || ch == '-' || ch == '.' ) 
                 continue ;
             return i+1 ; 
         }
         // Should not happen?
-        return -1 ;
+        return limit+1 ;
     }
     
     
