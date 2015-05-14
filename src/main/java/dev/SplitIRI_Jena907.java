@@ -17,12 +17,8 @@
 
 package dev;
 
-import java.util.Objects ;
-
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.system.RiotChars ;
-import org.junit.Assert ;
-import org.junit.Test ;
 
 //@RunWith(Parameterized.class)
 //public class SplitIRI_Jena907
@@ -42,103 +38,9 @@ public class SplitIRI_Jena907
 //    public static void main(String ...argv) {
 //    }
     
-    // Basics
-    @Test public void localname_01() { testPrefixLocalname("http://example/foo",            "http://example/",      "foo"       ) ; }
-    @Test public void localname_02() { testPrefixLocalname("http://example/foo#bar",        "http://example/foo#",  "bar"       ) ; }
-    @Test public void localname_03() { testPrefixLocalname("http://example/foo#",           "http://example/foo#",  ""          ) ; }
-    @Test public void localname_04() { testPrefixLocalname("http://example/",               "http://example/",      ""          ) ; }
-    @Test public void localname_05() { testPrefixLocalname("http://example/1abc",           "http://example/",      "1abc"      ) ; }
-    @Test public void localname_06() { testPrefixLocalname("http://example/1.2.3.4",        "http://example/",      "1.2.3.4"   ) ; }
-    @Test public void localname_07() { testPrefixLocalname("http://example/xyz#1.2.3.4",    "http://example/xyz#",  "1.2.3.4"   ) ; }
-    @Test public void localname_08() { testPrefixLocalname("http://example/xyz#_abc",       "http://example/xyz#",  "_abc"      ) ; }
-    @Test public void localname_09() { testPrefixLocalname("http://example/xyz/_1.2.3.4",   "http://example/xyz/", "_1.2.3.4"   ) ; }
-    
-    // Work on relative URIs and bizarre URIs.
-    @Test public void localname_10() { testPrefixLocalname("xyz/_1.2.3.4",  "xyz/", "_1.2.3.4" ) ; }
-    @Test public void localname_11() { testPrefixLocalname("xyz",           "",     "xyz" ) ; }
-    @Test public void localname_12() { testPrefixLocalname("abc:def",       "abc:", "def" ) ; }
-    
-    // URNs split differently.
-    @Test public void localname_20() { testPrefixLocalname("urn:foo:bar",                   "urn:foo:",              "bar"       ) ; }
 
-    // Splitting rules - no escapes? 
 
-    @Test public void localname_30() { testPrefixLocalname("http://example/id=89",          "http://example/",      "id=89"   ) ; }
-    
-    @Test public void localname_40() { testPrefixLocalname("http://example/foo#bar:baz",    "http://example/foo#",  "bar:baz"   ) ; }
-    @Test public void localname_41() { testPrefixLocalname("http://example/a:b:c",          "http://example/",      "a:b:c"     ) ; }
-    @Test public void localname_42() { testPrefixLocalname("http://example/.2.3.4",         "http://example/.",     "2.3.4"     ) ; }
-    
-    @Test public void localname_51() { testPrefixLocalnameNot("http://example/foo#bar:baz", "http://example/foo#bar", "baz"     ) ; }
-
-    
-    // Test for PrefixLocalnameEsc
-    @Test public void localnameEsc_30() { testPrefixLocalnameEsc("http://example/id=89",  "id\\=89"   ) ; }
-    
-    @Test public void split() { testSplit("http://example/foo", "http://example/".length()) ; }
-    
-    private void testSplit(String string, int expected) {
-        int i = splitpoint(string) ;
-        Assert.assertEquals(expected, i) ;
-    }
-
-    // ??
-    private void testTurtle(String string, String expectedPrefix, String expectedLocalname) {
-        int i = splitpoint(string) ;
-        String ns = string ;
-        String ln = "" ;
-        if ( i > 0 ) {
-            ns = string.substring(0, i) ;
-            ln = string.substring(i) ;
-        }
-        
-        if ( expectedPrefix != null )
-            Assert.assertEquals(expectedPrefix, ns);
-        if ( expectedLocalname != null )
-            Assert.assertEquals(expectedLocalname, ln);
-        if (  expectedPrefix != null && expectedLocalname != null ) {
-            String x = ns+ln ;
-            Assert.assertEquals(string, x) ;
-        }
-    }
-
-    private void testPrefixLocalname(String string, String expectedPrefix, String expectedLocalname) {
-        String ns = namespace(string) ;
-        String ln = localname(string) ;
-
-        if ( expectedPrefix != null )
-            Assert.assertEquals(expectedPrefix, ns);
-        if ( expectedLocalname != null )
-            Assert.assertEquals(expectedLocalname, ln);
-        if (  expectedPrefix != null && expectedLocalname != null ) {
-            String x = ns+ln ;
-            Assert.assertEquals(string, x) ;
-        }
-    }
-
-    private void testPrefixLocalnameEsc(String string, String expectedLocalname) {
-      String ln = localnameEsc(string) ;
-      Assert.assertEquals(expectedLocalname, ln);
-  }
-
-    private void testPrefixLocalnameNot(String string, String expectedPrefix, String expectedLocalname) {
-//      Node n = NodeFactory.createURI(string) ;
-//      String ns = n.getNameSpace() ;
-//      String ln = n.getLocalName() ;
-        String ns = namespace(string) ;
-        String ln = localname(string) ;
-
-        boolean b1 = Objects.equals(expectedPrefix, ns) ;
-        boolean b2 = Objects.equals(expectedLocalname, ln) ;
-
-        // Test not both true.
-        Assert.assertFalse("Wrong: ("+ns+","+ln+")", b1&&b2);
-        // But it still combines.
-        String x = ns+ln ;
-        Assert.assertEquals(string, x) ;
-    }
-
-    private String namespace(String string) {
+    public static String namespace(String string) {
         int i = splitpoint(string) ;
         if ( i < 0 )
             return string ;
@@ -147,7 +49,7 @@ public class SplitIRI_Jena907
     
     
     /** Calculate a localname - do not escape PN_LOCAL_ESC */
-    private String localname(String string) {
+    public static String localname(String string) {
         int i = splitpoint(string) ;
         if ( i < 0 )
             return "" ;
@@ -155,7 +57,7 @@ public class SplitIRI_Jena907
     }
     
     /** Calculate a localname - escape PN_LOCAL_ESC */
-    private String localnameEsc(String string) {
+    public static String localnameEsc(String string) {
         String x = localname(string) ;
         return escape_PN_LOCAL_ESC(x) ;
     }
@@ -177,7 +79,7 @@ public class SplitIRI_Jena907
  */
     
 
-    private String escape_PN_LOCAL_ESC(String x) {
+    private static String escape_PN_LOCAL_ESC(String x) {
         // Assume that escapes are rare so scan once to make sure there
         // is work to do then scan again doing the work.
         //'\' ('_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%')
@@ -245,6 +147,18 @@ Productions for terminals
     // ((PN_CHARS | '.' | ':' | PLX)*  Includes "-" and 0-9
     // (PN_CHARS | ':' | PLX))?
     
+    /** Find the URI split point, return the index into the string that is the
+     * first character of a legal Turtle local name.   
+     * <p>
+     * This is a pragmatic choice, not just finding the maximal point.
+     * For example, with escaping '/' can be included but that means 
+     * {@code http://example/path/abc} could split to give {@code http://example/}
+     * and {@code path/abc} .  
+     *   
+     * @param uri URI string
+     * @return The split point, or -1 for "not found".
+     */
+    
     static int splitpoint(String uri) {
         boolean isURN = uri.startsWith("urn:") ;
         // Fast track.  Still need to check validity of the prefix part.
@@ -283,13 +197,16 @@ Productions for terminals
             splitPoint = i+1 ;
             break ;
         }
+        // limit was at the end.  No split point (we could escape the limit point)
         if ( splitPoint == -1 )
             splitPoint = limit+1 ;
+        // No split point.
         if ( splitPoint >= uri.length() )
             return -1 ;
         
         // Check the first character of the local name.
-        
+        // All character are legal localname name characters but may not satisfy the additional
+        // first character rule.  Move forward to first legal first character.    
         int ch = uri.charAt(splitPoint) ;
         while ( ch == '.' || ch == '-' ) {
             splitPoint++ ;
