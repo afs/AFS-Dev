@@ -20,18 +20,6 @@ package dev;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.riot.system.RiotChars ;
 
-//@RunWith(Parameterized.class)
-//public class SplitIRI_Jena907
-//{
-//    @Parameters(name="{0} -> {1} : {2}")
-//    public static Collection<Object[]> data() {
-//        return Arrays.asList(new Object[][]{
-//              { "http://example/foo", "http://example/", "foo" }
-//            , { "http://example/foo#bar", "http://example/foo#", "bar"}
-//            , { "http://example/foo#", "http://example/foo#", "" }
-//            }) ;
-//    }
-    
 public class SplitIRI_Jena907
 {
     static { LogCtl.setCmdLogging(); }
