@@ -188,9 +188,9 @@ public class UpdateTransformOps {
 
         private Node transform(Node n) {
             if ( Var.isVar(n) )
-                return TransEltLib.apply(Var.alloc(n), exprTransform) ;
+                return TransformElementLib.apply(Var.alloc(n), exprTransform) ;
             else
-                return TransEltLib.apply(n, exprTransform) ;
+                return TransformElementLib.apply(n, exprTransform) ;
         }
 
         @Override

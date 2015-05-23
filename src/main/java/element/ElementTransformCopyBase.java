@@ -25,7 +25,7 @@ import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.expr.Expr ;
 import org.apache.jena.sparql.syntax.* ;
 
-/** Create a copy if the Element(s) below have chanaged */
+/** Create a copy if the Element(s) below has chanaged */
 public class ElementTransformCopyBase implements ElementTransform {
     // Note the use of == as object pointer equality.
 
@@ -92,7 +92,7 @@ public class ElementTransformCopyBase implements ElementTransform {
 
     @Override
     public Element transform(ElementDataset el, Element elt1) {
-        if ( el.getPatternElement() == elt1 )
+        if ( el.getElement() == elt1 )
             return el ;
         return new ElementDataset(el.getDataset(), elt1) ;
     }

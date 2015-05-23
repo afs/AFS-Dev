@@ -22,13 +22,14 @@ import java.util.HashMap ;
 import java.util.Map ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
-
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;
 import org.apache.jena.query.Syntax ;
 import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.syntax.Element ;
+import org.apache.jena.sparql.syntax.ElementOptional ;
 import org.apache.jena.update.UpdateFactory ;
 import org.apache.jena.update.UpdateRequest ;
 
@@ -65,6 +66,25 @@ public class MainElt
         System.out.print(req2) ;
         System.out.println("-------------");
         
+        // Optional to fixed
+        
+        ElementTransform t = new ElementTransformCopyBase() {
+            @Override
+            public Element transform(ElementOptional el, Element opElt) {
+                return opElt ;
+            }
+        } ;
+        
+        String x2 = StrUtils.strjoinNL
+            ( "PREFIX : <http://example/>"
+            , "SELECT * { GRAPH ?g { {OPTIONAL { ?s :q ?v }} UNION { ?s :p ?w } } }"  
+            );
+        Query qq = QueryFactory.create(x2, Syntax.syntaxARQ) ;
+        Query qq2 = QueryTransformOps.transform(qq, t, null) ;
+        System.out.print(qq) ;
+        System.out.println("-------------");
+        System.out.print(qq2) ;
+        System.out.println("-------------");
         
     }
     

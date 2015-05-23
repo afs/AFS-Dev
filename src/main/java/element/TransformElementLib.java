@@ -26,7 +26,7 @@ import org.apache.jena.sparql.expr.ExprTransform ;
 import org.apache.jena.sparql.expr.ExprVar ;
 import org.apache.jena.sparql.expr.NodeValue ;
 
-public class TransEltLib {
+public class TransformElementLib {
     public static Var applyVar(Var v, ExprTransform exprTransform) {
         ExprVar expr = new ExprVar(v) ;
         Expr e = exprTransform.transform(expr) ;

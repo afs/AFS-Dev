@@ -22,7 +22,6 @@ import java.util.Deque ;
 import java.util.List ;
 
 import org.apache.jena.atlas.logging.Log ;
-
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.sparql.core.Var ;
@@ -107,14 +106,16 @@ public class ElementTransformer {
             stack.push(elt) ;
         }
 
-        protected final void pushChanged(Element elt, Element elt2) {
+        protected final void xpushChanged(Element elt, Element elt2) {
             if ( elt == elt2 )
                 stack.push(elt) ;
             else
                 stack.push(elt2) ;
         }
-
+        
         public ApplyTransformVisitor(ElementTransform transform, ExprTransform exprTransform) {
+            if ( transform == null )
+                transform = ElementTransformIdentity.get() ;
             this.transform = transform ;
             this.exprTransform = exprTransform ;
         }
@@ -128,80 +129,70 @@ public class ElementTransformer {
         @Override
         public void visit(ElementTriplesBlock el) {
             Element el2 = transform.transform(el) ;
-            pushChanged(el, el2) ;
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementPathBlock el) {
             Element el2 = transform.transform(el) ;
-            pushChanged(el, el2) ;
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementFilter el) {
             Expr expr = el.getExpr() ;
-            Expr expr2 = transform(expr, exprTransform) ;
+            Expr expr2 = transformExpr(expr, exprTransform) ;
             Element el2 = transform.transform(el, expr2) ;
-            pushChanged(el, el2) ;
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementAssign el) {
             Var v = el.getVar() ;
-            Var v1 = TransEltLib.applyVar(v, exprTransform) ;
+            Var v1 = TransformElementLib.applyVar(v, exprTransform) ;
             Expr expr = el.getExpr() ;
             Expr expr1 = ExprTransformer.transform(exprTransform, expr) ;
-            if ( v == v1 && expr == expr1 ) {
-                push(el) ;
-                return ;
-            }
-            push(new ElementAssign(v1, expr1)) ;
+            Element el2 = transform.transform(el, v1, expr1 ) ;
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementBind el) {
             Var v = el.getVar() ;
-            Var v1 = TransEltLib.applyVar(v, exprTransform) ;
+            Var v1 = TransformElementLib.applyVar(v, exprTransform) ;
             Expr expr = el.getExpr() ;
             Expr expr1 = ExprTransformer.transform(exprTransform, expr) ;
-            if ( v == v1 && expr == expr1 ) {
-                push(el) ;
-                return ;
-            }
-            push(new ElementBind(v1, expr1)) ;
+            Element el2 = transform.transform(el, v1, expr1 ) ;
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementData el) {
+            transform.transform(el) ;
             push(el) ;
         }
 
         @Override
         public void visit(ElementOptional el) {
-            Element elSub = el.getOptionalElement() ;
-            Element elSub2 = pop() ;
-            Element el2 = (elSub == elSub2) ? el : new ElementOptional(elSub2) ;
-            pushChanged(el, el2) ;
+            Element elSub = pop() ;
+            Element el2 = transform.transform(el, elSub) ;
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementGroup el) {
             ElementGroup newElt = new ElementGroup() ;
             boolean b = transformFromTo(el.getElements(), newElt.getElements()) ;
-            if ( b )
-                push(newElt) ;
-            else
-                push(el) ;
+            Element el2 = transform.transform(el, newElt.getElements()) ;
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementUnion el) {
             ElementUnion newElt = new ElementUnion() ;
             boolean b = transformFromTo(el.getElements(), newElt.getElements()) ;
-            if ( b )
-                push(newElt) ;
-            else
-                push(el) ;
+            Element el2 = transform.transform(el, newElt.getElements()) ;
+            push(el2) ;
         }
 
         private boolean transformFromTo(List<Element> elts, List<Element> elts2) {
@@ -217,45 +208,36 @@ public class ElementTransformer {
 
         @Override
         public void visit(ElementDataset el) {
+            Element sub = pop() ;
+            Element el2 = transform.transform(el, sub) ;
             push(el) ;
-            // TODO
-            // el.getPatternElement() ;
         }
 
         @Override
         public void visit(ElementNamedGraph el) {
             Node n = el.getGraphNameNode() ;
-            Node n1 = TransEltLib.apply(n, exprTransform) ;
-            Element elt = el.getElement() ;
+            Node n1 = transformNode(n) ;
             Element elt1 = pop() ;
-            if ( n == n1 && elt == elt1 )
-                push(el) ;
-            else
-                push(new ElementNamedGraph(n1, elt1)) ;
+            Element el2 = transform.transform(el, n, elt1) ; 
+            push(el2) ;
         }
 
         @Override
         public void visit(ElementExists el) {
             Element elt = el.getElement() ;
             Element elt1 = subElement(elt) ;
-            if ( elt == elt1 )
-                push(el) ;
-            else
-                push(new ElementExists(elt1)) ;
+            Element el2 = transform.transform(el, elt1) ;
         }
 
         @Override
         public void visit(ElementNotExists el) {
             Element elt = el.getElement() ;
             Element elt1 = subElement(elt) ;
-            if ( elt == elt1 )
-                push(el) ;
-            else
-                push(new ElementNotExists(elt1)) ;
+            Element el2 = transform.transform(el, elt1) ;
         }
 
-        // When you need to force the walking of the tree ... EXISTS / NOT
-        // EXISTS
+        // When you need to force the walking of the tree ... 
+        // EXISTS / NOT EXISTS
         private Element subElement(Element elt) {
             ElementWalker.walk(elt, this) ;
             Element elt1 = pop() ;
@@ -276,13 +258,10 @@ public class ElementTransformer {
         public void visit(ElementService el) {
             boolean b = el.getSilent() ;
             Node n = el.getServiceNode() ;
-            Node n1 = TransEltLib.apply(n, exprTransform) ;
+            Node n1 = transformNode(n) ;
             Element elt = el.getElement() ;
             Element elt1 = pop() ;
-            if ( n == n1 && elt == elt1 )
-                push(el) ;
-            else
-                push(new ElementService(n1, elt1, b)) ;
+            Element el2 = transform.transform(el, n1, elt1) ;
         }
 
         @Override
@@ -291,19 +270,19 @@ public class ElementTransformer {
             push(new ElementSubQuery(newQuery)) ;
         }
 
-        // private Element transform(Element el)
-        // {
-        // el.visit(this) ;
-        // return pop() ;
-        // }
+        private Node transformNode(Node n) {
+            if ( exprTransform == null )
+                return n ;
+            return TransformElementLib.apply(n, exprTransform) ;
+        }
 
-        private ExprList transform(ExprList exprList, ExprTransform exprTransform) {
+        private ExprList transformExpr(ExprList exprList, ExprTransform exprTransform) {
             if ( exprList == null || exprTransform == null )
                 return exprList ;
             return ExprTransformer.transform(exprTransform, exprList) ;
         }
 
-        private Expr transform(Expr expr, ExprTransform exprTransform) {
+        private Expr transformExpr(Expr expr, ExprTransform exprTransform) {
             if ( expr == null || exprTransform == null )
                 return expr ;
             return ExprTransformer.transform(exprTransform, expr) ;
