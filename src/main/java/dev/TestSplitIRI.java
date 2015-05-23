@@ -24,8 +24,10 @@ import java.util.Objects ;
 import org.junit.Assert ;
 import org.junit.Test ;
 
+/** Test splitting IRI strings using Turtle rules.
+ */
 public class TestSplitIRI {
-    
+    // See also "TestUtil" for XML split tests. 
     // Basics
     @Test public void split_basic_00() { testSplit("http://example/foo", "http://example/".length()) ; }
     @Test public void split_basic_01() { testPrefixLocalname("http://example/foo",            "http://example/",      "foo"       ) ; }
@@ -59,11 +61,15 @@ public class TestSplitIRI {
     @Test public void split_ttl_05() { testPrefixLocalname("abc:xyz/-def",       "abc:xyz/-", "def" ) ; }
     @Test public void split_ttl_06() { testPrefixLocalname("abc:xyz/-.-.-def",       "abc:xyz/-.-.-", "def" ) ; }
     @Test public void split_ttl_07() { testPrefixLocalname("http://example/id=89",          "http://example/",      "id=89"   ) ; }
+    // Trailing '.'
+    @Test public void split_ttl_08() { testPrefixLocalname("http://example/2.3.",           "http://example/",      "2.3."     ) ; }
     
     // Turtle details, including escaping.
     // Test for PrefixLocalnameEsc
     @Test public void split_ttl_esc_01() { testPrefixLocalnameEsc("http://example/id=89",  "id\\=89"   ) ; }
-    @Test public void split_ttl_esc_02() { testPrefixLocalnameEsc("http://example/a,b",  "a\\b"   ) ; }
+    @Test public void split_ttl_esc_02() { testPrefixLocalnameEsc("http://example/a,b",  "a\\,b"   ) ; }
+    // Trailing '.'
+    @Test public void split_ttl_esc_033() { testPrefixLocalnameEsc("http://example/2.3.", "2.3\\."     ) ; }
     
     // URNs split differently.
     @Test public void split_urn_01() { testPrefixLocalname("urn:foo:bar",                   "urn:foo:",              "bar"       ) ; }
@@ -125,7 +131,7 @@ public class TestSplitIRI {
     }
 
     private void testPrefixLocalnameEsc(String string, String expectedLocalname) {
-      String ln = localnameEsc(string) ;
+      String ln = localnameTTL(string) ;
       Assert.assertEquals(expectedLocalname, ln);
   }
 

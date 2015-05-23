@@ -18,17 +18,32 @@
 
 package dev;
 
-import org.apache.jena.atlas.logging.LogCtl ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.rdf.model.impl.Util ;
 import org.apache.jena.riot.system.RiotChars ;
 
+/**
+ * Code to split an URI or IRI into prefix and local part.
+ * Historically, 'prefix' is referred to as 'namespace'
+ * reflecting RDF/XML history.
+ * <p>
+ * For display, use {@link #localname} and {@link #namespace}.
+ * This follows Turtle, adds some pragmatic rulesm but does not escape
+ * any characters. A URI is split never split before the last {@code /} 
+ * or last {@code #}, if present.
+ * See {@link #splitpoint} for more details.
+ * <p>
+ * This code form the machinary behind {@link Node#getLocalName}
+ * {@link Node#getNameSpace} for URI Nodes.   
+ * <p>
+ * {@link #localnameTTL} is strict Turtle; it is the same local name as
+ * before, but escaped if necessary.
+ * <p>
+ * The functions {@link #namespaceXML} and {@link #localnameXML}
+ * apply the rules for XML qnames. 
+ */
 public class SplitIRI_Jena907
 {
-    static { LogCtl.setCmdLogging(); }
-//    public static void main(String ...argv) {
-//    }
-    
-
-
     public static String namespace(String string) {
         int i = splitpoint(string) ;
         if ( i < 0 )
@@ -36,8 +51,9 @@ public class SplitIRI_Jena907
         return string.substring(0, i) ;
     }
     
-    
-    /** Calculate a localname - do not escape PN_LOCAL_ESC */
+    /** Calculate a localname - do not escape PN_LOCAL_ESC.
+     * This is not guaranteed to be legal Turtle.
+     */
     public static String localname(String string) {
         int i = splitpoint(string) ;
         if ( i < 0 )
@@ -45,12 +61,31 @@ public class SplitIRI_Jena907
         return string.substring(i) ;
     }
     
-    /** Calculate a localname - escape PN_LOCAL_ESC */
-    public static String localnameEsc(String string) {
+    /** Calculate a localname - enforce legal Turle
+     * escape PN_LOCAL_ESC, check for final '.'
+     */
+    public static String localnameTTL(String string) {
         String x = localname(string) ;
+        if ( x.isEmpty())
+            return x ;
         return escape_PN_LOCAL_ESC(x) ;
     }
     
+    /** Split point, according to XML rules. */
+    public static int splitXML(String string) { return Util.splitNamespaceXML(string) ; }
+    
+    /** Namespace, according to XML qname rules. */
+    public static String namespaceXML(String string) { 
+        int i = splitXML(string) ;
+        return string.substring(0, i) ;
+    }
+    
+    /** Localname, according to XML qname rules. */
+    public static String localnameXML(String string) { 
+        int i = splitXML(string) ;
+        return string.substring(i) ;
+    }
+
     //TODO  Turtle additional check: %XX and \ u \ U
 /*
             // %  - just need to check that it is followed by two hex. 
@@ -77,7 +112,7 @@ public class SplitIRI_Jena907
         boolean escchar = false ;
         for ( int i = 0 ; i < N ; i++ ) {
             char ch = x.charAt(i) ;
-            if ( isPN_LOCAL_ESC(ch) ) {
+            if ( needsEscape(ch, (i==N-1)) ) {
                 escchar = true ;
                 break ;
             }
@@ -87,11 +122,18 @@ public class SplitIRI_Jena907
         StringBuilder sb = new StringBuilder(N+10) ;
         for ( int i = 0 ; i < N ; i++ ) {
             char ch = x.charAt(i) ;
-            if ( isPN_LOCAL_ESC(ch) )
+            // DOT only needs escaping at the end
+            if ( needsEscape(ch, (i==N-1) )  )
                 sb.append('\\') ;
             sb.append(ch) ;
         }
         return sb.toString() ; 
+    }
+
+    private static boolean needsEscape(char ch, boolean finalChar) {
+        if ( ch == '.' )
+            return finalChar ;
+        return isPN_LOCAL_ESC(ch) ; 
     }
     
     public static boolean /*RiotChars.*/isPN_LOCAL_ESC(char ch) {
@@ -122,62 +164,47 @@ Productions for terminals
 [171s]  HEX     ::=     [0-9] | [A-F] | [a-f]
 [172s]  PN_LOCAL_ESC    ::=     '\' ('_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%')
 */
-    
-    // Special cases: : 
-    // a:b:c is legal.
-    // PLX : %
-    
-    
-    // Try # and /, then work harder.
-    // Some light URI parsing?
-    
-    // The local name rules are quite complicated:
-    // (PN_CHARS_U | ':' | [0-9] | PLX)
-    // ((PN_CHARS | '.' | ':' | PLX)*  Includes "-" and 0-9
-    // (PN_CHARS | ':' | PLX))?
-    
+
     /** Find the URI split point, return the index into the string that is the
      * first character of a legal Turtle local name.   
      * <p>
      * This is a pragmatic choice, not just finding the maximal point.
      * For example, with escaping '/' can be included but that means 
      * {@code http://example/path/abc} could split to give {@code http://example/}
-     * and {@code path/abc} .  
+     * and {@code path/abc} .
+     * <p>
+     * Split URN's after ':'.  
      *   
      * @param uri URI string
      * @return The split point, or -1 for "not found".
      */
     
-    static int splitpoint(String uri) {
+    public static int splitpoint(String uri) {
         boolean isURN = uri.startsWith("urn:") ;
         // Fast track.  Still need to check validity of the prefix part.
         int idx1 = uri.lastIndexOf('#') ;
-//        if ( idx1 >= 0 ) {
-//            // If legal URI.
-//            return idx1+1 ;
-//        }
-//        
         // Not so simple - \/ in local names 
         int idx2 = 
             isURN ? uri.lastIndexOf(':') : uri.lastIndexOf('/') ;
-//        if ( idx2 >= 0 ) {
-//            if ( idx1 < 0 || idx2 > idx1 ) 
-//                // If legal URI.
-//                return idx2+1 ;
-//        }
 
         // If absolute.
         int idx3 = uri.indexOf(':') ; 
-
+    
+        // Special case.
+        // A final "." makes it illegal Turtle. 
+        if ( uri.endsWith(".") ) {
             
+        }
+        
         // Test the discovered local part.
         // Limit is exclusive.
         int limit = Math.max(idx1, idx2) ;
         limit = Math.max(limit, idx3) ;
         limit = Math.max(-1, limit) ;
         
-        // Work harder.
         int splitPoint = -1 ;
+        // Work backwards, checking for 
+        // ((PN_CHARS | '.' | ':' | PLX)*
         for ( int i = uri.length()-1 ; i > limit ; i-- ) {
             char ch = uri.charAt(i) ;
             
@@ -203,12 +230,13 @@ Productions for terminals
                 return -1 ;
             ch = uri.charAt(splitPoint) ;
         }
-        
-        // Check the last.  Not a dot.
-        // This could be done earlier.
-        ch = uri.charAt(uri.length()-1) ;
-        if ( ch == '.' )
-            return -1 ;
+
+        // This is done when checkign for escapes.
+//        // Check the last.  Not a dot.
+//        // This could be done earlier.
+//        ch = uri.charAt(uri.length()-1) ;
+//        if ( ch == '.' )
+//            return -1 ;
         
         return splitPoint ;
     }
