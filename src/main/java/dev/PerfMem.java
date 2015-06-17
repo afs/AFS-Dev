@@ -29,13 +29,11 @@ public class PerfMem {
             direct() ;
         }
     }
-    
  
     public static void heap() {
         ByteBuffer buf = ByteBuffer.allocate(2048);
         exec("heap", buf) ;
     }
-
  
     public static void direct() {
         ByteBuffer buf = ByteBuffer.allocateDirect(2048);

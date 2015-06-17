@@ -21,5 +21,11 @@ package dev;
 public class SplitIRI
 {
     // Code migrated to Jena - not enabled (2015-05)
+    /*
+     * Check uses of:
+    Model.listNameSpaces - used by XML writer => rename/deprecate
+      Model.listNameSpacesXML??
+    Resource.getNameSpace, getLocalName
+    */ 
 }
 
