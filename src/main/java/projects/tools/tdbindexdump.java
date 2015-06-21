@@ -19,8 +19,7 @@ package projects.tools;
 
 import java.util.List ;
 
-import tdb.cmdline.CmdTDB ;
-import arq.cmd.CmdException ;
+import jena.cmd.CmdException ;
 
 import org.apache.jena.tdb.TDB ;
 import org.apache.jena.tdb.base.file.Location ;
@@ -29,6 +28,8 @@ import org.apache.jena.tdb.store.tupletable.TupleIndex ;
 import org.apache.jena.tdb.store.tupletable.TupleIndexRecord ;
 import org.apache.jena.tdb.sys.Names ;
 import org.apache.jena.tdb.sys.SetupTDB ;
+
+import tdb.cmdline.CmdTDB ;
 
 /** Dump a TDB index.
  */

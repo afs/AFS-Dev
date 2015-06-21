@@ -19,7 +19,7 @@ package jena;
 
 import java.util.Iterator ;
 
-import arq.cmd.CmdMain ;
+import jena.cmd.CmdMain ;
 
 import org.apache.jena.atlas.lib.Lib ;
 import org.apache.jena.rdf.model.* ;
