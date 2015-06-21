@@ -67,6 +67,7 @@
       <version>${ver.jena}</version>
       <classifier>tests</classifier>
     </dependency>
+    
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
