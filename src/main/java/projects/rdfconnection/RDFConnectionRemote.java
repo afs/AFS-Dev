@@ -28,7 +28,6 @@ import org.apache.jena.riot.Lang ;
 import org.apache.jena.riot.RDFLanguages ;
 import org.apache.jena.riot.web.HttpOp ;
 import org.apache.jena.sparql.ARQException ;
-import org.apache.jena.update.Update ;
 import org.apache.jena.update.UpdateExecutionFactory ;
 import org.apache.jena.update.UpdateProcessor ;
 import org.apache.jena.update.UpdateRequest ;
@@ -81,11 +80,6 @@ public class RDFConnectionRemote implements RDFConnection {
 //    public ResultSet querySelect(Query query) {
 //        return QueryExecutionFactory.createServiceRequest(svcQuery, query) ;
 //    }
-
-    @Override
-    public void update(Update update) {
-        update(new UpdateRequest(update)) ;
-    }
 
     @Override
     public void update(UpdateRequest update) {

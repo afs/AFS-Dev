@@ -37,7 +37,9 @@ public interface RDFConnection {
     }
 
     // ---- Update
-    public void update(Update update) ;
+    public default void update(Update update) {
+        update(new UpdateRequest(update)) ;
+    }
 
     public void update(UpdateRequest update) ; 
     
