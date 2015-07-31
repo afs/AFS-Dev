@@ -16,18 +16,40 @@
 
 package projects.rdfconnection;
 
+import org.apache.jena.query.Dataset ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryExecution ;
 import org.apache.jena.query.QueryFactory ;
+import org.apache.jena.rdf.model.Model ;
 import org.apache.jena.update.Update ;
 import org.apache.jena.update.UpdateFactory ;
 import org.apache.jena.update.UpdateRequest ;
 
-public interface RDFConnection {
+/** Interface for SPARQL operations on a datsets, whether local or remote.
+ * 
+ * <ul>
+ * <li>query
+ * <li>update
+ * <li>graph store protocol   
+ * </ul>
+ * 
+ * <p>
+ * SPARQL Protocol 
 
+ * <p>
+ * SPARQL Graph Store Protocol 
+ *  
+ * 
+ */  
+public interface RDFConnection {
+    
     // ---- Query
-    //   execSelect()
-    // Consider special for SELECT queries.  
+    // Maybe more query forms: querySelect(Query)? select(Query)?
+    // Closing?
+//     public ResultSet querySelect(Query query) {
+//      return QueryExecutionFactory.createServiceRequest(svcQuery, query).execSelect() ;
+//  }
+    // Model queryConstruct
     
     public QueryExecution query(Query query) ; 
     
@@ -49,18 +71,86 @@ public interface RDFConnection {
     
     // GraphStore Protocol
     
-    // GET
     
-    // POST
-    public void load(String graph, String file) ;
+    /** Fetch a named graph.
+     * This is SPARQL Graph Store Protocol HTTP GET or equivalent. 
+     * 
+     * @param graphName URI string for the graph name (null or "default" for the default graph)
+     * @return Model
+     */
+    public Model fetchModel(String graphName) ;
     
+    /** Fetch the default graph.
+     * This is SPARQL Graph Store Protocol HTTP GET or equivalent. 
+     * @return Model
+     */
+    public Model fetchModel() ;
+    
+    /** Load (add, append) RDF into a named graph in a dataset.
+     * This is SPARQL Graph Store Protocol HTTP POST or equivalent. 
+     * 
+     * @param graphName Graph name (null or "default" for the default graph)
+     * @param file File of the data.
+     */
+    public void load(String graphName, String file) ;
+    
+    /** Load (add, append) RDF into the default graph of a dataset.
+     * This is SPARQL Graph Store Protocol HTTP POST or equivalent. 
+     * 
+     * @param file File of the data.
+     */
     public void load(String file) ;
     
-    // PUT
+    /** Set the contents of a named graph of a dataset.
+     * Any existing data is lost. 
+     * This is SPARQL Graph Store Protocol HTTP PUT or equivalent. 
+     *
+     * @param graphName Graph name (null or "default" for the default graph)
+     * @param file File of the data.
+     */
+    public void setReplace(String graphName, String file) ;
     
-    // DELETE
+    /** Set the contents of the default graph of a dataset.
+     * Any existing data is lost. 
+     * This is SPARQL Graph Store Protocol HTTP PUT or equivalent. 
+     * 
+     * @param file File of the data.
+     */
+    public void setReplace(String file) ;
+        
+    /**
+     * Delete a graph from the dataset.
+     * Null or "default" measn the default graph, which is cleared, not removed.
+     * 
+     * @param graphName
+     */
+    public void delete(String graphName) ;
+
+    /**
+     * Remove all data from the default graph.
+     */ 
+    public void delete() ;
+
+    // Whole datsets operations
+    // Not SPARQL Graph Store Protocol
+
+    /* Load (add, append) RDF triple or quad data into a dataset. Triples wil go into the default graph.
+     * This is not a SPARQL Graph Store Protocol operation.
+     * It is an HTTP POST equivalent to the dataset.
+     */
+    public void loadDataset(String file) ;
+
+    /* Set RDF triple or quad data as the dataset contents.
+     * Triples wil go into the default graph.
+     * This is not a SPARQL Graph Store Protocol operation.
+     * It is an HTTP PUT equivalent to the dataset.
+     */
+    public void setReplaceDataset(String file) ;
     
+//    /** Clear the dataset - remove all named graphs, clear the default graph. */
+//    public void clearDataset() ;
     
-    //public void load(String graph, String file) ;
+    /** Fetch the contents of the dataset */ 
+    public Dataset fetchDataset() ;
 }
 

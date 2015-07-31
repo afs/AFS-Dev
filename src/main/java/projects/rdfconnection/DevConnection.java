@@ -16,6 +16,12 @@
 
 package projects.rdfconnection;
 
+import org.apache.jena.query.Dataset ;
+import org.apache.jena.query.DatasetFactory ;
+import org.apache.jena.rdf.model.Model ;
+import org.apache.jena.riot.Lang ;
+import org.apache.jena.riot.RDFDataMgr ;
+
 public class DevConnection {
     /*
      * jena-client - local/remote same
@@ -24,14 +30,19 @@ public class DevConnection {
      */
     
     public static void main(String ... argv) {
-        String dest = "http://localhost:3030/ds/" ;
-        //load(dest+"?default", "/home/afs/tmp/D.ttl") ;
-        // Fuseki only.
         
-        RDFConnection rConn = RDFConnectionFactory.create(dest) ;
-        rConn.load("/home/afs/tmp/D.trig") ;
-        rConn.load("http://example/graph", "/home/afs/tmp/D.ttl") ;
-        rConn.load("default", "/home/afs/tmp/D.ttl") ;
+        //String dest = "http://localhost:3030/ds/" ;
+        // RDFConnection rConn = RDFConnectionFactory.create(dest) ;
+        Dataset ds = DatasetFactory.createMem() ;
+        RDFConnection rConn = RDFConnectionFactory.create(ds) ;
+        
+//        rConn.load("/home/afs/tmp/D.trig") ;
+        rConn.load("default", "/home/afs/tmp/D1.ttl") ;
+        rConn.load("/home/afs/tmp/D2.ttl") ;
+        
+        rConn.setReplace("/home/afs/tmp/D.trig") ;
+        Model m = rConn.fetchModel() ;
+        RDFDataMgr.write(System.out, m, Lang.TTL);  
         
         // Illegal
         // rConn.load("http://example/graph", "/home/afs/tmp/D.trig") ;

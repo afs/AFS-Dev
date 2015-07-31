@@ -16,12 +16,50 @@
 
 package projects.rdfconnection;
 
+import org.apache.jena.query.Dataset ;
+
 // Pool stuff
 public class RDFConnectionFactory {
-    static RDFConnection create(String destination) {
+    /** Connection to a remote location by URL.
+     * This is the URL for the dataset.
+     * 
+     * Assumed names
+     *   private static final String fusekiDftSrvQuery = "query" ;
+    private static final String fusekiDftSrvUpdate = "update" ;
+    private static final String fusekiDftSrvGSP = "data" ;
+     *     
+     *     
+     *  hence ...
+     * @param destination
+     * @return RDFConnection
+     */
+    public static RDFConnection connect(String destination) {
         return new RDFConnectionRemote(destination) ;
     }
+
+    public static RDFConnection connect(String queryServiceEndpoint,
+                                        String updateServiceEndpoint,
+                                        String graphStoreProtocolEndpoint) {
+        return new RDFConnectionRemote(queryServiceEndpoint, updateServiceEndpoint, graphStoreProtocolEndpoint) ;
+    }
+
     
+    public static RDFConnection connect(String daatsetURL,
+                                        String queryServiceEndpoint,
+                                        String updateServiceEndpoint,
+                                        String graphStoreProtocolEndpoint) {
+        return new RDFConnectionRemote(queryServiceEndpoint, updateServiceEndpoint, graphStoreProtocolEndpoint) ;
+    }
+
+    /**
+     * Differences:
+     * @param dataset
+     * @return
+     */
+    static RDFConnection create(Dataset dataset) {
+        return new RDFConnectionLocal(dataset) ;
+    }
+
     //public RDFConnection getFromPool() ;
 }
 
