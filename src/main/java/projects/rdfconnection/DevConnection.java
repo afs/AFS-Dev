@@ -42,8 +42,8 @@ public class DevConnection {
             rConn.load("default", "/home/afs/tmp/D1.ttl") ;
             rConn.load("/home/afs/tmp/D2.ttl") ;
             
-            rConn.setReplace("/home/afs/tmp/D.trig") ;
-            Model m = rConn.fetchModel() ;
+            rConn.put("/home/afs/tmp/D.trig") ;
+            Model m = rConn.fetch() ;
             RDFDataMgr.write(System.out, m, Lang.TTL);  
             
             // Illegal

@@ -90,13 +90,13 @@ public interface RDFConnection extends AutoCloseable {
      * @param graphName URI string for the graph name (null or "default" for the default graph)
      * @return Model
      */
-    public Model fetchModel(String graphName) ;
+    public Model fetch(String graphName) ;
     
     /** Fetch the default graph.
      * This is SPARQL Graph Store Protocol HTTP GET or equivalent. 
      * @return Model
      */
-    public Model fetchModel() ;
+    public Model fetch() ;
     
     /** Load (add, append) RDF into a named graph in a dataset.
      * This is SPARQL Graph Store Protocol HTTP POST or equivalent. 
@@ -135,7 +135,7 @@ public interface RDFConnection extends AutoCloseable {
      * @param graphName Graph name (null or "default" for the default graph)
      * @param file File of the data.
      */
-    public void setReplace(String graphName, String file) ;
+    public void put(String graphName, String file) ;
     
     /** Set the contents of the default graph of a dataset.
      * Any existing data is lost. 
@@ -143,7 +143,7 @@ public interface RDFConnection extends AutoCloseable {
      * 
      * @param file File of the data.
      */
-    public void setReplace(String file) ;
+    public void put(String file) ;
         
     /** Set the contents of a named graph of a dataset.
      * Any existing data is lost. 
@@ -152,7 +152,7 @@ public interface RDFConnection extends AutoCloseable {
      * @param graphName Graph name (null or "default" for the default graph)
      * @param model Data.
      */
-    public void setReplace(String graphName, Model model) ;
+    public void put(String graphName, Model model) ;
     
     /** Set the contents of the default graph of a dataset.
      * Any existing data is lost. 
@@ -160,7 +160,7 @@ public interface RDFConnection extends AutoCloseable {
      * 
      * @param model Data.
      */
-    public void setReplace( Model model) ;
+    public void put( Model model) ;
         
     /**
      * Delete a graph from the dataset.
@@ -184,13 +184,6 @@ public interface RDFConnection extends AutoCloseable {
      */
     public void loadDataset(String file) ;
 
-    /* Set RDF triple or quad data as the dataset contents.
-     * Triples wil go into the default graph.
-     * This is not a SPARQL Graph Store Protocol operation.
-     * It is an HTTP PUT equivalent to the dataset.
-     */
-    public void setReplaceDataset(String file) ;
-    
     /* Load (add, append) RDF triple or quad data into a dataset. Triples wil go into the default graph.
      * This is not a SPARQL Graph Store Protocol operation.
      * It is an HTTP POST equivalent to the dataset.
@@ -198,11 +191,18 @@ public interface RDFConnection extends AutoCloseable {
     public void loadDataset(Dataset dataset) ;
 
     /* Set RDF triple or quad data as the dataset contents.
-     * Triples wil go into the default graph.
+     * Triples will go into the default graph, quads in named graphs.
      * This is not a SPARQL Graph Store Protocol operation.
      * It is an HTTP PUT equivalent to the dataset.
      */
-    public void setReplaceDataset(Dataset dataset) ;
+    public void putDataset(String file) ;
+    
+    /* Set RDF triple or quad data as the dataset contents.
+     * Triples will go into the default graph, quads in named graphs.
+     * This is not a SPARQL Graph Store Protocol operation.
+     * It is an HTTP PUT equivalent to the dataset.
+     */
+    public void putDataset(Dataset dataset) ;
 
     //    /** Clear the dataset - remove all named graphs, clear the default graph. */
 //    public void clearDataset() ;

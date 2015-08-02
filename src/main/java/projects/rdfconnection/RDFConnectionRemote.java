@@ -101,7 +101,7 @@ public class RDFConnectionRemote implements RDFConnection {
     }
     
     @Override
-    public Model fetchModel(String graphName) {
+    public Model fetch(String graphName) {
         checkGSP() ;
         String url = RDFConn.urlForGraph(svcGraphStore, graphName) ;
         Graph graph = fetch$(url) ;
@@ -109,9 +109,9 @@ public class RDFConnectionRemote implements RDFConnection {
     }
     
     @Override
-    public Model fetchModel() {
+    public Model fetch() {
         checkGSP() ;
-        return fetchModel(null) ;
+        return fetch(null) ;
     }
     
     private Graph fetch$(String url) {
@@ -170,22 +170,22 @@ public class RDFConnectionRemote implements RDFConnection {
     }
 
     @Override
-    public void setReplace(String graph, String file) {
+    public void put(String graph, String file) {
         checkGSP() ;
         upload(graph, file, true) ;
     }
     
     @Override
-    public void setReplace(String file) { 
+    public void put(String file) { 
         checkGSP() ;
         upload(null, file, true) ; 
     }
     
     @Override
-    public void setReplace(String graphName, Model model) {}
+    public void put(String graphName, Model model) {}
 
     @Override
-    public void setReplace(Model model) {}
+    public void put(Model model) {}
 
     
     
@@ -238,14 +238,14 @@ public class RDFConnectionRemote implements RDFConnection {
     }
 
     @Override
-    public void setReplaceDataset(String file) {
+    public void putDataset(String file) {
         if ( destination == null )
             throw new ARQException("Dataset operations not available - no dataset URl provided") ; 
         doPutPostDataset(file, true) ;
     }
     
     @Override
-    public void setReplaceDataset(Dataset dataset) {}
+    public void putDataset(Dataset dataset) {}
 
     private void doPutPostDataset(Dataset dataset, boolean replace) {
         Lang lang = Lang.NQUADS ;

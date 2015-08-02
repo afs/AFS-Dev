@@ -87,16 +87,16 @@ public class RDFConnectionLocal implements RDFConnection {
      */
 
     @Override
-    public Model fetchModel(String graph) {
+    public Model fetch(String graph) {
         checkOpen() ;
         Model model = modelFor(graph) ; 
         return isolate(model) ; 
     }
 
     @Override
-    public Model fetchModel() {
+    public Model fetch() {
         checkOpen() ;
-        return fetchModel(null) ;
+        return fetch(null) ;
     }
 
     /** Called to isolate a model from it's storage. */
@@ -132,24 +132,24 @@ public class RDFConnectionLocal implements RDFConnection {
     }
     
     @Override
-    public void setReplace(String file) {
+    public void put(String file) {
         checkOpen() ;
         doPutPost(null, file, true) ;
     }
 
     @Override
-    public void setReplace(String graph, String file) {
+    public void put(String graph, String file) {
         checkOpen() ;
         doPutPost(graph, file, true) ;
     }
 
     @Override
-    public void setReplace(Model model) {
-        setReplace(null, model) ; 
+    public void put(Model model) {
+        put(null, model) ; 
     }
 
     @Override
-    public void setReplace(String graphName, Model model) {
+    public void put(String graphName, Model model) {
         checkOpen() ;
         Model modelDst = modelFor(graphName) ; 
         modelDst.removeAll();
@@ -194,14 +194,14 @@ public class RDFConnectionLocal implements RDFConnection {
     }
 
     @Override
-    public void setReplaceDataset(String file) {
+    public void putDataset(String file) {
         checkOpen() ;
         dataset.asDatasetGraph().clear();
         RDFDataMgr.read(dataset, file);
     }
 
     @Override
-    public void setReplaceDataset(Dataset dataset) {
+    public void putDataset(Dataset dataset) {
         this.dataset = isolate(dataset) ; 
     }
 
