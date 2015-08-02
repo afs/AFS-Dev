@@ -35,18 +35,20 @@ public class DevConnection {
         //String dest = "http://localhost:3030/ds/" ;
         // RDFConnection rConn = RDFConnectionFactory.create(dest) ;
         Dataset ds = DatasetFactory.createMem() ;
-        RDFConnection rConn = RDFConnectionFactory.create(ds) ;
+        RDFConnection rConn1 = RDFConnectionFactory.create(ds) ;
         
-//        rConn.load("/home/afs/tmp/D.trig") ;
-        rConn.load("default", "/home/afs/tmp/D1.ttl") ;
-        rConn.load("/home/afs/tmp/D2.ttl") ;
-        
-        rConn.setReplace("/home/afs/tmp/D.trig") ;
-        Model m = rConn.fetchModel() ;
-        RDFDataMgr.write(System.out, m, Lang.TTL);  
-        
-        // Illegal
-        // rConn.load("http://example/graph", "/home/afs/tmp/D.trig") ;
+        try ( RDFConnection rConn = RDFConnectionFactory.create(ds) ) {
+    //        rConn.load("/home/afs/tmp/D.trig") ;
+            rConn.load("default", "/home/afs/tmp/D1.ttl") ;
+            rConn.load("/home/afs/tmp/D2.ttl") ;
+            
+            rConn.setReplace("/home/afs/tmp/D.trig") ;
+            Model m = rConn.fetchModel() ;
+            RDFDataMgr.write(System.out, m, Lang.TTL);  
+            
+            // Illegal
+            // rConn.load("http://example/graph", "/home/afs/tmp/D.trig") ;
+        }
         System.out.println("DONE") ;
     }
 }

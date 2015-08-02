@@ -42,7 +42,16 @@ import org.apache.jena.update.UpdateRequest ;
  *  
  * 
  */  
-public interface RDFConnection {
+public interface RDFConnection extends AutoCloseable {
+    // Autoclosable.
+    // This sort of "competes" with transactions in terms of: 
+    /*
+     * Txn.write(rdfConnection, ()->{
+     *    // Writes
+     *    }) ;
+     *    
+     * and leading to multiple nesting in some usages.
+     */
     
     // ---- Query
     // Maybe more query forms: querySelect(Query)? select(Query)?
@@ -51,8 +60,10 @@ public interface RDFConnection {
 //      return QueryExecutionFactory.createServiceRequest(svcQuery, query).execSelect() ;
 //  }
     // Model queryConstruct
+    //  
     
-    public QueryExecution query(Query query) ; 
+    // Also AutoClosable.
+    public QueryExecution query(Query query) ;
     
     // Override to allow non-standard syntax.
     public default QueryExecution query(String queryString) {
@@ -101,7 +112,22 @@ public interface RDFConnection {
      * @param file File of the data.
      */
     public void load(String file) ;
+
+    /** Load (add, append) RDF into a named graph in a dataset.
+     * This is SPARQL Graph Store Protocol HTTP POST or equivalent. 
+     * 
+     * @param graphName Graph name (null or "default" for the default graph)
+     * @param model Data.
+     */
+    public void load(String graphName, Model model) ;
     
+    /** Load (add, append) RDF into the default graph of a dataset.
+     * This is SPARQL Graph Store Protocol HTTP POST or equivalent. 
+     * 
+     * @param model Data.
+     */
+    public void load(Model model) ;
+
     /** Set the contents of a named graph of a dataset.
      * Any existing data is lost. 
      * This is SPARQL Graph Store Protocol HTTP PUT or equivalent. 
@@ -118,6 +144,23 @@ public interface RDFConnection {
      * @param file File of the data.
      */
     public void setReplace(String file) ;
+        
+    /** Set the contents of a named graph of a dataset.
+     * Any existing data is lost. 
+     * This is SPARQL Graph Store Protocol HTTP PUT or equivalent. 
+     *
+     * @param graphName Graph name (null or "default" for the default graph)
+     * @param model Data.
+     */
+    public void setReplace(String graphName, Model model) ;
+    
+    /** Set the contents of the default graph of a dataset.
+     * Any existing data is lost. 
+     * This is SPARQL Graph Store Protocol HTTP PUT or equivalent. 
+     * 
+     * @param model Data.
+     */
+    public void setReplace( Model model) ;
         
     /**
      * Delete a graph from the dataset.
@@ -148,10 +191,28 @@ public interface RDFConnection {
      */
     public void setReplaceDataset(String file) ;
     
-//    /** Clear the dataset - remove all named graphs, clear the default graph. */
+    /* Load (add, append) RDF triple or quad data into a dataset. Triples wil go into the default graph.
+     * This is not a SPARQL Graph Store Protocol operation.
+     * It is an HTTP POST equivalent to the dataset.
+     */
+    public void loadDataset(Dataset dataset) ;
+
+    /* Set RDF triple or quad data as the dataset contents.
+     * Triples wil go into the default graph.
+     * This is not a SPARQL Graph Store Protocol operation.
+     * It is an HTTP PUT equivalent to the dataset.
+     */
+    public void setReplaceDataset(Dataset dataset) ;
+
+    //    /** Clear the dataset - remove all named graphs, clear the default graph. */
 //    public void clearDataset() ;
     
     /** Fetch the contents of the dataset */ 
     public Dataset fetchDataset() ;
+    
+    public boolean isClosed() ;
+    
+    @Override public void close() ;
+
 }
 

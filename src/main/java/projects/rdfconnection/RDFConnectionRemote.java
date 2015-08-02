@@ -17,10 +17,14 @@
 
 package projects.rdfconnection;
 
+import static java.util.Objects.requireNonNull ;
+
 import java.io.File ;
 import java.io.InputStream ;
-import static java.util.Objects.requireNonNull;
+import java.util.function.Supplier ;
 
+import org.apache.http.HttpEntity ;
+import org.apache.http.entity.EntityTemplate ;
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.web.HttpException ;
 import org.apache.jena.atlas.web.TypedInputStream ;
@@ -29,14 +33,12 @@ import org.apache.jena.graph.Graph ;
 import org.apache.jena.query.* ;
 import org.apache.jena.rdf.model.Model ;
 import org.apache.jena.rdf.model.ModelFactory ;
-import org.apache.jena.riot.Lang ;
-import org.apache.jena.riot.RDFDataMgr ;
-import org.apache.jena.riot.RDFLanguages ;
-import org.apache.jena.riot.WebContent ;
+import org.apache.jena.riot.* ;
 import org.apache.jena.riot.web.HttpCaptureResponse ;
 import org.apache.jena.riot.web.HttpOp ;
 import org.apache.jena.riot.web.HttpResponseLib ;
 import org.apache.jena.sparql.ARQException ;
+import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.update.UpdateExecutionFactory ;
 import org.apache.jena.update.UpdateProcessor ;
 import org.apache.jena.update.UpdateRequest ;
@@ -47,11 +49,14 @@ public class RDFConnectionRemote implements RDFConnection {
     private static final String fusekiDftSrvUpdate = "update" ;
     private static final String fusekiDftSrvGSP = "data" ;
     
+    private boolean isOpen = true ; 
     private final String destination ;
     private final String svcQuery ;
     private final String svcUpdate ;
     private final String svcGraphStore ;
     private HttpAuthenticator authenticator = null ;
+    
+    // Merge/share code with DatasetGraphAccessorHTTP
     
     public RDFConnectionRemote(String destination) {
         this(requireNonNull(destination),
@@ -85,14 +90,14 @@ public class RDFConnectionRemote implements RDFConnection {
     @Override
     public QueryExecution query(Query query) {
         checkQuery();
-        return QueryExecutionFactory.createServiceRequest(svcQuery, query) ;
+        return exec(()->QueryExecutionFactory.createServiceRequest(svcQuery, query)) ;
     }
 
     @Override
     public void update(UpdateRequest update) {
         checkUpdate();
         UpdateProcessor proc = UpdateExecutionFactory.createRemote(update, svcUpdate) ;
-        proc.execute();
+        exec(()->proc.execute());
     }
     
     @Override
@@ -111,23 +116,33 @@ public class RDFConnectionRemote implements RDFConnection {
     
     private Graph fetch$(String url) {
         HttpCaptureResponse<Graph> graph = HttpResponseLib.graphHandler() ;
-        try {
-            HttpOp.execHttpGet(url, WebContent.defaultGraphAcceptHeader, graph, this.authenticator) ;
-        } catch (HttpException ex) {
-            if ( ex.getResponseCode() == HttpSC.NOT_FOUND_404 )
-                return null ;
-            throw ex ;
-        }
+        exec(()->HttpOp.execHttpGet(url, WebContent.defaultGraphAcceptHeader, graph, this.authenticator)) ;
         return graph.get() ;
     }
 
-
     @Override
-    
-    
     public void load(String graph, String file) {
         checkGSP() ;
         upload(graph, file, false) ;
+    }
+    
+    @Override
+    public void load(String file) {
+        checkGSP() ;
+        upload(null, file, false) ;
+    }
+    
+    @Override
+    public void load(Model model) {
+        load(null, model) ;
+    }
+    
+    @Override
+    public void load(String graphName, Model model) {
+        Graph graph = model.getGraph() ;
+        HttpEntity entity = graphToHttpEntity(graph) ;
+        String url = RDFConn.urlForGraph(svcGraphStore, graphName) ;
+        exec(()->HttpOp.execHttpPut(url, entity, null, null, this.authenticator)) ;
     }
     
     private void upload(String graph, String file, boolean replace) {
@@ -140,38 +155,18 @@ public class RDFConnectionRemote implements RDFConnection {
         String url = RDFConn.urlForGraph(svcGraphStore, graph) ;
         doPutPost(url, file, lang, replace) ;
     }
-    
-    @Override
-    public void load(String file) {
-        checkGSP() ;
-        upload(file, false) ;
-    }
-    
-    private void upload(String file, boolean replace) {
-        Lang lang = RDFLanguages.filenameToLang(file) ;
-        String url = null ;
-        if ( RDFLanguages.isTriples(lang) ) {
-            url = svcGraphStore+"?default" ;
-        }
-        else if ( RDFLanguages.isQuads(lang) ) {
-            // Try to POST to the dataset.
-            // Non-standard
-            url = svcGraphStore ;
-        }
-        if ( url == null )
-            throw new ARQException("Not an RDF format: "+file+" (lang="+lang+")") ;
-        doPutPost(url, file, lang, replace) ;
-    }
-    
+
     private void doPutPost(String url, String file, Lang lang, boolean replace) {
         File f = new File(file) ;
         long length = f.length() ; 
         InputStream source = IO.openFile(file) ;
         // Charset.
-        if ( replace )
-            HttpOp.execHttpPut(url, lang.getContentType().getContentType(), source, length, null, null, this.authenticator) ;
-        else    
-            HttpOp.execHttpPost(url, lang.getContentType().getContentType(), source, length, null, null, null, null, this.authenticator) ; 
+        exec(()->{
+            if ( replace )
+                HttpOp.execHttpPut(url, lang.getContentType().getContentType(), source, length, null, null, this.authenticator) ;
+            else    
+                HttpOp.execHttpPost(url, lang.getContentType().getContentType(), source, length, null, null, null, null, this.authenticator) ;
+        }) ;
     }
 
     @Override
@@ -183,14 +178,22 @@ public class RDFConnectionRemote implements RDFConnection {
     @Override
     public void setReplace(String file) { 
         checkGSP() ;
-        upload(file, true) ; 
+        upload(null, file, true) ; 
     }
+    
+    @Override
+    public void setReplace(String graphName, Model model) {}
+
+    @Override
+    public void setReplace(Model model) {}
+
+    
     
     @Override
     public void delete(String graph) {
         checkGSP() ;
         String url = RDFConn.urlForGraph(svcGraphStore, graph) ;
-        HttpOp.execHttpDelete(url);
+        exec(()->HttpOp.execHttpDelete(url));
     }
 
     @Override
@@ -204,7 +207,7 @@ public class RDFConnectionRemote implements RDFConnection {
         if ( destination == null )
             throw new ARQException("Dataset operations not available - no dataset URl provided") ; 
         Dataset ds = DatasetFactory.createMem() ;
-        TypedInputStream s = HttpOp.execHttpGet(destination, WebContent.defaultDatasetAcceptHeader) ;
+        TypedInputStream s = exec(()->HttpOp.execHttpGet(destination, WebContent.defaultDatasetAcceptHeader)) ;
         Lang lang = RDFLanguages.contentTypeToLang(s.getContentType()) ;
         RDFDataMgr.read(ds, s, null) ;
         return ds ;
@@ -218,15 +221,20 @@ public class RDFConnectionRemote implements RDFConnection {
         doPutPostDataset(file, false) ; 
     }
     
+    @Override
+    public void loadDataset(Dataset dataset) {}
+
     private void doPutPostDataset(String file, boolean replace) {
         Lang lang = RDFLanguages.filenameToLang(file) ;
         File f = new File(file) ;
-        long length = f.length() ; 
-        InputStream source = IO.openFile(file) ;
-        if ( replace )
-            HttpOp.execHttpPut(destination, lang.getContentType().getContentType(), source, length, null, null, this.authenticator) ;
-        else    
-            HttpOp.execHttpPost(destination, lang.getContentType().getContentType(), source, length, null, null, null, null, this.authenticator) ; 
+        long length = f.length() ;
+        exec(()->{
+            InputStream source = IO.openFile(file) ;
+            if ( replace )
+                HttpOp.execHttpPut(destination, lang.getContentType().getContentType(), source, length, null, null, this.authenticator) ;
+            else    
+                HttpOp.execHttpPost(destination, lang.getContentType().getContentType(), source, length, null, null, null, null, this.authenticator) ;
+        });
     }
 
     @Override
@@ -236,25 +244,96 @@ public class RDFConnectionRemote implements RDFConnection {
         doPutPostDataset(file, true) ;
     }
     
+    @Override
+    public void setReplaceDataset(Dataset dataset) {}
+
+    private void doPutPostDataset(Dataset dataset, boolean replace) {
+        Lang lang = Lang.NQUADS ;
+        exec(()->{
+            if ( replace )
+                HttpOp.execHttpPut(destination, datasetToHttpEntity(dataset.asDatasetGraph()),
+                                   null, null, this.authenticator) ;
+            else    
+                HttpOp.execHttpPost(destination, datasetToHttpEntity(dataset.asDatasetGraph()),
+                                    null, null, this.authenticator) ;
+        });
+    }
+
+
     private void checkQuery() {
+        checkOpen() ;
         if ( svcQuery == null )
             throw new ARQException("No query service defined for this RDFConnection") ;
     }
     
     private void checkUpdate() {
+        checkOpen() ;
         if ( svcUpdate == null )
             throw new ARQException("No update service defined for this RDFConnection") ;
     }
     
     private void checkGSP() {
+        checkOpen() ;
         if ( svcGraphStore == null )
             throw new ARQException("No SPARQL Graph Store service defined for this RDFConnection") ;
     }
+    
     private void checkDataset() {
+        checkOpen() ;
         if ( destination == null )
             throw new ARQException("Dataset operations not available - no dataset URL provided") ; 
     }
 
+    private void checkOpen() {
+        if ( ! isOpen )
+            throw new ARQException("closed") ;
+    }
+
+    @Override
+    public void close() {
+        isOpen = false ;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return ! isOpen ;
+    }
+
+    /** Create an HttpEntity for the graph */  
+    protected HttpEntity graphToHttpEntity(final Graph graph) {
+        final RDFFormat syntax = RDFFormat.NT ;
+        EntityTemplate entity = new EntityTemplate((out)->RDFDataMgr.write(out, graph, syntax)) ;
+        String ct = syntax.getLang().getContentType().getContentType() ;
+        entity.setContentType(ct) ;
+        return entity ;
+    }
+
+    /** Create an HttpEntity for the dataset */  
+    protected HttpEntity datasetToHttpEntity(final DatasetGraph dataset) {
+        final RDFFormat syntax = RDFFormat.NT ;
+        EntityTemplate entity = new EntityTemplate((out)->RDFDataMgr.write(out, dataset, syntax)) ;
+        String ct = syntax.getLang().getContentType().getContentType() ;
+        entity.setContentType(ct) ;
+        return entity ;
+    }
+
+    /** Convert HTTP status codes to exceptions */ 
+    static void exec(Runnable action)  {
+        try { action.run() ; }
+        catch (HttpException ex) { handleHttpException(ex, false) ; }
+    }
+
+    /** Convert HTTP status codes to exceptions */ 
+    static <X> X exec(Supplier<X> action)  {
+        try { return action.get() ; }
+        catch (HttpException ex) { handleHttpException(ex, true) ; return null ;}
+    }
+
+    private static void handleHttpException(HttpException ex, boolean ignore404) {
+        if ( ex.getResponseCode() == HttpSC.NOT_FOUND_404 && ignore404 )
+            return  ;
+        throw ex ;
+    }
 
 }
 
