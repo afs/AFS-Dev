@@ -18,13 +18,14 @@
 package projects.rdfconnection;
 
 import org.apache.jena.query.Dataset ;
-import org.apache.jena.query.DatasetFactory ;
+import org.apache.jena.tdb.TDBFactory ;
 
 public class TestRDFConnectionLocal extends AbstractTestRDFConnection {
 
     @Override
     protected RDFConnection connection() {
-        Dataset ds = DatasetFactory.createMem() ;
+        
+        Dataset ds = TDBFactory.createDataset() ;
         return new RDFConnectionLocal(ds) ;
     }
 

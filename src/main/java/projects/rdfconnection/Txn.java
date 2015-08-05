@@ -22,53 +22,81 @@ import java.util.function.Supplier ;
 import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.Transactional ;
 
-/** Application utilities for transactions. */
-public class Txn {
-    
+/** Application utilities for transactions. Autocommit provided. */
+class Txn {
     /** Execute the Runnable in a read transaction.
      *  Nested transactions are not supported.
      */
-    public static <T extends Transactional> void executeRead(T txn, Runnable r) {
-        txn.begin(ReadWrite.READ) ;
-        r.run(); 
-        txn.end() ;
+    static <T extends Transactional> void executeRead(T txn, Runnable r) {
+        boolean b = txn.isInTransaction() ;
+        if ( !b )
+            txn.begin(ReadWrite.READ) ;
+        try { r.run() ; }
+        catch (Throwable th) {
+            txn.abort() ;
+            txn.end() ;
+            throw th ;
+        }
+        if ( ! b )
+            txn.end() ;
     }
 
     /** Execute and return a value in a read transaction
      * Nested transactions are not supported.
      */
 
-    public static <T extends Transactional, X> X executeReadReturn(T txn, Supplier<X> r) {
-        txn.begin(ReadWrite.READ) ;
-        X x = r.get() ;
-        txn.end() ;
-        return x ;
+    static <T extends Transactional, X> X executeReadReturn(T txn, Supplier<X> r) {
+        boolean b = txn.isInTransaction() ;
+        if ( !b )
+            txn.begin(ReadWrite.READ) ;
+        try {
+            X x = r.get() ;
+            if ( !b )
+                txn.end() ;
+            return x ;
+        } catch (Throwable th) {
+            txn.abort() ;
+            txn.end() ;
+            throw th ;
+        }
     }
 
     /** Execute the Runnable in a write transaction 
      *  Nested transaction are not supported.
      */
-    public static <T extends Transactional> void executeWrite(T txn, Runnable r) {
-        txn.begin(ReadWrite.WRITE) ;
-        try { r.run(); }
+    static <T extends Transactional> void executeWrite(T txn, Runnable r) {
+        boolean b = txn.isInTransaction() ;
+        if ( !b )
+            txn.begin(ReadWrite.WRITE) ;
+        try { r.run() ; }
         catch (Throwable th) {
-            txn.abort();
-            txn.end();
-            throw th ; 
+            txn.abort() ;
+            txn.end() ;
+            throw th ;
         }
-        txn.commit() ;
-        txn.end() ;
-    }
+        if ( !b ) {
+            txn.commit() ;
+            txn.end() ;
+        }
+}
     
     /** Execute the Runnable in a write transaction 
      *  Nested transaction are not supported.
      */
-    public static <T extends Transactional, X> X executeWriteReturn(Transactional txn, Supplier<X> r) {
-        txn.begin(ReadWrite.WRITE) ;
-        X x = r.get() ;
-        txn.commit() ;
-        txn.end() ;
+    static <T extends Transactional, X> X executeWriteReturn(Transactional txn, Supplier<X> r) {
+        boolean b = txn.isInTransaction() ;
+        if ( !b )
+            txn.begin(ReadWrite.WRITE) ;
+        X x = null ;
+        try { x = r.get() ; } catch (Throwable th) {
+            txn.abort() ;
+            txn.end() ;
+            throw th ;
+        }
+        if ( !b ) {
+            txn.commit() ;
+            txn.end() ;
+        }
         return x ;
     }
 }
-

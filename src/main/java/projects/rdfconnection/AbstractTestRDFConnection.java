@@ -21,6 +21,8 @@ import org.apache.jena.atlas.junit.BaseTest ;
 import org.apache.jena.atlas.lib.StrUtils ;
 import org.apache.jena.query.Dataset ;
 import org.apache.jena.query.QueryExecution ;
+import org.apache.jena.query.ReadWrite ;
+import org.apache.jena.rdf.model.Model ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.sse.SSE ;
@@ -74,10 +76,12 @@ public abstract class AbstractTestRDFConnection extends BaseTest {
     
     @Test public void connect_02() {
         try ( RDFConnection conn = connection() ) {
+            conn.begin(ReadWrite.READ);
             try ( QueryExecution qExec = conn.query("ASK{}") ) {
                 boolean b = qExec.execAsk() ;
                 assertTrue(b) ;
             }
+            conn.end() ;
         }
     }
     
@@ -96,6 +100,21 @@ public abstract class AbstractTestRDFConnection extends BaseTest {
             assertTrue(isomorphic(ds0, ds)) ;
         }
     }
+    
+    @Test public void transaction_01() {
+        String testDataFile = DIR+"data.trig" ; 
+        try ( RDFConnection conn = connection() ) {
+            conn.begin(ReadWrite.WRITE) ;
+            conn.load(testDataFile);
+            conn.abort();
+            conn.end();
+            conn.begin(ReadWrite.READ) ;
+            Model m = conn.fetch() ;
+            assertTrue(m.isEmpty()) ;
+            conn.end() ;
+        }
+    }
+
 
     private static boolean isomorphic(Dataset ds1, Dataset ds2) {
         return IsoMatcher.isomorphic(ds1.asDatasetGraph(), ds2.asDatasetGraph()) ;

@@ -38,6 +38,7 @@ import org.apache.jena.riot.web.HttpCaptureResponse ;
 import org.apache.jena.riot.web.HttpOp ;
 import org.apache.jena.riot.web.HttpResponseLib ;
 import org.apache.jena.sparql.ARQException ;
+import org.apache.jena.sparql.ARQNotImplemented ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.update.UpdateExecutionFactory ;
 import org.apache.jena.update.UpdateProcessor ;
@@ -334,6 +335,23 @@ public class RDFConnectionRemote implements RDFConnection {
             return  ;
         throw ex ;
     }
+
+    @Override
+    public void begin(ReadWrite readWrite) { throw new ARQNotImplemented() ; }
+
+    @Override
+    public void commit() { throw new ARQNotImplemented() ; }
+
+    @Override
+    public void abort() { throw new ARQNotImplemented() ; }
+
+    @Override
+    public boolean isInTransaction() {
+        return false ;
+    }
+
+    @Override
+    public void end() { throw new ARQNotImplemented() ; }
 
 }
 

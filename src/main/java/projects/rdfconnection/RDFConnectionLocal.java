@@ -27,16 +27,20 @@ import org.apache.jena.riot.Lang ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.apache.jena.riot.RDFLanguages ;
 import org.apache.jena.sparql.ARQException ;
-import org.apache.jena.sparql.core.* ;
+import org.apache.jena.sparql.core.DatasetGraph ;
+import org.apache.jena.sparql.core.DatasetGraphFactory ;
+import org.apache.jena.sparql.core.DatasetGraphReadOnly ;
+import org.apache.jena.sparql.core.DatasetGraphWithLock ;
 import org.apache.jena.sparql.graph.GraphReadOnly ;
 import org.apache.jena.update.UpdateExecutionFactory ;
 import org.apache.jena.update.UpdateRequest ;
 
 public class RDFConnectionLocal implements RDFConnection {
 
+    private ThreadLocal<Boolean> transactionActive = ThreadLocal.withInitial(()->false) ;
     private static boolean isolateByCopy = true ; 
     private Dataset dataset ;
-
+    
     public RDFConnectionLocal(Dataset dataset) {
         if ( dataset.supportsTransactions() ) {
             this.dataset = dataset ;
@@ -262,6 +266,21 @@ public class RDFConnectionLocal implements RDFConnection {
         if ( dataset == null )
             throw new ARQException("closed") ;
     }
+
+    @Override
+    public void begin(ReadWrite readWrite)  { dataset.begin(readWrite); }
+
+    @Override
+    public void commit()                    { dataset.commit(); }
+
+    @Override
+    public void abort()                     { dataset.abort(); }
+
+    @Override
+    public boolean isInTransaction()        { return dataset.isInTransaction() ; }
+
+    @Override
+    public void end()                       { dataset.end() ; }
     
    
 }

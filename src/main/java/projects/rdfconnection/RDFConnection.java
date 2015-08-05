@@ -17,11 +17,11 @@
 
 package projects.rdfconnection;
 
-import org.apache.jena.query.Dataset ;
-import org.apache.jena.query.Query ;
-import org.apache.jena.query.QueryExecution ;
-import org.apache.jena.query.QueryFactory ;
+import java.util.function.Consumer ;
+
+import org.apache.jena.query.* ;
 import org.apache.jena.rdf.model.Model ;
+import org.apache.jena.sparql.core.Transactional ;
 import org.apache.jena.update.Update ;
 import org.apache.jena.update.UpdateFactory ;
 import org.apache.jena.update.UpdateRequest ;
@@ -42,7 +42,7 @@ import org.apache.jena.update.UpdateRequest ;
  *  
  * 
  */  
-public interface RDFConnection extends AutoCloseable {
+public interface RDFConnection extends Transactional, AutoCloseable {
     // Autoclosable.
     // This sort of "competes" with transactions in terms of: 
     /*
@@ -61,6 +61,47 @@ public interface RDFConnection extends AutoCloseable {
 //  }
     // Model queryConstruct
     //  
+    
+    // ----
+    //@Override
+    public default void querySelect(Query query, Consumer<QuerySolution> rowAction) {
+        Txn.executeRead(this, ()->{ 
+            try ( QueryExecution qExec = query(query) ) {
+                qExec.execSelect().forEachRemaining(rowAction);
+            }
+        } ) ; 
+    }
+
+    //@Override
+    public default Model queryConstruct(Query query) {
+        return 
+            Txn.executeReadReturn(this, ()->{ 
+                try ( QueryExecution qExec = query(query) ) {
+                    return qExec.execConstruct() ;
+                }
+            } ) ; 
+    }
+
+    //@Override
+    public default Model queryDescribe(Query query) {
+        return 
+            Txn.executeReadReturn(this, ()->{ 
+                try ( QueryExecution qExec = query(query) ) {
+                    return qExec.execDescribe() ;
+                }
+            } ) ; 
+    }
+
+    //@Override
+    public default boolean queryAsk(Query query) {
+        return 
+            Txn.executeReadReturn(this, ()->{ 
+                try ( QueryExecution qExec = query(query) ) {
+                    return qExec.execAsk() ;
+                }
+            } ) ; 
+    }
+    //--
     
     // Also AutoClosable.
     public QueryExecution query(Query query) ;
