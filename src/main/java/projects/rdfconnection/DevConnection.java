@@ -35,9 +35,9 @@ public class DevConnection {
         //String dest = "http://localhost:3030/ds/" ;
         // RDFConnection rConn = RDFConnectionFactory.create(dest) ;
         Dataset ds = DatasetFactory.createMem() ;
-        RDFConnection rConn1 = RDFConnectionFactory.create(ds) ;
+        RDFConnection rConn1 = RDFConnectionFactory.connect(ds) ;
         
-        try ( RDFConnection rConn = RDFConnectionFactory.create(ds) ) {
+        try ( RDFConnection rConn = RDFConnectionFactory.connect(ds) ) {
     //        rConn.load("/home/afs/tmp/D.trig") ;
             rConn.load("default", "/home/afs/tmp/D1.ttl") ;
             rConn.load("/home/afs/tmp/D2.ttl") ;

@@ -64,13 +64,23 @@ public interface RDFConnection extends Transactional, AutoCloseable {
     
     // ----
 
-    public default void querySelect(Query query, Consumer<QuerySolution> rowAction) {
+    public default void queryResultSet(Query query, Consumer<ResultSet> resultSetAction) {
+        Txn.executeRead(this, ()->{ 
+            try ( QueryExecution qExec = query(query) ) {
+                ResultSet rs = qExec.execSelect() ;
+                resultSetAction.accept(rs);
+            }
+        } ) ; 
+    }
+    
+    public default void querySelect2(Query query, Consumer<QuerySolution> rowAction) {
         Txn.executeRead(this, ()->{ 
             try ( QueryExecution qExec = query(query) ) {
                 qExec.execSelect().forEachRemaining(rowAction);
             }
         } ) ; 
     }
+
 
     public default Model queryConstruct(Query query) {
         return 

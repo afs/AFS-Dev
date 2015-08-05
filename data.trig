@@ -1,0 +1,10 @@
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX :        <http://example/>
+
+:s :p 1 .
+:s :p 2 .
+
+:g1 { :s1 :p1 :o1 , 1 } 
+:g2 { :s2 :p2 :o2 , 2 } 
+:g3 { :s3 :p3 :o3 , 3 } 

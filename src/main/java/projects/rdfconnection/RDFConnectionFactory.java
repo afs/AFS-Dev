@@ -57,7 +57,7 @@ public class RDFConnectionFactory {
      * @param dataset
      * @return
      */
-    static RDFConnection create(Dataset dataset) {
+    static RDFConnection connect(Dataset dataset) {
         return new RDFConnectionLocal(dataset) ;
     }
 
