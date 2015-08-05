@@ -63,7 +63,7 @@ public interface RDFConnection extends Transactional, AutoCloseable {
     //  
     
     // ----
-    //@Override
+
     public default void querySelect(Query query, Consumer<QuerySolution> rowAction) {
         Txn.executeRead(this, ()->{ 
             try ( QueryExecution qExec = query(query) ) {
@@ -72,7 +72,6 @@ public interface RDFConnection extends Transactional, AutoCloseable {
         } ) ; 
     }
 
-    //@Override
     public default Model queryConstruct(Query query) {
         return 
             Txn.executeReadReturn(this, ()->{ 
@@ -82,7 +81,6 @@ public interface RDFConnection extends Transactional, AutoCloseable {
             } ) ; 
     }
 
-    //@Override
     public default Model queryDescribe(Query query) {
         return 
             Txn.executeReadReturn(this, ()->{ 
@@ -92,7 +90,6 @@ public interface RDFConnection extends Transactional, AutoCloseable {
             } ) ; 
     }
 
-    //@Override
     public default boolean queryAsk(Query query) {
         return 
             Txn.executeReadReturn(this, ()->{ 
