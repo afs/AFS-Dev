@@ -19,6 +19,8 @@ package projects.prefixes.atlas;
 
 import java.util.Iterator ;
 import java.util.Map ;
+import java.util.Map.Entry ;
+import java.util.function.Function ;
 
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.Pair ;
@@ -50,7 +52,8 @@ public class SimpleMapOfMap<K,V> implements SimpleMap<K, V>
 
     @Override
     public Iterator<Pair<K, V>> iterator() {
-        return Iter.map(map.entrySet().iterator(), (item)->Pair.create(item.getKey(), item.getValue())) ;
+        Function<Entry<K,V>, Pair<K, V>> f = (item)->Pair.create(item.getKey(), item.getValue()) ;
+        return Iter.map(map.entrySet().iterator(), f) ;
     }
 
     @Override
