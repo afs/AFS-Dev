@@ -23,7 +23,7 @@ import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.Triple ;
 import org.apache.jena.sparql.core.Quad ;
 
-/** A minimal interface that can be plusgged into a 
+/** A minimal interface for RDF storage. 
  * 
  */
 interface StorageRDF {
