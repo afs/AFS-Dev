@@ -23,7 +23,6 @@ import java.util.Set ;
 import java.util.function.Function ;
 
 import org.apache.jena.atlas.io.IndentedWriter ;
-import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.Bytes ;
 import org.apache.jena.atlas.logging.Log ;
 
@@ -447,7 +446,7 @@ public final class RadixNode
             }
 
             if (idx >= N )
-                error(this, "Not a child of the parent %s : %s", Iter.map(Arrays.asList(parent.nodes), idOfNode), parent) ;
+                error(this, "Not a child of the parent %s : %s", Arrays.asList(parent.nodes).stream().map(idOfNode), parent) ;
         }
 
         if ( isLeaf() )
@@ -472,7 +471,7 @@ public final class RadixNode
             error(this, "One subnode but this is not a value") ;
         
         // Legal?
-        // Yes - during push-dwn we can end pusing down one node.
+        // Yes - during push-down we can end pusing down one node.
         // Should really avoid this.
         
 //        if ( nodes.size() < 2 )

@@ -17,18 +17,16 @@
 
 package lib;
 
-import java.util.* ;
+import java.util.AbstractList ;
+import java.util.Collection ;
+import java.util.List ;
+import java.util.Set ;
 import java.util.stream.Collectors ;
 import java.util.stream.Stream ;
-import java.util.stream.StreamSupport ;
 
 public class Lib8 {
     /** Iterator to Stream */ 
-    public static <T> Stream<T> stream(Iterator<? extends T> iterator) {
-        int characteristics = Spliterator.ORDERED | Spliterator.IMMUTABLE;
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, characteristics), false);
-    }
-    
+
     public static <X> List<X> toList(Stream<X> stream) {
         return stream.collect(Collectors.toList()) ;
     }

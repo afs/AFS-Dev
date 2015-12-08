@@ -17,14 +17,22 @@
  
 package projects.dsg2;
 
-import java.util.Iterator ;
+import java.util.stream.Stream ;
 
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.Triple ;
+import org.apache.jena.graph.Graph ;
 import org.apache.jena.sparql.core.Quad ;
 
-/** A minimal interface for RDF storage. 
- * 
+/**
+ * A minimal interface for RDF storage. This is less that {{DatasetGraph}} or
+ * any of it's derived classes and it just concerned with {@link Triple}s and
+ * {@link Quad}s, not {@link Graph}s.
+ * <p>
+ * Storage is split into the triples for the default graph and quads for the
+ * named graphs. In {@link #find(Node, Node, Node, Node)} ({@code find} on the
+ * named graphs), {@code null} for the graph slot does not match the default
+ * graph.
  */
 interface StorageRDF {
     default void add(Triple triple)     { add(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
@@ -39,12 +47,33 @@ interface StorageRDF {
     void delete(Node s, Node p, Node o) ;
     void delete(Node g, Node s, Node p, Node o) ;
 
+    /** Delete all triples matching a {@code find}-like pattern */ 
     void removeAll(Node s, Node p, Node o) ;
+    /** Delete all quads matching a {@code find}-like pattern */ 
     void removeAll(Node g, Node s, Node p, Node o) ;
     
     // NB Quads
-    Iterator<Quad>   findDftGraph(Node s, Node p, Node o) ;
-    Iterator<Quad>   find(Node g, Node s, Node p, Node o) ;
+    Stream<Quad>   findDftGraph(Node s, Node p, Node o) ;
+    Stream<Quad>   findUnionGraph(Node s, Node p, Node o) ;
+    Stream<Quad>   find(Node g, Node s, Node p, Node o) ;
+    // For findUnion.
+    Stream<Quad>   findDistinct(Node g, Node s, Node p, Node o) ;
     
+    // triples
+    Stream<Triple> find(Node s, Node p, Node o) ;
+    
+//    default Stream<Triple> find(Node s, Node p, Node o) { 
+//        return findDftGraph(s,p,o).map(Quad::asTriple) ;
+//    }
+    
+//    Iterator<Quad>   findUnionGraph(Node s, Node p, Node o) ;
+//    Iterator<Quad>   find(Node g, Node s, Node p, Node o) ;
+    
+    
+    // contains
+    
+    default boolean contains(Node s, Node p, Node o)            { return find(s,p,o).findAny().isPresent() ; }
+    default boolean contains(Node g, Node s, Node p, Node o)    { return find(g,s,p,o).findAny().isPresent() ; }
+     
     // Prefixes ??
 }

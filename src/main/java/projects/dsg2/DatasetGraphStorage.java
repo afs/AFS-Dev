@@ -78,12 +78,12 @@ class DatasetGraphStorage extends DatasetGraphBaseFind
 
     @Override
     protected Iterator<Quad> findInDftGraph(Node s, Node p, Node o) {
-        return storage.findDftGraph(s, p, o) ;
+        return storage.findDftGraph(s, p, o).iterator() ;
     }
 
     @Override
     protected Iterator<Quad> findInSpecificNamedGraph(Node g, Node s, Node p, Node o) {
-        return storage.find(g, s, p, o) ;
+        return storage.find(g, s, p, o).iterator() ;
     }
 
     @Override
