@@ -19,8 +19,7 @@ package projects.tools;
 
 import java.util.Iterator ;
 
-import org.apache.jena.atlas.lib.Tuple ;
-
+import org.apache.jena.atlas.lib.tuple.Tuple ;
 import org.apache.jena.tdb.base.file.Location ;
 import org.apache.jena.tdb.base.record.Record ;
 import org.apache.jena.tdb.index.RangeIndex ;
