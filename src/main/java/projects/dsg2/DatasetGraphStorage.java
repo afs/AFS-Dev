@@ -22,13 +22,12 @@ import java.util.Iterator ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
-import org.apache.jena.sparql.core.DatasetGraphBaseFind ;
-import org.apache.jena.sparql.core.GraphView ;
-import org.apache.jena.sparql.core.Quad ;
+import org.apache.jena.query.ReadWrite ;
+import org.apache.jena.sparql.core.* ;
 
 /**
  * A DatasetGraph base class for triples+quads storage. The machinary is really
- * th espliting between default and named graphs. This happens in two classes,
+ * the spliting between default and named graphs. This happens in two classes,
  * DatasetGraphBaseFind (for find splitting) and here, for add/delete splitting.
  * 
  * Because storage is usually decomposing quads and triples, the default
@@ -39,6 +38,17 @@ import org.apache.jena.sparql.core.Quad ;
 
 class DatasetGraphStorage extends DatasetGraphBaseFind
 {
+    // What about DatasetGraphTriplesQuads?
+    
+    private final Transactional txn                     = TransactionalLock.createMRSW() ;
+    @Override public void begin(ReadWrite mode)         { txn.begin(mode) ; }
+    @Override public void commit()                      { txn.commit() ; }
+    @Override public void abort()                       { txn.abort() ; }
+    @Override public boolean isInTransaction()          { return txn.isInTransaction() ; }
+    @Override public void end()                         { txn.end(); }
+    @Override public boolean supportsTransactions()     { return true ; }
+    @Override public boolean supportsTransactionAbort() { return false ; }
+    
     private final StorageRDF storage ;
     DatasetGraphStorage(StorageRDF storage) {
         this.storage = storage ;
