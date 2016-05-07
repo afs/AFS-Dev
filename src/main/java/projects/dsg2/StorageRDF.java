@@ -35,11 +35,19 @@ import org.apache.jena.sparql.core.Quad ;
  * graph.
  */
 interface StorageRDF {
-    default void add(Triple triple)     { add(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
-    default void add(Quad quad)         { add(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ; }
+    // Prefixes per dataset : and per graph
+    // DatasetPrefixStorage
     
-    default void delete(Triple triple)  { delete(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
-    default void delete(Quad quad)      { delete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ; }
+    default void add(Triple triple)
+    { add(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
+    
+    default void add(Quad quad)
+    { add(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ; }
+    
+    default void delete(Triple triple)
+    { delete(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
+    default void delete(Quad quad)
+    { delete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ; }
     
     void add(Node s, Node p, Node o) ;
     void add(Node g, Node s, Node p, Node o) ;
