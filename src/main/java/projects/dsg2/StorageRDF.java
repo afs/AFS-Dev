@@ -19,9 +19,9 @@ package projects.dsg2;
 
 import java.util.stream.Stream ;
 
+import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.Triple ;
-import org.apache.jena.graph.Graph ;
 import org.apache.jena.sparql.core.Quad ;
 
 /**
@@ -34,54 +34,67 @@ import org.apache.jena.sparql.core.Quad ;
  * named graphs), {@code null} for the graph slot does not match the default
  * graph.
  */
-interface StorageRDF {
+public interface StorageRDF /*extends Transactional*/ {
     // Prefixes per dataset : and per graph
     // DatasetPrefixStorage
     
-    default void add(Triple triple)
+    public default void add(Triple triple)
     { add(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
     
-    default void add(Quad quad)
+    public default void add(Quad quad)
     { add(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ; }
     
-    default void delete(Triple triple)
+    public default void delete(Triple triple)
     { delete(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
-    default void delete(Quad quad)
+    
+    public default void delete(Quad quad)
     { delete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ; }
     
-    void add(Node s, Node p, Node o) ;
-    void add(Node g, Node s, Node p, Node o) ;
+    public void add(Node s, Node p, Node o) ;
+    
+    public void add(Node g, Node s, Node p, Node o) ;
 
-    void delete(Node s, Node p, Node o) ;
-    void delete(Node g, Node s, Node p, Node o) ;
+    public void delete(Node s, Node p, Node o) ;
+    
+    public void delete(Node g, Node s, Node p, Node o) ;
 
     /** Delete all triples matching a {@code find}-like pattern */ 
-    void removeAll(Node s, Node p, Node o) ;
+    public void removeAll(Node s, Node p, Node o) ;
+    
     /** Delete all quads matching a {@code find}-like pattern */ 
-    void removeAll(Node g, Node s, Node p, Node o) ;
+    public void removeAll(Node g, Node s, Node p, Node o) ;
     
-    // NB Quads
-    Stream<Quad>   findDftGraph(Node s, Node p, Node o) ;
-    Stream<Quad>   findUnionGraph(Node s, Node p, Node o) ;
-    Stream<Quad>   find(Node g, Node s, Node p, Node o) ;
-    // For findUnion.
-    Stream<Quad>   findDistinct(Node g, Node s, Node p, Node o) ;
-    
-    // triples
-    Stream<Triple> find(Node s, Node p, Node o) ;
-    
-//    default Stream<Triple> find(Node s, Node p, Node o) { 
-//        return findDftGraph(s,p,o).map(Quad::asTriple) ;
+//    // ??
+//    /** Find in the default graph - return as quads (graph name {@link Quad#defaultGraphIRI}) */
+//    default Stream<Quad> xfindDftGraph(Node s, Node p, Node o) {
+//        return find(s, p, o).map(t -> Quad.create(Quad.defaultGraphIRI, t)) ;
 //    }
+//    
+    /** Find in the union graph (union of all named graphs, not the default graph) */
+    public default Stream<Triple> findUnionGraph(Node s, Node p, Node o) {
+        return find(Node.ANY, s, p, o).map(Quad::asTriple).distinct() ;
+    }
     
-//    Iterator<Quad>   findUnionGraph(Node s, Node p, Node o) ;
-//    Iterator<Quad>   find(Node g, Node s, Node p, Node o) ;
+    /** Find in named graphs: does not look in the default graph */
+    public Stream<Quad> find(Node g, Node s, Node p, Node o) ;
     
+    /** Find in the default graph */
+    public Stream<Triple> find(Node s, Node p, Node o) ;
+
+    /** Does the default graph contain the match the triple? (s,p,o must be concrete) */ 
+    public default boolean contains(Triple triple) {
+        return contains(triple.getSubject(), triple.getPredicate(), triple.getObject()) ;
+    }
+
+    /** Does the default graph contain the match the triple? (s,p,o must be concrete) */ 
+    public boolean contains(Node s, Node p, Node o) ;
     
-    // contains
-    
-    default boolean contains(Node s, Node p, Node o)            { return find(s,p,o).findAny().isPresent() ; }
-    default boolean contains(Node g, Node s, Node p, Node o)    { return find(g,s,p,o).findAny().isPresent() ; }
+    public default boolean contains(Quad quad) {
+        return contains(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
+    }
+
+    /** Do any of the named graphs match the quad? (g,s,p,o must be concrete) */
+    boolean contains(Node g, Node s, Node p, Node o) ;
      
     // Prefixes ??
 }

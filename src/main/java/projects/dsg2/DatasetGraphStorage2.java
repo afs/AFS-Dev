@@ -28,16 +28,18 @@ import org.apache.jena.sparql.core.* ;
 /**
  * A DatasetGraph base class for triples+quads storage. The machinary is really
  * the spliting between default and named graphs. This happens in two classes,
- * {@link DatasetGraphBaseFind} (for find splitting) and 
- * {@link DatasetGraphTriplesQuads} add/delete splitting (it inherits
- * {@link DatasetGraphBaseFind}).
- * <p>
+ * DatasetGraphBaseFind (for find splitting) and here, for add/delete splitting.
+ * 
  * Because storage is usually decomposing quads and triples, the default
  * behaviour is to work in s/p/o and g/s/p/o.  
+ * 
+ * g being null means find in named graphs, not default graph.  
  */
 
-class DatasetGraphStorage extends DatasetGraphTriplesQuads
+class DatasetGraphStorage2 extends DatasetGraphBaseFind
 {
+    // Older version.
+    
     private final Transactional txn                     = TransactionalLock.createMRSW() ;
     @Override public void begin(ReadWrite mode)         { txn.begin(mode) ; }
     @Override public void commit()                      { txn.commit() ; }
@@ -48,36 +50,42 @@ class DatasetGraphStorage extends DatasetGraphTriplesQuads
     @Override public boolean supportsTransactionAbort() { return false ; }
     
     private final StorageRDF storage ;
-    DatasetGraphStorage(StorageRDF storage) {
+    DatasetGraphStorage2(StorageRDF storage) {
         this.storage = storage ;
     }
     
+    @Override
+    final public void add(Quad quad) {
+        storage.add(quad);
+    }
+
+    @Override
+    final public void delete(Quad quad) {
+        storage.delete(quad);
+    }
+
+    @Override
+    public void add(Node g, Node s, Node p, Node o) {
+        if ( Quad.isDefaultGraphGenerated(g) || Quad.isDefaultGraphExplicit(g) )
+            storage.add(s, p, o);
+        else
+            storage.add(g, s, p, o);
+    }
+
+    @Override
+    public void delete(Node g, Node s, Node p, Node o) {
+        if ( Quad.isDefaultGraphGenerated(g) || Quad.isDefaultGraphExplicit(g) )
+            storage.delete(s, p, o);
+        else
+            storage.delete(g, s, p, o);
+    }
+
     @Override
     public Iterator<Node> listGraphNodes() {
         Iterator<Quad> iter = find(null, null, null, null) ;
         return Iter.iter(iter).map(Quad::getGraph).distinct() ;
     }
 
-    @Override
-    protected void addToDftGraph(Node s, Node p, Node o) {
-        storage.add(s, p, o);
-    }
-    
-    @Override
-    protected void addToNamedGraph(Node g, Node s, Node p, Node o) {
-        storage.add(g, s, p, o);
-    }
-    
-    @Override
-    protected void deleteFromDftGraph(Node s, Node p, Node o) {
-        storage.delete(s, p, o);
-    }
-    
-    @Override
-    protected void deleteFromNamedGraph(Node g, Node s, Node p, Node o) {
-        storage.delete(g, s, p, o);
-    }
-    
     @Override
     protected Iterator<Quad> findInDftGraph(Node s, Node p, Node o) {
         return storage.find(s, p, o).map(t -> Quad.create(Quad.defaultGraphIRI, t)).iterator() ;
@@ -91,7 +99,7 @@ class DatasetGraphStorage extends DatasetGraphTriplesQuads
     @Override
     protected Iterator<Quad> findInAnyNamedGraphs(Node s, Node p, Node o) {
         // Implementations may wish to do better.
-        return find(Node.ANY, s, p, o) ;
+        return storage.find(Node.ANY, s, p, o).iterator() ;
     }
 
     @Override
@@ -104,13 +112,13 @@ class DatasetGraphStorage extends DatasetGraphTriplesQuads
         return GraphView.createNamedGraph(this, graphNode) ;
     }
 
-//    @Override
-//    public void addGraph(Node graphName, Graph graph) {
-//        graph.find(null,null,null).forEachRemaining(t->add(graphName, t.getSubject(), t.getPredicate(), t.getObject())) ;
-//    }
-//
-//    @Override
-//    public void removeGraph(Node graphName) {
-//        storage.removeAll(graphName, null, null, null) ;
-//    }
+    @Override
+    public void addGraph(Node graphName, Graph graph) {
+        graph.find(null,null,null).forEachRemaining(t->add(graphName, t.getSubject(), t.getPredicate(), t.getObject())) ;
+    }
+
+    @Override
+    public void removeGraph(Node graphName) {
+        storage.removeAll(graphName, null, null, null) ;
+    }
 }

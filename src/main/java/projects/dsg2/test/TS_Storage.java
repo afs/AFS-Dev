@@ -16,15 +16,14 @@
  * limitations under the License.
  */
 
-package projects.dsg2;
+package projects.dsg2.test;
 
-public class DSG2 {
-    // Prefixes
-    // * PrefixMap - DatasetPrefixStorage (graph), DatasetPrefixes
-    // * Dataset and graph
-    
-    // PrefixMapI
-    // PrefixMap
+import org.junit.runner.RunWith ;
+import org.junit.runners.Suite ;
 
-}
+@RunWith(Suite.class)
+@Suite.SuiteClasses( {
+    TestStorageSimple.class
+})
 
+public class TS_Storage { }

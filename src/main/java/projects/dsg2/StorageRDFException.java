@@ -18,13 +18,11 @@
 
 package projects.dsg2;
 
-public class DSG2 {
-    // Prefixes
-    // * PrefixMap - DatasetPrefixStorage (graph), DatasetPrefixes
-    // * Dataset and graph
-    
-    // PrefixMapI
-    // PrefixMap
+import org.apache.jena.shared.JenaException ;
 
+public class StorageRDFException extends JenaException {
+    public StorageRDFException()                                  { super(); }
+    public StorageRDFException(String message)                    { super(message); }
+    public StorageRDFException(Throwable cause)                   { super(cause) ; }
+    public StorageRDFException(String message, Throwable cause)   { super(message, cause) ; }
 }
-

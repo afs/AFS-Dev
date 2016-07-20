@@ -16,15 +16,16 @@
  * limitations under the License.
  */
 
-package projects.dsg2;
+package projects.dsg2.test;
 
-public class DSG2 {
-    // Prefixes
-    // * PrefixMap - DatasetPrefixStorage (graph), DatasetPrefixes
-    // * Dataset and graph
-    
-    // PrefixMapI
-    // PrefixMap
+import projects.dsg2.StorageMem ;
+import projects.dsg2.StorageRDF ;
+
+public class TestStorageSimple extends BaseTestStorageRDF {
+
+    @Override
+    protected StorageRDF create() {
+        return new StorageMem() ;
+    }
 
 }
-
