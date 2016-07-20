@@ -19,6 +19,9 @@
 package projects.dsg2;
 
 public class DSG2 {
+    
+    
+    
     // Prefixes
     // * PrefixMap - DatasetPrefixStorage (graph), DatasetPrefixes
     // * Dataset and graph

@@ -24,6 +24,7 @@ import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.* ;
+import projects.dsg2.storage.StorageRDF ;
 
 /**
  * A DatasetGraph base class for triples+quads storage. The machinary is really

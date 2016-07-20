@@ -16,16 +16,12 @@
  * limitations under the License.
  */
 
-package projects.dsg2.test;
+package projects.dsg2.storage;
 
-import projects.dsg2.storage.StorageMem ;
-import projects.dsg2.storage.StorageRDF ;
+/** Very simple {@link StorageRDF} based on a set/scan implementation of tuple storage.*/
+public class StorageMem extends StorageTuples {
 
-public class TestStorageSimple extends BaseTestStorageRDF {
-
-    @Override
-    protected StorageRDF create() {
-        return new StorageMem() ;
+    public StorageMem() {
+        super(new StorageTuplesN(3), new StorageTuplesN(4)) ;
     }
-
 }

@@ -28,7 +28,7 @@ import org.apache.jena.sparql.core.Quad ;
 import org.apache.jena.sparql.sse.SSE ;
 import org.junit.Before ;
 import org.junit.Test ;
-import projects.dsg2.StorageRDF ;
+import projects.dsg2.storage.StorageRDF ;
 
 public abstract class BaseTestStorageRDF {
     

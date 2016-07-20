@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package projects.dsg2;
+package projects.dsg2.storage;
 
 import org.apache.jena.shared.JenaException ;
 
 public class StorageRDFException extends JenaException {
     public StorageRDFException()                                  { super(); }
-    public StorageRDFException(String message)                    { super(message); }
-    public StorageRDFException(Throwable cause)                   { super(cause) ; }
-    public StorageRDFException(String message, Throwable cause)   { super(message, cause) ; }
+//    public StorageRDFException(String message)                    { super(message); }
+//    public StorageRDFException(Throwable cause)                   { super(cause) ; }
+//    public StorageRDFException(String message, Throwable cause)   { super(message, cause) ; }
 }
