@@ -23,7 +23,7 @@ import java.io.UnsupportedEncodingException ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
 import org.apache.jena.atlas.logging.LogCtl ;
-import org.apache.jena.atlas.logging.java.ConsoleHandlerStdout ;
+import org.apache.jena.atlas.logging.java.ConsoleHandlerStream ;
 import org.slf4j.LoggerFactory ;
 
 public class LogMain
@@ -103,7 +103,7 @@ public class LogMain
         
         // Because the parent has the plumbed in ConsoleHandler
         log.setUseParentHandlers(false) ;
-        log.addHandler(new ConsoleHandlerStdout()) ;
+        log.addHandler(new ConsoleHandlerStream()) ;
         log.info("Hello World (part 2)") ;
          
 //        // -- Remove any ConsoleHanlder

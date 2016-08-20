@@ -93,35 +93,33 @@ public class DatasetPrefixStorageMem implements DatasetPrefixStorage
     {}
 
     @Override
-    public void removeFromPrefixMap(String graphName, String prefix)
-    {
+    public void removeFromPrefixMap(String graphName, String prefix) {
         access(graphName).delete(prefix) ;
     }
 
     @Override
-    public PrefixMapping getPrefixMapping()
-    {
+    public void removeAllFromPrefixMap(String graphName) {
+        access(graphName).clear() ;
+    }
+
+    @Override
+    public PrefixMapping getPrefixMapping() {
         return getPrefixMapping(dftGraph) ;
     }
 
     @Override
-    public PrefixMapping getPrefixMapping(String graphName)
-    {
+    public PrefixMapping getPrefixMapping(String graphName) {
         return new GraphPrefixesProjection(canonical(graphName), this) ;
     }
 
     @Override
-    public void close()
-    {}
+    public void close() {}
 
     @Override
-    public void sync()
-    {}
-
+    public void sync() {}
 
     // Access or return the empty, dummy mapping.
-    private PrefixMap access(String graphName)
-    {
+    private PrefixMap access(String graphName) {
         graphName = canonical(graphName) ;
         PrefixMap pmap = prefixes.get(graphName) ;
         if ( pmap == null )
@@ -129,12 +127,9 @@ public class DatasetPrefixStorageMem implements DatasetPrefixStorage
         return pmap ;
     }
 
-
-    private static String canonical(String graphName)
-    {
+    private static String canonical(String graphName) {
         if ( graphName == null && dftGraph2.equals(graphName) )
             return dftGraph ;
         return graphName ;
     }
-
 }

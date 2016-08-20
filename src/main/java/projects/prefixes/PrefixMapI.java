@@ -47,6 +47,10 @@ public interface PrefixMapI
     /** Delete a prefix */
     public abstract void delete(String prefix) ;
 
+    /** Clear the prefix mappings. */
+    public abstract void clear() ;
+    
+    /** Get the mapping for a prefix (or return null). */
     public abstract String get(String prefix) ;
     
     public abstract boolean contains(String prefix) ;

@@ -42,6 +42,9 @@ public interface DatasetPrefixes // replaces DatasetPrefixStorage
     /** Delete a prefix mapping */
     void delete(Node graphNode, String prefix) ;
     
+    /** Delete prefix mappings for a specific graph name. */
+    void deleteAll(Node graphNode) ;
+    
     /** Abbreviate an IRI or return null */
     public String abbreviate(Node graphNode, String iriStr) ;
     

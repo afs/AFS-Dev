@@ -49,6 +49,12 @@ public class PrefixMappingOverPrefixMapI implements PrefixMapping
     }
 
     @Override
+    public PrefixMapping clearNsPrefixMap() {
+        pmap.clear(); 
+        return this ;
+    }
+
+    @Override
     public PrefixMapping setNsPrefixes(PrefixMapping other)
     {
         return setNsPrefixes(other.getNsPrefixMap()) ;

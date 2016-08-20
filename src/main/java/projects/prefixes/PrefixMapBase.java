@@ -95,6 +95,11 @@ public class PrefixMapBase implements PrefixMapI {
     }
 
     @Override
+    public void clear() {
+        prefixes.clear(); 
+    }
+
+    @Override
     public String get(String prefix)
     {
         prefix = canonicalPrefix(prefix) ;

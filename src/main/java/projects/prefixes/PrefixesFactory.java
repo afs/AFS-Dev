@@ -69,26 +69,26 @@ public class PrefixesFactory
         { new UnsupportedOperationException() ; }
 
         @Override
-        public String abbreviate(Node graphNode, String iriStr)
-        { 
-           return null ;
-        }
+        public void deleteAll(Node graphNode)
+        { new UnsupportedOperationException() ; }
 
         @Override
-        public Pair<String, String> abbrev(Node graphNode, String uriStr)
-        {
+        public String abbreviate(Node graphNode, String iriStr) {
             return null ;
         }
 
         @Override
-        public String expand(Node graphNode, String prefixedName)
-        {
+        public Pair<String, String> abbrev(Node graphNode, String uriStr) {
             return null ;
         }
 
         @Override
-        public String expand(Node graphNode, String prefix, String localName)
-        {
+        public String expand(Node graphNode, String prefixedName) {
+            return null ;
+        }
+
+        @Override
+        public String expand(Node graphNode, String prefix, String localName) {
             return null ;
         }
     }

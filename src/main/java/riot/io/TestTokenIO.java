@@ -69,7 +69,7 @@ public class TestTokenIO extends BaseTest
     
     @AfterClass public static void teardownClass()
     {
-        LogCtl.set("Token", "warn") ;
+        LogCtl.setLevel("Token", "warn") ;
     }
 
     
