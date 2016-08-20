@@ -24,6 +24,8 @@ import org.junit.runners.Suite ;
 @RunWith(Suite.class)
 @Suite.SuiteClasses( {
     TestStorageSimple.class
+    , TestDatasetGraphStorageTests.class
+    , TestDatasetGraphStorageFindTests.class
 })
 
 public class TS_Storage { }

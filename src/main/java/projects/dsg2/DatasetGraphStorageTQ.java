@@ -26,7 +26,7 @@ import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.* ;
 import projects.dsg2.storage.StorageRDF ;
 
-/** DatasetGraph over RDFStoreage, using DatasetGraphBaseFind
+/** DatasetGraph over RDFStoreage, using DatasetGraphTriplesQuads
 
 /**
  * A DatasetGraph base class for triples+quads storage. The machinary is really
@@ -39,7 +39,9 @@ import projects.dsg2.storage.StorageRDF ;
  * behaviour is to work in s/p/o and g/s/p/o.  
  */
 
-public class DatasetGraphStorage extends DatasetGraphTriplesQuads
+// See DatasetGraphStorage
+
+public class DatasetGraphStorageTQ extends DatasetGraphTriplesQuads
 {
     private final Transactional txn                     = TransactionalLock.createMRSW() ;
     @Override public void begin(ReadWrite mode)         { txn.begin(mode) ; }
@@ -51,8 +53,7 @@ public class DatasetGraphStorage extends DatasetGraphTriplesQuads
     @Override public boolean supportsTransactionAbort() { return false ; }
     
     private final StorageRDF storage ;
-    
-    public DatasetGraphStorage(StorageRDF storage) {
+    DatasetGraphStorageTQ(StorageRDF storage) {
         this.storage = storage ;
     }
     

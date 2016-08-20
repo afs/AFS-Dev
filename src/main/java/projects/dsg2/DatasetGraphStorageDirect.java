@@ -39,7 +39,7 @@ import projects.dsg2.storage.StorageRDF ;
  * behaviour is to work in s/p/o and g/s/p/o.  
  */
 
-public class DatasetGraphStorage extends DatasetGraphTriplesQuads
+public class DatasetGraphStorageDirect extends DatasetGraphBaseFind
 {
     private final Transactional txn                     = TransactionalLock.createMRSW() ;
     @Override public void begin(ReadWrite mode)         { txn.begin(mode) ; }
@@ -51,8 +51,7 @@ public class DatasetGraphStorage extends DatasetGraphTriplesQuads
     @Override public boolean supportsTransactionAbort() { return false ; }
     
     private final StorageRDF storage ;
-    
-    public DatasetGraphStorage(StorageRDF storage) {
+    public DatasetGraphStorageDirect(StorageRDF storage) {
         this.storage = storage ;
     }
     
@@ -62,26 +61,6 @@ public class DatasetGraphStorage extends DatasetGraphTriplesQuads
         return Iter.iter(iter).map(Quad::getGraph).distinct() ;
     }
 
-    @Override
-    protected void addToDftGraph(Node s, Node p, Node o) {
-        storage.add(s, p, o);
-    }
-    
-    @Override
-    protected void addToNamedGraph(Node g, Node s, Node p, Node o) {
-        storage.add(g, s, p, o);
-    }
-    
-    @Override
-    protected void deleteFromDftGraph(Node s, Node p, Node o) {
-        storage.delete(s, p, o);
-    }
-    
-    @Override
-    protected void deleteFromNamedGraph(Node g, Node s, Node p, Node o) {
-        storage.delete(g, s, p, o);
-    }
-    
     @Override
     protected Iterator<Quad> findInDftGraph(Node s, Node p, Node o) {
         return storage.find(s, p, o).map(t -> Quad.create(Quad.defaultGraphIRI, t)).iterator() ;
@@ -94,6 +73,7 @@ public class DatasetGraphStorage extends DatasetGraphTriplesQuads
 
     @Override
     protected Iterator<Quad> findInAnyNamedGraphs(Node s, Node p, Node o) {
+        // Implementations may wish to do better.
         return storage.find(Node.ANY, s, p, o).iterator() ;
     }
 
@@ -106,11 +86,43 @@ public class DatasetGraphStorage extends DatasetGraphTriplesQuads
     public Graph getGraph(Node graphNode) {
         return GraphView.createNamedGraph(this, graphNode) ;
     }
+    
+    @Override
+    public void add(Quad quad) { 
+        if ( Quad.isDefaultGraph(quad.getGraph()) )
+            storage.add(quad.getSubject(), quad.getPredicate(), quad.getObject()) ; // quad.asTriple
+        else
+            storage.add(quad) ;
+    }
+    
+    @Override
+    public void delete(Quad quad) {
+        if ( Quad.isDefaultGraph(quad.getGraph()) )
+            storage.delete(quad.getSubject(), quad.getPredicate(), quad.getObject()) ; // quad.asTriple
+        else
+            storage.delete(quad) ;
+    }
+    
+    @Override
+    public void add(Node g, Node s, Node p, Node o) {
+        if ( g == null || Quad.isDefaultGraph(g) )
+            storage.add(s,p,o) ;
+        else
+            storage.add(g,s,p,o) ;
+    }
+    
+    @Override
+    public void delete(Node g, Node s, Node p, Node o) {
+        if ( g == null || Quad.isDefaultGraph(g) )
+            storage.delete(s,p,o) ;
+        else
+            storage.delete(g,s,p,o) ;
+    }
 
-//    @Override
-//    public void addGraph(Node graphName, Graph graph) {
-//        graph.find(null,null,null).forEachRemaining(t->add(graphName, t.getSubject(), t.getPredicate(), t.getObject())) ;
-//    }
+    @Override
+    public void addGraph(Node graphName, Graph graph) {
+        graph.find(null,null,null).forEachRemaining(t->add(graphName, t.getSubject(), t.getPredicate(), t.getObject())) ;
+    }
 
     @Override
     public void removeGraph(Node graphName) {

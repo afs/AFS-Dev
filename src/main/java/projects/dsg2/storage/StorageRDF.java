@@ -97,4 +97,5 @@ public interface StorageRDF /*extends Transactional*/ {
     boolean contains(Node g, Node s, Node p, Node o) ;
      
     // Prefixes ??
+    // DatasetPrefixStorage(Jena) => AFS-Dev...prefixes.DatasetPrefixes
 }
