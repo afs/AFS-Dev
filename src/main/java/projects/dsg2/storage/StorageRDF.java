@@ -37,7 +37,7 @@ import org.apache.jena.sparql.core.Quad ;
 public interface StorageRDF /*extends Transactional*/ {
     // Prefixes per dataset : and per graph
     // DatasetPrefixStorage
-    
+    // StorageRDF<X>, Tuples.
     public default void add(Triple triple)
     { add(triple.getSubject(), triple.getPredicate(), triple.getObject()) ; }
     
@@ -70,7 +70,23 @@ public interface StorageRDF /*extends Transactional*/ {
 //        return find(s, p, o).map(t -> Quad.create(Quad.defaultGraphIRI, t)) ;
 //    }
 //    
-    /** Find in the union graph (union of all named graphs, not the default graph) */
+    /** Find in the union graph (union of all named graphs, not the default graph).
+     * An RDF graph is a set of triples - the union graph does not shows duplicates even
+     * if more then one named graph contains a given triple.   
+     * @implNote
+     * The default implementation of this operation involves the use of {@link Stream#distinct()}
+     * which is <i><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html#StreamOps">stateful
+     * intermediate operation</a></i>. Without additional internal knowledge, 
+     * it is necessary to remember all triples in the stream
+     * so far to know whether the next triple is a duplicate or not.
+     * This can be a signiifcant amount of intermediate space. 
+     * <p>
+     * An implmentation may be able to exploit its internal representation to 
+     * means that this operation can be implemented more efficient, for example,
+     * knowing that duplicate triples (same triple, from different graphs) will
+     * be adjacent in the stream so not requires the full cost of {@code distinct}
+     * to remove duplicates.  
+     */
     public default Stream<Triple> findUnionGraph(Node s, Node p, Node o) {
         return find(Node.ANY, s, p, o).map(Quad::asTriple).distinct() ;
     }
