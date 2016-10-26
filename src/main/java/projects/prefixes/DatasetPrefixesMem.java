@@ -104,6 +104,19 @@ public class DatasetPrefixesMem implements DatasetPrefixes // No -- extends
         return access(graphNode).expand(prefix, localName) ;
     }
 
+    @Override
+    public boolean isEmpty() {
+        if ( map.isEmpty() )
+            return true ;
+        // All must be empty 
+        return map.entrySet().stream().allMatch((e)->e.getValue().isEmpty()) ;
+    }
+
+    @Override
+    public int size() {
+        return 0 ;
+    }
+
     // Access or return the empty, dummy mapping.
     private PrefixMapI accessForUpdate(Node graphName) {
         graphName = canonical(graphName) ;

@@ -42,8 +42,6 @@ public class PrefixMapStorageView implements PrefixMapStorage
         this.graphName = graphName ;
     }
     
-    
-    
     @Override
     public void put(String prefix, String uriStr)   { dsgPrefixes.add(graphName, prefix, uriStr) ; }
     
@@ -73,6 +71,11 @@ public class PrefixMapStorageView implements PrefixMapStorage
         return ! dsgPrefixes.listGraphNodes().hasNext() ;
     }
     
+    @Override
+    public int size() {
+        return (int)Iter.count(dsgPrefixes.get(graphName)) ;
+    }
+
     @Override
     public Iterator<Pair<String, String>> iterator()
     {

@@ -35,6 +35,8 @@ public interface PrefixMapStorage extends SimpleMap<String, String>, Sync, Close
     public void clear() ;
     @Override
     public boolean isEmpty() ;
+    @Override
+    public int size() ;
     
     @Override
     public Iterator<Pair<String, String>> iterator() ;

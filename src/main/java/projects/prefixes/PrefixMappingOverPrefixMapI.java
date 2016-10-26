@@ -15,7 +15,7 @@
  *  information regarding copyright ownership.
  */
 
-package projects.prefixes;
+package projects.prefixes ;
 
 import java.util.HashMap ;
 import java.util.Map ;
@@ -24,47 +24,44 @@ import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.iri.IRI ;
 import org.apache.jena.shared.PrefixMapping ;
 
-/** Converted from PrefixMap (a used by the parsers) to Jena's inferface PrefixMapping
+/**
+ * Converted from PrefixMap (a used by the parsers) to Jena's inferface PrefixMapping
  * (which is a bit XML-centric for historical reasons).
  */
 
-public class PrefixMappingOverPrefixMapI implements PrefixMapping
-{
+public class PrefixMappingOverPrefixMapI implements PrefixMapping {
     private PrefixMapI pmap ;
 
-    PrefixMappingOverPrefixMapI(PrefixMapI pmap) { this.pmap = pmap ; }
+    PrefixMappingOverPrefixMapI(PrefixMapI pmap) {
+        this.pmap = pmap ;
+    }
 
     @Override
-    public PrefixMapping setNsPrefix(String prefix, String uri)
-    {
+    public PrefixMapping setNsPrefix(String prefix, String uri) {
         pmap.add(prefix, uri) ;
         return this ;
     }
 
     @Override
-    public PrefixMapping removeNsPrefix(String prefix)
-    {
+    public PrefixMapping removeNsPrefix(String prefix) {
         pmap.delete(prefix) ;
         return this ;
     }
 
     @Override
     public PrefixMapping clearNsPrefixMap() {
-        pmap.clear(); 
+        pmap.clear() ;
         return this ;
     }
 
     @Override
-    public PrefixMapping setNsPrefixes(PrefixMapping other)
-    {
+    public PrefixMapping setNsPrefixes(PrefixMapping other) {
         return setNsPrefixes(other.getNsPrefixMap()) ;
     }
 
     @Override
-    public PrefixMapping setNsPrefixes(Map<String, String> map)
-    {
-        for ( Map.Entry<String, String> e : map.entrySet() )
-        {
+    public PrefixMapping setNsPrefixes(Map<String, String> map) {
+        for ( Map.Entry<String, String> e : map.entrySet() ) {
             String prefix = e.getKey() ;
             String iriStr = e.getValue() ;
             pmap.add(prefix, iriStr) ;
@@ -73,46 +70,40 @@ public class PrefixMappingOverPrefixMapI implements PrefixMapping
     }
 
     @Override
-    public PrefixMapping withDefaultMappings(PrefixMapping map)
-    {
+    public PrefixMapping withDefaultMappings(PrefixMapping map) {
         Map<String, String> emap = map.getNsPrefixMap() ;
-        for  ( Map.Entry<String, String> e : emap.entrySet() )
-        {
+        for ( Map.Entry<String, String> e : emap.entrySet() ) {
             String prefix = e.getKey() ;
             String iriStr = e.getValue() ;
-            if ( ! pmap.contains(prefix) )
+            if ( !pmap.contains(prefix) )
                 pmap.add(prefix, iriStr) ;
         }
         return this ;
     }
 
     @Override
-    public String getNsPrefixURI(String prefix)
-    {
+    public String getNsPrefixURI(String prefix) {
         return pmap.getMapping().get(prefix).toString() ;
     }
 
     @Override
-    public String getNsURIPrefix(String uri)
-    {
-        Pair<String , String> abbrev = pmap.abbrev(uri) ;
+    public String getNsURIPrefix(String uri) {
+        Pair<String, String> abbrev = pmap.abbrev(uri) ;
         if ( abbrev == null )
             return null ;
         return abbrev.getLeft() ;
     }
 
     @Override
-    public Map<String, String> getNsPrefixMap()
-    {
+    public Map<String, String> getNsPrefixMap() {
         Map<String, IRI> map = pmap.getMapping() ;
         Map<String, String> smap = new HashMap<String, String>() ;
-        map.forEach((key, value)->smap.put(key, value.toString()));
-        return smap  ;
+        map.forEach((key, value) -> smap.put(key, value.toString())) ;
+        return smap ;
     }
 
     @Override
-    public String expandPrefix(String prefixed)
-    {
+    public String expandPrefix(String prefixed) {
         String str = pmap.expand(prefixed) ;
         if ( str == null )
             return prefixed ;
@@ -120,8 +111,7 @@ public class PrefixMappingOverPrefixMapI implements PrefixMapping
     }
 
     @Override
-    public String shortForm(String uri)
-    {
+    public String shortForm(String uri) {
         String s = pmap.abbreviate(uri) ;
         if ( s == null )
             return uri ;
@@ -129,22 +119,28 @@ public class PrefixMappingOverPrefixMapI implements PrefixMapping
     }
 
     @Override
-    public String qnameFor(String uri)
-    {
+    public String qnameFor(String uri) {
         return pmap.abbreviate(uri) ;
     }
 
     @Override
-    public PrefixMapping lock()
-    {
+    public boolean hasNoMappings() {
+        return pmap.isEmpty() ;
+    }
+
+    @Override
+    public int numPrefixes() {
+        return pmap.size() ;
+    }
+
+    @Override
+    public PrefixMapping lock() {
         return this ;
     }
 
     @Override
-    public boolean samePrefixMappingAs(PrefixMapping other)
-    {
-        return this.getNsPrefixMap().equals( other.getNsPrefixMap() ) ;
+    public boolean samePrefixMappingAs(PrefixMapping other) {
+        return this.getNsPrefixMap().equals(other.getNsPrefixMap()) ;
     }
-    
-}
 
+}

@@ -33,6 +33,7 @@ public interface SimpleMap<K,V> extends Iterable<Pair<K,V>> {
     public void remove(K key) ;
     public void clear() ;
     public boolean isEmpty() ;
+    public int size() ;
     @Override
     public Iterator<Pair<K, V>> iterator() ;
     public Iterator<K> keys() ;

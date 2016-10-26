@@ -91,6 +91,16 @@ public class PrefixesFactory
         public String expand(Node graphNode, String prefix, String localName) {
             return null ;
         }
+
+        @Override
+        public boolean isEmpty() {
+            return true ;
+        }
+
+        @Override
+        public int size() {
+            return 0 ;
+        }
     }
 //    
 //    static PrefixMapI emptyPrefixMapEmpty = new PrefixMapI() {

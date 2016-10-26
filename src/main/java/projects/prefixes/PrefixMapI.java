@@ -66,4 +66,11 @@ public interface PrefixMapI
 
     /** Expand a prefix, return null if it can't be expanded */
     public abstract String expand(String prefix, String localName) ;
+    
+    /** Return whether there are any prefix mappings or not. */
+    public boolean isEmpty() ;
+    
+    /** Return the number of mappings. */
+    public int size() ;
+
 }

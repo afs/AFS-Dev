@@ -60,4 +60,9 @@ public class SimpleMapOfMap<K,V> implements SimpleMap<K, V>
     public Iterator<K> keys() {
         return map.keySet().iterator() ;
     }
+
+    @Override
+    public int size() {
+        return map.size() ;
+    }
 }

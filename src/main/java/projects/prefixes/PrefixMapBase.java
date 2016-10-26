@@ -100,6 +100,16 @@ public class PrefixMapBase implements PrefixMapI {
     }
 
     @Override
+    public boolean isEmpty() {
+        return prefixes.isEmpty() ;
+    }
+
+    @Override
+    public int size() {
+        return prefixes.size() ;
+    }
+
+    @Override
     public String get(String prefix)
     {
         prefix = canonicalPrefix(prefix) ;

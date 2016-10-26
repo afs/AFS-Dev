@@ -56,5 +56,11 @@ public interface DatasetPrefixes // replaces DatasetPrefixStorage
     /** Expand a prefix, return null if it can't be expanded */
     public String expand(Node graphNode, String prefix, String localName) ;
 
+    /** Return whether there are any prefix mappings or not (any graph). */
+    public boolean isEmpty() ;
+    
+    /** Return the number of mappings. */
+    public int size() ;
+
 }
 
