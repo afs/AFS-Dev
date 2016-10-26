@@ -26,7 +26,7 @@ import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.* ;
 import projects.dsg2.storage.StorageRDF ;
 
-/** DatasetGraph over RDFStoreage, using DatasetGraphBaseFind
+/** DatasetGraph over RDFStorage, using DatasetGraphBaseFind
 
 /**
  * A DatasetGraph base class for triples+quads storage. The machinary is really
@@ -90,7 +90,7 @@ public class DatasetGraphStorageDirect extends DatasetGraphBaseFind
     @Override
     public void add(Quad quad) { 
         if ( Quad.isDefaultGraph(quad.getGraph()) )
-            storage.add(quad.getSubject(), quad.getPredicate(), quad.getObject()) ; // quad.asTriple
+            storage.add(quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
         else
             storage.add(quad) ;
     }
@@ -98,7 +98,7 @@ public class DatasetGraphStorageDirect extends DatasetGraphBaseFind
     @Override
     public void delete(Quad quad) {
         if ( Quad.isDefaultGraph(quad.getGraph()) )
-            storage.delete(quad.getSubject(), quad.getPredicate(), quad.getObject()) ; // quad.asTriple
+            storage.delete(quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
         else
             storage.delete(quad) ;
     }
