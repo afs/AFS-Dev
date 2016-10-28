@@ -26,8 +26,15 @@ import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.* ;
 import projects.dsg2.storage.StorageRDF ;
 
-/** DatasetGraph over RDFStoreage, using DatasetGraphBaseFind
-
+/** DatasetGraph over RDFStoreage, using DatasetGraphBaseFind.
+<pre>
+DatasetGraph
+  DatasetGraphBase
+    DatasetGraphBaseFind
+      DatasetGraphTriplesQuads
+        DatasetGraphStorage
+</pre>
+ * <p>
 /**
  * A DatasetGraph base class for triples+quads storage. The machinary is really
  * the spliting between default and named graphs. This happens in two classes,
