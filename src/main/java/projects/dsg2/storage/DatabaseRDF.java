@@ -23,6 +23,7 @@ import projects.prefixes.DatasetPrefixesStorage2;
 
 // "Storage" - full database level.
 // And make StorageRDF, DatasetPrefixesStorage2 -- TransactionalComponents?
-public interface TheInterface extends StorageRDF, DatasetPrefixesStorage2, Transactional {
+
+public interface DatabaseRDF extends StorageRDF, DatasetPrefixesStorage2, Transactional {
 
 }
