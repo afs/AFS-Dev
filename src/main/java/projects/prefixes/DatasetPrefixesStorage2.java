@@ -20,18 +20,21 @@ package projects.prefixes;
 import java.util.Iterator ;
 
 import org.apache.jena.atlas.lib.Pair ;
-
 import org.apache.jena.graph.Node ;
 
 /** Like PrefixMapping, only for a dataset which can have different prefix maps for different graphs */
 
-public interface DatasetPrefixes // replaces DatasetPrefixStorage
+public interface DatasetPrefixesStorage2 // replaces DatasetPrefixStorage
 {
+    //Distinguished nodes:
+    //  Default graph: Quad.defaultGraphIRI
+    //  "whole dataset" : null 
+    
     /* Get the prefix mapping of a prefix */
     public String get(Node graphNode, String prefix) ;
     
     /* Access to the storage - access by graph name */
-    public Iterator<Pair<String, String>> get(Node graphNode) ;
+    public Iterator<PrefixEntry> get(Node graphNode) ;
 
     /* Access to the storage - enumerate the graph nodes */
     public Iterator<Node> listGraphNodes() ;

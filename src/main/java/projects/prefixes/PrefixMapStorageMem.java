@@ -17,23 +17,58 @@
 
 package projects.prefixes;
 
-import java.util.HashMap ;
+import java.util.HashMap;
+import java.util.Iterator ;
+import java.util.Map ;
+import java.util.stream.Stream ;
 
-import projects.prefixes.atlas.SimpleMapOfMap ;
+public class PrefixMapStorageMem implements PrefixMapStorage {
+    private Map<String, String> map = new HashMap<>();
 
+    public PrefixMapStorageMem() { }
 
-public class PrefixMapStorageMem extends SimpleMapOfMap<String, String> implements PrefixMapStorage 
-{
-    PrefixMapStorageMem() 
-    { 
-        super(new HashMap<String, String>()) ; 
+    @Override
+    public void put(String prefix, String uriStr) {
+        map.put(prefix, uriStr);
     }
 
     @Override
-    public void sync()
-    {}
+    public String get(String prefix) {
+        return map.get(prefix);
+    }
 
     @Override
-    public void close()
-    { super.clear() ; }
+    public void remove(String prefix) {
+        map.remove(prefix);
+    }
+
+    @Override
+    public boolean containsPrefix(String prefix) {
+        return map.containsKey(prefix);
+    }
+
+    @Override
+    public void clear() {
+        map.clear();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
+    @Override
+    public int size() {
+        return map.size();
+    }
+
+    @Override
+    public Iterator<PrefixEntry> iterator() {
+        return stream().iterator();
+    }
+
+    @Override
+    public Stream<PrefixEntry> stream() {
+        return map.entrySet().stream().map(e->PrefixEntry.create(e.getKey(), e.getValue())) ;
+    }
 }

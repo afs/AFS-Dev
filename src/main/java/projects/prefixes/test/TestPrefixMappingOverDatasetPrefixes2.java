@@ -27,7 +27,7 @@ import org.apache.jena.sparql.graph.AbstractTestPrefixMapping2 ;
 public class TestPrefixMappingOverDatasetPrefixes2 extends AbstractTestPrefixMapping2
 {
     static Node gn = NodeFactory.createURI("http://test/graphName") ;
-    DatasetPrefixes dsgprefixes ;
+    DatasetPrefixesStorage2 dsgprefixes ;
     
     
     @Override

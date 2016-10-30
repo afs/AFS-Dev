@@ -25,11 +25,14 @@ import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.shared.PrefixMapping ;
 
+/** Factory */
+// Just "Prefixes"?
+// Mixes storage and API level.
 public class PrefixesFactory
 {
     public static PrefixMapI createMem() { return newPrefixMap(newPrefixMapStorageMem() ) ; }
     
-    public static DatasetPrefixes newDatasetPrefixesMem()
+    public static DatasetPrefixesStorage2 newDatasetPrefixesMem()
     { return new DatasetPrefixesMem() ; }
     
     public static PrefixMapping newPrefixMappingOverPrefixMapI(PrefixMapI pmap)
@@ -43,17 +46,17 @@ public class PrefixesFactory
     
     public static PrefixMapI empty() { return emptyPrefixMap ; }
     
-    static DatasetPrefixes emptyDatasetPrefixes = new EmptyDatasetPrefixes() ;
+    static DatasetPrefixesStorage2 emptyDatasetPrefixes = new EmptyDatasetPrefixes() ;
     static PrefixMapI emptyPrefixMap = newPrefixMap(PrefixMapStorageView.viewDefaultGraph(emptyDatasetPrefixes)) ;
     
-    private static class EmptyDatasetPrefixes implements DatasetPrefixes
+    private static class EmptyDatasetPrefixes implements DatasetPrefixesStorage2
     {
         @Override
         public String get(Node graphNode, String prefix)
         { return null ; }
 
         @Override
-        public Iterator<Pair<String, String>> get(Node graphNode)
+        public Iterator<PrefixEntry> get(Node graphNode)
         { return Iter.nullIterator() ; }
 
         @Override

@@ -25,7 +25,7 @@ import org.apache.jena.iri.IRI ;
 import org.apache.jena.shared.PrefixMapping ;
 
 /**
- * Converted from PrefixMap (a used by the parsers) to Jena's inferface PrefixMapping
+ * Converted from PrefixMap (a used by the parsers) to Jena's interface PrefixMapping
  * (which is a bit XML-centric for historical reasons).
  */
 
@@ -75,7 +75,7 @@ public class PrefixMappingOverPrefixMapI implements PrefixMapping {
         for ( Map.Entry<String, String> e : emap.entrySet() ) {
             String prefix = e.getKey() ;
             String iriStr = e.getValue() ;
-            if ( !pmap.contains(prefix) )
+            if ( !pmap.containPrefix(prefix) )
                 pmap.add(prefix, iriStr) ;
         }
         return this ;

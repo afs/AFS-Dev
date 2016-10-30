@@ -17,26 +17,22 @@
 
 package projects.prefixes.test;
 
-import projects.prefixes.DatasetPrefixes ;
-import projects.prefixes.PrefixesFactory ;
+import projects.prefixes.DatasetPrefixesStorage2;
+import projects.prefixes.PrefixesFactory;
 
-public class TestDatasetPrefixesMem extends AbstractTestDatasetPrefixes
-{
+public class TestDatasetPrefixesMem extends AbstractTestDatasetPrefixesStorage {
 
-    DatasetPrefixes prefixes ;
-    
+    DatasetPrefixesStorage2 prefixes;
+
     @Override
-    protected DatasetPrefixes create()
-    {
-        prefixes = PrefixesFactory.newDatasetPrefixesMem() ;
-        return view() ;
+    protected DatasetPrefixesStorage2 create() {
+        prefixes = PrefixesFactory.newDatasetPrefixesMem();
+        return view();
     }
 
     @Override
-    protected DatasetPrefixes view()
-    {
-        return prefixes ;
+    protected DatasetPrefixesStorage2 view() {
+        return prefixes;
     }
 
 }
-

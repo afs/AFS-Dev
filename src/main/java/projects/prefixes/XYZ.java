@@ -21,6 +21,16 @@ package projects.prefixes;
 
 public class XYZ
 {
+    //DatasetPrefixes
+    // Prefix functions over storage.
+    
+    //DatasetPrefixesStorage2
+    // XXX Add stream() and other  PrefixMapStorage stuff.
+
+    //PrefixMapStorage
+    // View of DatasetPrefixesStorage2
+    
+    // Out of date.
     /*
      * 
      * 

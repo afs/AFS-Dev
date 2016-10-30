@@ -19,24 +19,26 @@ package projects.prefixes;
 
 import java.util.Iterator ;
 import java.util.List ;
+import java.util.stream.Stream;
 
 import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.sparql.core.Quad ;
 
+/** Implementation over {@link DatasetPrefixesStorage2}.
+ */
 public class PrefixMapStorageView implements PrefixMapStorage
 {
-    private final DatasetPrefixes dsgPrefixes ;    // change to put/get style -- see DatasetPrefixes
+    private final DatasetPrefixesStorage2 dsgPrefixes;
     private final Node graphName ;
     
-    public static PrefixMapStorage viewDefaultGraph(DatasetPrefixes dsgPrefixes)
+    public static PrefixMapStorage viewDefaultGraph(DatasetPrefixesStorage2 dsgPrefixes)
     { return new PrefixMapStorageView(dsgPrefixes, null) ; }
     
-    public static PrefixMapStorage viewGraph(DatasetPrefixes dsgPrefixes, Node graphName) 
+    public static PrefixMapStorage viewGraph(DatasetPrefixesStorage2 dsgPrefixes, Node graphName) 
     { return new PrefixMapStorageView(dsgPrefixes, graphName) ; }
     
-    private PrefixMapStorageView(DatasetPrefixes dsgPrefixes, Node graphName)
+    private PrefixMapStorageView(DatasetPrefixesStorage2 dsgPrefixes, Node graphName)
     {
         this.dsgPrefixes = dsgPrefixes ;
         this.graphName = graphName ;
@@ -50,62 +52,49 @@ public class PrefixMapStorageView implements PrefixMapStorage
     public String get(String prefix)                { return dsgPrefixes.get(graphName, prefix) ; } 
     
     @Override
-    public boolean containsKey(String prefix)
+    public boolean containsPrefix(String prefix)
     {
         return get(prefix) != null ;
     }
-
     
     @Override
     public void remove(String prefix) { dsgPrefixes.delete(graphName, prefix) ; }
     
     @Override
     public void clear() {
-        List<Pair<String, String>> x = Iter.toList(iterator()) ;
-        for ( Pair<String, String> e : x )
-            remove(e.getLeft()) ;
-    }
-    
-    @Override
-    public boolean isEmpty() {  
-        return ! dsgPrefixes.listGraphNodes().hasNext() ;
-    }
-    
-    @Override
-    public int size() {
-        return (int)Iter.count(dsgPrefixes.get(graphName)) ;
+        List<PrefixEntry> x = Iter.toList(iterator());
+        for ( PrefixEntry e : x )
+            remove(e.getPrefix());
     }
 
     @Override
-    public Iterator<Pair<String, String>> iterator()
-    {
-        return dsgPrefixes.get(graphName) ;
+    public boolean isEmpty() {
+        return !dsgPrefixes.listGraphNodes().hasNext();
+    }
+
+    @Override
+    public int size() {
+        return (int)Iter.count(dsgPrefixes.get(graphName));
+    }
+
+    @Override
+    public Iterator<PrefixEntry> iterator() {
+        return dsgPrefixes.get(graphName);
     }
     
     @Override
-    public Iterator<String> keys()
-    {
-        return Iter.map(dsgPrefixes.listGraphNodes(), Node::getURI) ;
+    public Stream<PrefixEntry> stream() {
+        return Iter.asStream(dsgPrefixes.get(graphName));
     }
     
-    @Override
-    public void sync() {}
-    @Override
-    public void close() {}
+//    @Override
+//    public void sync() {}
+//    
+//    @Override
+//    public void close() {}
     
     // The default graph : preferred name is the explicitly used name.
     private static final Node dftGraph =  Quad.defaultGraphIRI ;
     // Also seen as:
     private static final Node dftGraph2 = Quad.defaultGraphNodeGenerated ;
-
-    private static Node canonical(Node graphName)
-    {
-        if ( graphName == null )
-            return dftGraph ;
-        if ( dftGraph2.equals(graphName) )
-            return dftGraph ;
-        return graphName ;
-    }
-
-    
 }

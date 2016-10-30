@@ -17,34 +17,74 @@
 
 package projects.prefixes;
 
-import java.util.Iterator ;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
-import org.apache.jena.atlas.lib.Closeable ;
-import org.apache.jena.atlas.lib.Pair ;
-import org.apache.jena.atlas.lib.Sync ;
-import projects.prefixes.atlas.SimpleMap ;
+import org.apache.jena.atlas.lib.Sync;
 
-public interface PrefixMapStorage extends SimpleMap<String, String>, Sync, Closeable {
-    @Override
-    public void put(String prefix, String uriStr) ;
-    @Override
-    public String get(String prefix) ;
-    @Override
-    public void remove(String prefix) ;
-    @Override
-    public void clear() ;
-    @Override
-    public boolean isEmpty() ;
-    @Override
-    public int size() ;
+// Maybe a view of DatasetPrefixes(Storage)
+
+/**
+ * Storage-oriented abstraction for prefix mappings.
+ * The API features, such as expanding prefix names. are provided elsewhere.
+ * This interface is just storage of the pairs (prefix, uri string)
+ */
+
+public interface PrefixMapStorage extends Iterable<PrefixEntry>, Sync/*, Closeable*/ {
     
+    /** Put a (prefix, uri) pair into the mapping.
+     * This replaces any previous mapping for the prefix.
+     * @param prefix    Prefix string (without colon).
+     * @param uriStr    URI as a string.
+     */
+    public void put(String prefix, String uriStr);
+
+    /** Get the URI string associated with a prefix, or return null if there is no association.
+     * 
+     * @param prefix
+     * @return String
+     */
+    public String get(String prefix);
+
+    /**
+     * Remove the mapping for a prefix.
+     * @param prefix The prefix of the mapping to be removed.
+     */
+    public void remove(String prefix);
+
+    /** Return whether the mapping contains an entry for the given prefix. */
+    public boolean containsPrefix(String prefix);
+
+    /** Clear the prefix mapping storage. */
+    public void clear();
+
+    /** Return whether there are any prefix mappings or not. */
+    public boolean isEmpty();
+
+    /** Return the number of prefix mappings. */
+    public int size();
+
+    /** Iterator over all prefix entries. */
     @Override
-    public Iterator<Pair<String, String>> iterator() ;
-    @Override
-    public Iterator<String> keys() ;
+    public Iterator<PrefixEntry> iterator();
     
+//    @Override
+//    public default Iterator<PrefixEntry> iterator() {
+//        return stream().iterator() ;
+//    }
+
+    /** Stream of over all prefix entries. */ 
+    public Stream<PrefixEntry> stream();
+    
+    /** Stream all prefixes. */
+    public default Stream<String> prefixes() {
+        return stream().map(PrefixEntry::getPrefix) ;
+    }
+
     @Override
-    public void sync() ;
-    @Override
-    public void close() ;
+    public default void sync() {}
+
+//    @Override
+//    public default void close() {}
 }
+

@@ -17,12 +17,21 @@
 
 package projects.prefixes ;
 
+import java.util.Iterator;
 import java.util.Map ;
+import java.util.stream.Stream;
 
 import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.iri.IRI ;
 
-public interface PrefixMapI
+/** Application-view of prefix mappings.
+ * 
+ * @apiNotes
+ * <p>See {@link PrefixMapStorage} for the storage implementation view. 
+ * <p>See {@link PrefixMapBase} for an implementation over {@link PrefixMapStorage} 
+ */
+
+public interface PrefixMapI // replaces PrefixMap 
 {
     /** return the underlying mapping - do not modify */
     public abstract Map<String, IRI> getMapping() ;
@@ -53,7 +62,7 @@ public interface PrefixMapI
     /** Get the mapping for a prefix (or return null). */
     public abstract String get(String prefix) ;
     
-    public abstract boolean contains(String prefix) ;
+    public abstract boolean containPrefix(String prefix) ;
 
     /** Abbreviate an IRI or return null */
     public abstract String abbreviate(String uriStr) ;
@@ -67,6 +76,19 @@ public interface PrefixMapI
     /** Expand a prefix, return null if it can't be expanded */
     public abstract String expand(String prefix, String localName) ;
     
+    /** Iterator over all prefix entries. */
+    public default Iterator<PrefixEntry> iterator() {
+        return stream().iterator() ;
+    }
+
+    /** Stream of over all prefix entries. */ 
+    public Stream<PrefixEntry> stream();
+    
+    /** Stream all prefixes. */
+    public default Stream<String> prefixes() {
+        return stream().map(PrefixEntry::getPrefix) ;
+    }
+
     /** Return whether there are any prefix mappings or not. */
     public boolean isEmpty() ;
     

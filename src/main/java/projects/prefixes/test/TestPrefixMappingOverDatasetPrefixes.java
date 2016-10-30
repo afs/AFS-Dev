@@ -24,8 +24,7 @@ import org.apache.jena.sparql.graph.AbstractTestPrefixMapping2 ;
 
 public class TestPrefixMappingOverDatasetPrefixes extends AbstractTestPrefixMapping2
 {
-    DatasetPrefixes dsgprefixes ;
-    
+    DatasetPrefixesStorage2 dsgprefixes ;
     
     @Override
     protected PrefixMapping create()

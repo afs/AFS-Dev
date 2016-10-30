@@ -23,18 +23,18 @@ import java.util.List ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.junit.BaseTest ;
 import org.apache.jena.atlas.lib.Pair ;
-import org.junit.Test ;
-import projects.prefixes.DatasetPrefixes ;
-
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
+import org.junit.Test ;
+import projects.prefixes.DatasetPrefixesStorage2;
+import projects.prefixes.PrefixEntry;
 
-public abstract class AbstractTestDatasetPrefixes extends BaseTest
+public abstract class AbstractTestDatasetPrefixesStorage extends BaseTest
 {
     /** Create a fresh PrefixMapping */
-    protected abstract DatasetPrefixes create() ;
+    protected abstract DatasetPrefixesStorage2 create() ;
     /** Create a fresh view over the same storage as last create() */
-    protected abstract DatasetPrefixes view() ;
+    protected abstract DatasetPrefixesStorage2 view() ;
     
     protected Node g1 = NodeFactory.createURI("http://example.org/g1") ;
     protected Node g2 = NodeFactory.createURI("http://example.org/g2") ;
@@ -44,13 +44,13 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
     
     @Test public void dsg_prefixes_01()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
     }
     
     @Test public void dsg_prefixes_02()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
         String x1 = prefixes.get(g1, pref1) ;
         assertEquals("http://example.net/ns#", x1) ;
@@ -60,7 +60,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
     
     @Test public void dsg_prefixes_03()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
         String x1 = prefixes.get(g2, pref1) ;
         assertNull(x1) ;
@@ -68,7 +68,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
     
     @Test public void dsg_prefixes_04()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
         prefixes.delete(g1, pref1) ;
         String x1 = prefixes.get(g1, pref1) ;
@@ -79,7 +79,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
     
     @Test public void dsg_prefixes_05()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
 
         String x = prefixes.abbreviate(g1, "http://example.net/ns#xyz") ;
@@ -88,7 +88,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
 
     @Test public void dsg_prefixes_06()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
 
         String x = prefixes.abbreviate(g1, "http://other/ns#xyz") ;
@@ -99,7 +99,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
 
     @Test public void dsg_prefixes_07()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
 
         Pair<String,String> x = prefixes.abbrev(g1, "http://example.net/ns#xyz") ;
@@ -110,7 +110,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
 
     @Test public void dsg_prefixes_08()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
         Pair<String,String> x = prefixes.abbrev(g1, "http://other/ns#xyz") ;
         assertNull(x) ;
@@ -119,7 +119,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
     // expand[graph]/1
     @Test public void dsg_prefixes_09()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
 
         String x = prefixes.expand(g1, "pref1:abc") ;
@@ -132,7 +132,7 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
     // expand[graph]/2
     @Test public void dsg_prefixes_10()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
         String x = prefixes.expand(g1, "pref1", "abc") ; 
         assertEquals("http://example.net/ns#abc", x) ;
@@ -143,13 +143,13 @@ public abstract class AbstractTestDatasetPrefixes extends BaseTest
     // Accessors
     @Test public void dsg_prefixes_11()
     {
-        DatasetPrefixes prefixes = create() ;
+        DatasetPrefixesStorage2 prefixes = create() ;
         prefixes.add(g1, pref1, "http://example.net/ns#") ;
         
         List<Node> x = Iter.toList(prefixes.listGraphNodes()) ;
         assertEquals(1, x.size()) ;
         
-        List<Pair<String, String>> y = Iter.toList(prefixes.get(g1)) ;
+        List<PrefixEntry> y = Iter.toList(prefixes.get(g1)) ;
         assertEquals(1, y.size()) ;
     }
 
