@@ -47,6 +47,7 @@ DatasetGraph
 
 public class DatasetGraphStorageDirect extends DatasetGraphBaseFind
 {
+    // Temporary fill-in
     private final Transactional txn                     = TransactionalLock.createMRSW() ;
     @Override public void begin(ReadWrite mode)         { txn.begin(mode) ; }
     @Override public void commit()                      { txn.commit() ; }
