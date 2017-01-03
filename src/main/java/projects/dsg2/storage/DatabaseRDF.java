@@ -26,4 +26,13 @@ import projects.prefixes.DatasetPrefixesStorage2;
 
 public interface DatabaseRDF extends StorageRDF, DatasetPrefixesStorage2, Transactional {
 
+    /**
+     * @return the triples/quads storage. 
+     */
+    public default StorageRDF getData()                     { return this ; }
+    
+    /**
+     * @return the prefixes storage.
+     */
+    public default DatasetPrefixesStorage2 getPrefixes()    { return this ; }
 }

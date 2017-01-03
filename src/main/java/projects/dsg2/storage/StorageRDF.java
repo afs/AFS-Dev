@@ -52,7 +52,11 @@ import org.apache.jena.sparql.core.Quad;
  * both are acceptable.
  * 
  */
-public interface StorageRDF /*extends Transactional*/ {
+public interface StorageRDF
+    // Add Prefixes.
+    /*extends org.seaborne.dboe.transaction.txn.TransactionalComponent;*/
+    /*extends Transactional*/ {
+    
     /** Add a triple to the default graph.
      * <p>Concrete operation.
      */ 
