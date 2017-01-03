@@ -94,5 +94,4 @@ public interface PrefixMapI // replaces PrefixMap
     
     /** Return the number of mappings. */
     public int size() ;
-
 }

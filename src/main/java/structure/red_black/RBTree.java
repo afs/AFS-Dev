@@ -17,7 +17,7 @@
 
 package structure.red_black;
 
-import org.apache.jena.atlas.lib.Ref ;
+import structure.Ref;
 import structure.binary_search_tree.BST_Tree ;
 import structure.tree.TreeNode ;
 

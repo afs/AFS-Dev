@@ -25,8 +25,6 @@ import java.net.HttpURLConnection ;
 import java.util.Iterator ;
 
 import org.apache.jena.atlas.iterator.NullIterator ;
-import org.apache.jena.atlas.lib.StrUtils ;
-
 import org.apache.jena.sparql.util.Convert ;
 
 public abstract class SearchBase implements Search 
@@ -34,7 +32,7 @@ public abstract class SearchBase implements Search
     @Override
     public final Iterator<String> search(String... words)
     {
-        String str = StrUtils.strjoin(" ", words) ;
+        String str = String.join(" ", words) ;
         str = Convert.encWWWForm(str) ;
         InputStream in = execGet(str) ;
         if ( in == null )

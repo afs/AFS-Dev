@@ -23,9 +23,9 @@ import java.util.List ;
 
 import org.apache.jena.atlas.io.IndentedLineBuffer ;
 import org.apache.jena.atlas.io.IndentedWriter ;
-import org.apache.jena.atlas.lib.Ref ;
 import structure.Entry ;
 import structure.OrderedMap ;
+import structure.Ref;
 import structure.tree.TreeNode ;
 import structure.tree.TreeNodeBasic ;
 import structure.tree.TreeOps ;

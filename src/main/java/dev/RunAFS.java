@@ -17,64 +17,13 @@
 
 package dev;
 
-import java.lang.reflect.Field ;
-
-import org.apache.jena.atlas.lib.Bytes ;
 import org.apache.jena.atlas.logging.LogCtl ;
-import sun.misc.Unsafe ;
 
-@SuppressWarnings("restriction")
 public class RunAFS
 {
     static { LogCtl.setCmdLogging(); }
-    
-    private static Unsafe getUnsafe() {
-        try {
-
-            Field singleoneInstanceField = Unsafe.class.getDeclaredField("theUnsafe");
-            singleoneInstanceField.setAccessible(true);
-            return (Unsafe) singleoneInstanceField.get(null);
-
-        } catch (IllegalArgumentException e) {
-            throw createExceptionForObtainingUnsafe(e);
-        } catch (SecurityException e) {
-            throw createExceptionForObtainingUnsafe(e);
-        } catch (NoSuchFieldException e) {
-            throw createExceptionForObtainingUnsafe(e);
-        } catch (IllegalAccessException e) {
-            throw createExceptionForObtainingUnsafe(e);
-        }
-    }
-    
-    
-    private static RuntimeException createExceptionForObtainingUnsafe(Exception e) {
-        return new RuntimeException(e) ;
-    }
-
 
     public static void main(String ...argv) {
-        Unsafe x = getUnsafe() ;
-        final long offset = Unsafe.ARRAY_BYTE_BASE_OFFSET ; /* Typically, 16, on 64 bit JVM */ //x.arrayBaseOffset(byte[].class) ;
-        final long scale = Unsafe.ARRAY_BYTE_INDEX_SCALE ; /* Typically, 1 */                 //x.arrayIndexScale(byte[].class) ;
-        System.out.printf("%d / %d\n", offset, scale) ;
-        byte[] b = new byte[8*10] ;
-        
-        int i = 6 ;
-        
-        // Network order != x68 order.
-        x.putLong(b, offset+i*scale, Long.reverseBytes(153L)) ; // Order? little endian.
-        
-        
-        long z = Bytes.getLong(b, 6) ;
-        
-        System.out.printf("==> %d 0x%08X\n", z,z) ;
-        z = x.getLong(b, offset+i*scale) ;
-        
-        z = Long.reverseBytes(z) ;
-        System.out.printf("==> %d 0x%08X\n", z,z) ;
-        
-        System.out.println("DONE") ;
-        
     }
 }
 
