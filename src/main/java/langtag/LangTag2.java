@@ -29,6 +29,12 @@ public class LangTag2 {
     // TODO
     // Exception vs "return null"
     
+    private LangTag2() {
+//        // See also (Java7)
+//        Locale.Builder locBuild = new Locale.Builder();
+//        locBuild.setLanguageTag("tag").build().toLanguageTag();
+    }
+    
     static class LangTagException extends RuntimeException {
         LangTagException(String str) { super(str) ; }
     }
@@ -44,7 +50,7 @@ public class LangTag2 {
     /** Index of all extensions */
     public static final int idxExtension    = 4 ;
     
-    private static final int partsLength    = 5 ;
+    public static final int partsLength     = 5 ;
 
     /*
      *     <li>ABNF definition: <a href="http://www.ietf.org/rfc/rfc4234.txt">RFC 4234</a></li>
@@ -92,20 +98,30 @@ public class LangTag2 {
 
     static String[] template = new String[] {} ; 
     
-    public static String[] parse(String x) { 
+    public static LangTag parse(String x) { 
         List<String> strings = parse1(x) ;
         if ( strings == null )
             return null ;
         String[] parts = parse2(strings) ;
         if ( parts == null )
             return null ;
+        /*
+         * Canonicalize with the rules of RFC 4646 "In this format, all non-initial
+         * two-letter subtags are uppercase, all non-initial four-letter subtags are
+         * titlecase, and all other subtags are lowercase." In addition, leave
+         * extensions unchanged.
+         * RFC 5646 is slightly different becaue it replaces one strign with another. 
+         */
         parts[idxLanguage] = lowercase(parts[idxLanguage]) ;
         parts[idxScript] = strcase(parts[idxScript]) ;
         parts[idxRegion] = strcase(parts[idxRegion]) ;
         parts[idxVariant] = strcase(parts[idxVariant]) ;
-        // Leave extensions alone.
-        // parts[idxExtension] = strcase(parts[idxExtension]) ; 
-        return parts ;
+        parts[idxExtension] = lowercase(parts[idxExtension]) ; 
+        return new LangTag(parts[idxLanguage],
+                           parts[idxScript],
+                           parts[idxRegion],
+                           parts[idxVariant],
+                           parts[idxExtension]);
     }
 
     private static List<String> parse1(String x) {
@@ -239,50 +255,49 @@ public class LangTag2 {
     public static String canonical(String str) {
         if ( str == null )
             return null ;
-        String[] parts = parse(str) ;
-        String x = canonical(parts) ;
-        if ( x == null ) {
-            // Could try to apply the rule case-seeting rules
+        LangTag langTag = parse(str) ;
+        if ( langTag == null ) {
+            // Could try to apply the rule case-setting rules
             // even through it's not a conforming langtag.
             return str ;
         }
-        return x ;
+        return langTag.asString();
     }
     
-    /**
-     * Canonicalize with the rules of RFC 4646 "In this format, all non-initial
-     * two-letter subtags are uppercase, all non-initial four-letter subtags are
-     * titlecase, and all other subtags are lowercase." In addition, leave
-     * extensions unchanged.
-     */
-    public static String canonical(String[] parts) {
-        // We canonicalised parts on parsing.
-        // RFC 5646 is slightly different.
-        if ( parts == null )
-            return null ;
-
-        if ( parts[0] == null ) {
-            // Grandfathered
-            return parts[idxExtension] ;
-        }
-
-        StringBuilder sb = new StringBuilder() ;
-        sb.append(parts[0]) ;
-        for (int i = 1; i < parts.length; i++) {
-            if ( parts[i] != null ) {
-                sb.append("-") ;
-                sb.append(parts[i]) ;
-            }
-        }
-        return sb.toString() ;
-    }
+//    /**
+//     * Canonicalize with the rules of RFC 4646 "In this format, all non-initial
+//     * two-letter subtags are uppercase, all non-initial four-letter subtags are
+//     * titlecase, and all other subtags are lowercase." In addition, leave
+//     * extensions unchanged.
+//     */
+//    public static String asString(String[] parts) {
+//        // We canonicalised parts on parsing.
+//        // RFC 5646 is slightly different.
+//        if ( parts == null )
+//            return null ;
+//
+//        if ( parts[0] == null ) {
+//            // Grandfathered
+//            return parts[idxExtension] ;
+//        }
+//
+//        StringBuilder sb = new StringBuilder() ;
+//        sb.append(parts[0]) ;
+//        for (int i = 1; i < parts.length; i++) {
+//            if ( parts[i] != null ) {
+//                sb.append("-") ;
+//                sb.append(parts[i]) ;
+//            }
+//        }
+//        return sb.toString() ;
+//    }
     
     
     /**
      * Validate - basic syntax check for a language tags: [a-zA-Z]+ ('-'
      * [a-zA-Z0-9]+)*
      */
-    public static boolean check(String languageTag) {
+    public static boolean checkSyntax(String languageTag) {
         int len = languageTag.length() ;
         int idx = 0 ;
         boolean first = true ;
@@ -344,7 +359,7 @@ public class LangTag2 {
         return string.toUpperCase(Locale.ROOT) ;
     }
 
-    private static String titlecase(String string) {
+    /*package*/ static String titlecase(String string) {
         if ( string == null )
             return null ;
         char ch1 = string.charAt(0) ;

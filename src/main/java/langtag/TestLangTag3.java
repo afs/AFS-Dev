@@ -17,15 +17,16 @@
 
 package langtag;
 
-public class TestLangTag2 extends AbstractTestLangTag
+public class TestLangTag3 extends AbstractTestLangTag
 {
     @Override
     protected LangTag parseLangtag(String str) {
-        return LangTag2.parse(str);
+        return LangTag3.parse(str);
     }
 
     @Override
     protected String canonical(String str) {
-        return LangTag2.canonical(str);
+        return LangTag3.canonical(str);
     }
+
 }
