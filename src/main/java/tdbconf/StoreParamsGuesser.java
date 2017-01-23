@@ -21,10 +21,10 @@ import java.io.File ;
 import java.io.FileFilter ;
 import java.nio.file.Path ;
 import java.nio.file.Paths ;
+import java.util.ArrayList;
 import java.util.Arrays ;
 import java.util.List ;
 
-import org.apache.jena.atlas.lib.DS ;
 import org.apache.jena.atlas.lib.FileOps ;
 import org.apache.jena.ext.com.google.common.collect.ArrayListMultimap ;
 import org.apache.jena.ext.com.google.common.collect.ListMultimap ;
@@ -82,8 +82,8 @@ public class StoreParamsGuesser {
             fileParts.put(base, ext) ;
         }) ;
         
-        List<String> indexesTriples = DS.list() ;
-        List<String> indexesQuads = DS.list() ;
+        List<String> indexesTriples = new ArrayList<>();
+        List<String> indexesQuads = new ArrayList<>();
         
         // Index seeking.
         for ( String base : fileParts.keys() ) {
