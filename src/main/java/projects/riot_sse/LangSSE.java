@@ -110,9 +110,7 @@ public class LangSSE extends LangBase
             return ;
         }
 
-        if ( lookingAt(TokenType.STRING) || 
-             lookingAt(TokenType.STRING1) || lookingAt(TokenType.STRING2) ||
-             lookingAt(TokenType.LONG_STRING1) || lookingAt(TokenType.LONG_STRING2) )
+        if ( lookingAt(TokenType.STRING) )
         {
             Token t = nextToken() ;
             handler.emitLiteral((int)t.getLine(), (int)t.getColumn(), 

@@ -52,7 +52,7 @@ public class FnvHashFunction implements HashToInt {
 
     public static void main(String[] args) {
         if(args.length != 2)
-            Log.fatal(FnvHashFunction.class, "USAGE: java FnvHashFunction iterations buckets");
+            Log.error(FnvHashFunction.class, "USAGE: java FnvHashFunction iterations buckets");
         int numIterations = Integer.parseInt(args[0]);
         int numBuckets = Integer.parseInt(args[1]);
         int[] buckets = new int[numBuckets];
