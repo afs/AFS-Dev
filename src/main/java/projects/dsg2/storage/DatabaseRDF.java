@@ -19,20 +19,20 @@
 package projects.dsg2.storage;
 
 import org.apache.jena.sparql.core.Transactional;
-import projects.prefixes.DatasetPrefixesStorage2;
 
 // "Storage" - full database level.
-// And make StorageRDF, DatasetPrefixesStorage2 -- TransactionalComponents?
+// And make StorageRDF, StoragePrefixes -- TransactionalComponents?
+// StoragePrefixes: what about dataset wide? Or feature of implementation?
 
-public interface DatabaseRDF extends StorageRDF, DatasetPrefixesStorage2, Transactional {
+public interface DatabaseRDF extends StorageRDF, StoragePrefixes, Transactional {
 
     /**
      * @return the triples/quads storage. 
      */
-    public default StorageRDF getData()                     { return this ; }
+    public default StorageRDF getData()             { return this ; }
     
     /**
      * @return the prefixes storage.
      */
-    public default DatasetPrefixesStorage2 getPrefixes()    { return this ; }
+    public default StoragePrefixes getPrefixes()    { return this ; }
 }
