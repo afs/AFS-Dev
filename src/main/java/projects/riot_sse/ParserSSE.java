@@ -81,7 +81,7 @@ public class ParserSSE
         
         ParseHandler handler = createParseHandler(prologue.getPrefixMapping()) ;
         ErrorHandler errHandler = ErrorHandlerFactory.getDefaultErrorHandler() ;
-        ParserProfile profile = RiotLib.profile(null, false, true, errHandler) ;
+        ParserProfile profile = RiotLib.createParserProfile(RiotLib.factoryRDF(), errHandler, false);
         
         LangSSE parser = new LangSSE(tokenizer, profile, handler) ;
         parser.parse() ;
