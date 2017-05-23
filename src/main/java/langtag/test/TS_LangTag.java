@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-package langtag;
+package langtag.test;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( {
-    TestLangTag2.class,
-    TestLangTag3.class,
+    TestLangTag.class
+    , TestLangTagParserAlt.class
 } )
 public class TS_LangTag {
 

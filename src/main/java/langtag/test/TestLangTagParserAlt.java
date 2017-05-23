@@ -15,18 +15,20 @@
  *  information regarding copyright ownership.
  */
 
-package langtag;
+package langtag.test;
 
-public class TestLangTag3 extends AbstractTestLangTag
+import langtag.LangTag;
+import langtag.LangTagParserAlt;
+
+public class TestLangTagParserAlt extends AbstractTestLangTag
 {
     @Override
     protected LangTag parseLangtag(String str) {
-        return LangTag3.parse(str);
+        return LangTagParserAlt.parse(str);
     }
 
     @Override
     protected String canonical(String str) {
-        return LangTag3.canonical(str);
+        return LangTagParserAlt.canonical(str);
     }
-
 }

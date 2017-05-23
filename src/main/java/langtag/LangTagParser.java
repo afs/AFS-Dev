@@ -23,12 +23,15 @@ import java.util.Locale.Builder;
 import java.util.Set;
 
 /**
- * LangTag parsing. A thin layer over the JDK {@link Locale} and {@link Builder} to
+ * LangTag parsing.
+ * <p>
+ * A thin layer over the JDK {@link Locale} and {@code Locale.}{@link Builder} to
  * introduce a class {@link LangTag}.
  */
-public class LangTag3 {
-    // Like LangTag2 except using Java library code
-    // which checks validity as well as just syntax.
+public class LangTagParser {
+    
+    private LangTagParser() { }
+    
     private static Locale.Builder locBuild = new Locale.Builder();  
     
     public static LangTag parse(String x) {
@@ -42,14 +45,15 @@ public class LangTag3 {
     }
     
     public static String canonical(String str) {
-        try { 
+        try {
+            // Does not do conversion of language for ISO 639 codes that have changed.
             return locBuild.setLanguageTag(str).build().toLanguageTag();
         } catch (IllformedLocaleException ex) {
             return str;
         }
     }
     
-private static LangTag asLangTag(Locale.Builder locBuild) {
+    private static LangTag asLangTag(Locale.Builder locBuild) {
         Locale lc = locBuild.build();
         Set<Character> extkeys = lc.getExtensionKeys();
         StringBuilder sb = new StringBuilder();

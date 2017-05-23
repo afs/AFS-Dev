@@ -24,19 +24,59 @@ import java.util.Locale;
 import org.apache.jena.atlas.lib.Chars;
 import org.apache.jena.riot.system.RiotChars;
 
+/**
+ * Class that represents a language tag as a tuple of 5 strings (lang, script, region,
+ * variant, extension).
+ * <p>
+ * See {@link LangTagParser} for generating {@code LangTag}s. Note tgis returns the old ISO code.
+ * See the javadoc of {@link Locale#getLanguage()}.
+ * <p>
+ * {@link LangTagParserAlt} is an alternative version which does not use the Java locale
+ * built-in functionality and does not canonical language names (replace one name by another).
+ * <p>
+ * Language tags are BCP 47.
+ * <p>
+ * RFCs:
+ * <ul>
+ * <li><a href="https://tools.ietf.org/html/5646">RFC 5646</a> "Tags for Identifying
+ * Languages"
+ * <li><a href="https://tools.ietf.org/html/4646">RFC 4646</a> "Tags for Identifying
+ * Languages"
+ * <li><a href="https://tools.ietf.org/html/3066">RFC 3066</a> "Tags for the
+ * Identification of Languages"
+ * </ul>
+ * Related:
+ * <ul>
+ * <li><a href="https://tools.ietf.org/html/4647">RFC 4647</a> "Matching of Language Tags"
+ * <li><a href="https://tools.ietf.org/html/4234">RFC 4232</a> "Augmented BNF for Syntax
+ * Specifications: ABNF"
+ * </ul>
+ */
+
 public class LangTag {
     
     public static void main(String...a) {
         try { 
             Locale.Builder locBuild = new Locale.Builder();
             //locBuild.setLanguageTag("de-CH-x-phonebk");
-            locBuild.setLanguageTag("zh-CN-a-myext-x-private");
+            locBuild.setLanguageTag("zh-cn-a-myext-x-private");
             Locale lc = locBuild.build();
             System.out.println("L:"+lc.getLanguage());
             System.out.println("S:"+lc.getScript());
             System.out.println("C:"+lc.getCountry());
             System.out.println("V:"+lc.getVariant());
             System.out.println(lc.toLanguageTag());
+            
+            LangTag lang3 = LangTagParser.parse("zh-cn-a-myext-x-private") ;
+            System.out.println();
+            System.out.println(lang3.asString());
+            
+            LangTag lang2 = LangTagParserAlt.parse("zh-cn-a-myext-x-private") ;
+            System.out.println();
+            System.out.println(lang2.asString());
+            
+            
+            
         } catch (IllformedLocaleException ex) {
             ex.printStackTrace();
         }
@@ -94,7 +134,14 @@ public class LangTag {
     private final String variant;
     private final String extension;
 
-    public LangTag(String lang, String script, String region, String variant, String extension) {
+    /** Construct a LangTag.
+     * <p>
+     * This 
+     * <p> 
+     * null means "empty" 
+     */
+    public
+    /*package*/ LangTag(String lang, String script, String region, String variant, String extension) {
         this.lang       = nullToEmpty(lang,      "'lang' is null");
         this.script     = nullToEmpty(script,    "'script' is null");
         this.region     = nullToEmpty(region,    "'region' is null");
@@ -112,7 +159,11 @@ public class LangTag {
     @Override
     public String toString() { return asString() ; }
     
+    /** Return as a string - canonicalization is depend on whether the 
+     * the parser canonicalized on input. 
+     */ 
     public String asString() {
+        
         if ( lang == null || lang.isEmpty() ) {
             // Grandfathered
             return extension;

@@ -15,8 +15,9 @@
  *  information regarding copyright ownership.
  */
 
-package langtag;
+package langtag.test;
 
+import langtag.LangTag;
 import org.junit.Assert ;
 import org.junit.Test ;
 
@@ -58,21 +59,19 @@ public abstract class AbstractTestLangTag extends Assert
     @Test public void parse_bad_03() { parseBad("123-abc") ; }
     @Test public void parse_bad_04() { parseBad("en-") ; }
     
-//    protected abstract void parseGood(String input, String ex_output, String... ex_parts );
-//    protected abstract void parseBad(String input);
-//    protected abstract void testCanonical(String input, String ex_output);
-    
     protected void parseGood(String input, String ex_output, String... ex_parts ) {
+        if ( ex_parts.length != 5 )
+            throw new IllegalArgumentException("Lost of expected parts must be length 5"); 
         LangTag langTagExpected =  new LangTag(ex_parts[0],
-                                       ex_parts[1],
-                                       ex_parts[2],
-                                       ex_parts[3],
-                                       ex_parts[4]);
+                                               ex_parts[1],
+                                               ex_parts[2],
+                                               ex_parts[3],
+                                               ex_parts[4]);
         LangTag langTagActual = parseLangtag(input);
         assertEquals("The LangTag", langTagExpected, langTagActual);
         String output = canonical(input) ;
         assertEquals("Canonical", ex_output, output) ;
-        assertTrue(LangTag2.checkSyntax(input)) ;
+        assertTrue(LangTag.checkSyntax(input)) ;
     }
 
     protected void parseBad(String input) {
@@ -80,17 +79,24 @@ public abstract class AbstractTestLangTag extends Assert
         assertNull(langTag) ;
         String output = canonical(input) ;
         assertEquals(input, output) ;
-        assertFalse(LangTag2.checkSyntax(input)) ;
+        assertFalse(LangTag.checkSyntax(input)) ;
     }
     
     protected void testCanonical(String input, String ex_output) {
         String output = canonical(input) ;
         assertEquals(ex_output, output) ;
+//        String output2 = canonicalByParsing(input);
+//        if ( output2 != null )
+//            assertEquals(ex_output, output2) ;
     }
     
     protected abstract LangTag parseLangtag(String str);
     protected abstract String canonical(String str);
     
+    // Override and return null if the impl does not parse to canonical form.
+    protected String canonicalByParsing(String str) {
+        return parseLangtag(str).asString();
+    }
         
     // "x" extensions and irregular forms are left alone, including "sgn-be-fr" 
 
@@ -111,6 +117,7 @@ public abstract class AbstractTestLangTag extends Assert
     @Test public void parseCanonical_15() { testCanonical("qqq-002",            "qqq-002"); }
     @Test public void parseCanonical_16() { testCanonical("ja-latn",            "ja-Latn"); }
     @Test public void parseCanonical_17() { testCanonical("x-local",            "x-local"); }
+    // 
     @Test public void parseCanonical_18() { testCanonical("he-latn",            "he-Latn"); }
     @Test public void parseCanonical_19() { testCanonical("und",                "und"); }
     @Test public void parseCanonical_20() { testCanonical("nn",                 "nn"); }
@@ -123,4 +130,5 @@ public abstract class AbstractTestLangTag extends Assert
     @Test public void parseCanonical_27() { testCanonical("grc-x-liturgic",     "grc-x-liturgic"); }
     @Test public void parseCanonical_28() { testCanonical("egy-Latn",           "egy-Latn"); }
     @Test public void parseCanonical_29() { testCanonical("la-x-medieval",      "la-x-medieval"); }
+    @Test public void parseCanonical_30() { testCanonical("aaa-bbb-ccc-ddd-eee","aaa-bbb-ccc-ddd-eee"); }
 }
