@@ -18,7 +18,6 @@
 
 package langtag;
 
-import java.util.IllformedLocaleException;
 import java.util.Locale;
 
 import org.apache.jena.atlas.lib.Chars;
@@ -55,36 +54,10 @@ import org.apache.jena.riot.system.RiotChars;
 
 public class LangTag {
     
-    public static void main(String...a) {
-        try { 
-            Locale.Builder locBuild = new Locale.Builder();
-            //locBuild.setLanguageTag("de-CH-x-phonebk");
-            locBuild.setLanguageTag("zh-cn-a-myext-x-private");
-            Locale lc = locBuild.build();
-            System.out.println("L:"+lc.getLanguage());
-            System.out.println("S:"+lc.getScript());
-            System.out.println("C:"+lc.getCountry());
-            System.out.println("V:"+lc.getVariant());
-            System.out.println(lc.toLanguageTag());
-            
-            LangTag lang3 = LangTagParser.parse("zh-cn-a-myext-x-private") ;
-            System.out.println();
-            System.out.println(lang3.asString());
-            
-            LangTag lang2 = LangTagParserAlt.parse("zh-cn-a-myext-x-private") ;
-            System.out.println();
-            System.out.println(lang2.asString());
-            
-            
-            
-        } catch (IllformedLocaleException ex) {
-            ex.printStackTrace();
-        }
-    }
-    
     /**
-     * Basic syntax check for a language tags: 
-     *   [a-zA-Z]+ ('-' [a-zA-Z0-9]+)*
+     * Basic syntax check for a language tag, equivalent to what is in the Turtle and SPARQL specs 
+     * <pre>[a-zA-Z]+('-' [a-zA-Z0-9]+)*</pre>
+     * Oassing this check does <em>not</em> guarantee the language tage is correct.
      */
     public static boolean checkSyntax(String languageTag) {
         int len = languageTag.length() ;
