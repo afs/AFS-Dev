@@ -23,7 +23,6 @@ import java.util.List ;
 
 import org.apache.jena.atlas.lib.Pair ;
 import org.apache.jena.atlas.lib.StrUtils ;
-import org.apache.jena.atlas.logging.Log ;
 
 public class ControlBlock
 {
@@ -91,8 +90,6 @@ public class ControlBlock
             bb.get(b) ;
             String key = StrUtils.fromUTF8bytes(b) ;
             Long rootId = bb.getLong() ;
-            if ( params.roots.contains(key) )
-                Log.warn(ControlBlock.class, "Duplicate key for roots map") ;
             params.roots.add(Pair.create(key, rootId)) ;
         }
         return params ;

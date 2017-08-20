@@ -407,7 +407,7 @@ public final class RadixNode
         }
         
         // It's a tree and so we seen nodes only once. 
-        if ( seen.contains(this) )
+        if ( seen.contains(this.id) )
         {
             error(this, "Node %d already seen",id) ;
             return ;
