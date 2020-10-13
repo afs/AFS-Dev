@@ -17,7 +17,8 @@
 
 package projects.riot_sse;
 
-import org.apache.jena.atlas.junit.BaseTest ;
+import static org.junit.Assert.* ;
+
 import org.apache.jena.datatypes.xsd.XSDDatatype ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.riot.RiotException ;
@@ -29,7 +30,7 @@ import org.apache.jena.sparql.sse.ItemException ;
 import org.apache.jena.sparql.util.NodeFactoryExtra ;
 import org.junit.Test ;
 
-public class TestSSE_Basic extends BaseTest
+public class TestSSE_Basic
 {
     // Tests not requiring URI resolution or prefix name handling.
     
