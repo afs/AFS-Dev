@@ -26,7 +26,7 @@ import org.apache.jena.riot.system.ErrorHandlerFactory ;
 import org.apache.jena.riot.system.ParserProfile ;
 import org.apache.jena.riot.system.RiotLib ;
 import org.apache.jena.riot.tokens.Tokenizer ;
-import org.apache.jena.riot.tokens.TokenizerFactory ;
+import org.apache.jena.riot.tokens.TokenizerText;
 import org.apache.jena.shared.PrefixMapping ;
 import org.apache.jena.shared.impl.PrefixMappingImpl ;
 import org.apache.jena.sparql.ARQConstants ;
@@ -48,14 +48,13 @@ public class ParserSSE
     
     public static Item parse(InputStream input, Prologue prologue)
     {
-        Tokenizer tokenizer = TokenizerFactory.makeTokenizerUTF8(input) ;
+        Tokenizer tokenizer = TokenizerText.create().source(input).build();
         return parseWorker(tokenizer, prologue) ;
     }
     
     public static Item parse(Reader reader, Prologue prologue)
     {
-        @SuppressWarnings("deprecation")
-        Tokenizer tokenizer = TokenizerFactory.makeTokenizer(reader) ;
+        Tokenizer tokenizer = TokenizerText.create().source(reader).build();
         return parseWorker(tokenizer, prologue) ;
     }
     
@@ -92,8 +91,7 @@ public class ParserSSE
     {
         if ( true )
         {
-            Prologue prologue = new Prologue(pmap) ;
-            return new ParseHandlerResolver(prologue) ;
+            return new ParseHandlerResolver(null, pmap) ;
         }
         else
             return new ParseHandlerPlain() ;

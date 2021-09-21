@@ -29,7 +29,7 @@ import org.apache.jena.shared.LockMRSW;
 
 public class TestMRSW
 {
-    static { LogCtl.setLog4j() ; }
+    static { LogCtl.setLog4j2() ; }
     
     static Lock lock = new LockMRSW() ;
     static AtomicInteger readerCount = new AtomicInteger(0) ;

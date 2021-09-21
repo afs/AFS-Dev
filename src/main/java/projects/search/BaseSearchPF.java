@@ -59,7 +59,7 @@ public abstract class BaseSearchPF extends PropertyFunctionEval
         Search search = searchEngine() ;
         Iterator<String> x = search.search(searchTerm) ;
         Iter<String> iter = Iter.iter(x) ;
-        QueryIterator qIter = new QueryIterPlainWrapper(iter.map((item)-> {
+        QueryIterator qIter = QueryIterPlainWrapper.create(iter.map((item)-> {
             return BindingFactory.binding(binding, var, NodeFactory.createURI(item)) ;
         })) ;
         return qIter ;

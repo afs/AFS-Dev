@@ -17,14 +17,16 @@
 
 package storage.varrecord;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.nio.ByteBuffer;
 
 import org.apache.jena.tdb.base.record.Record;
-
 import org.junit.Test;
-import org.apache.jena.atlas.junit.BaseTest ;
 
-public class TestVarRecordBlock extends BaseTest
+public class TestVarRecordBlock
 {
     // Some data items.
     static byte[] d1 = make(1,2,3,4) ;

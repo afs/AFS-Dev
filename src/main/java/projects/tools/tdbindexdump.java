@@ -19,8 +19,7 @@ package projects.tools;
 
 import java.util.List ;
 
-import jena.cmd.CmdException ;
-
+import org.apache.jena.cmd.CmdException;
 import org.apache.jena.tdb.TDB ;
 import org.apache.jena.tdb.base.file.Location ;
 import org.apache.jena.tdb.store.NodeId ;
@@ -28,7 +27,6 @@ import org.apache.jena.tdb.store.tupletable.TupleIndex ;
 import org.apache.jena.tdb.store.tupletable.TupleIndexRecord ;
 import org.apache.jena.tdb.sys.Names ;
 import org.apache.jena.tdb.sys.SetupTDB ;
-
 import tdb.cmdline.CmdTDB ;
 
 /** Dump a TDB index.
@@ -97,7 +95,7 @@ public class tdbindexdump extends CmdTDB
             // Index named by column mapping "SPO->POS"
             // This is silly.
             int i = idx.getColumnMap().getLabel().indexOf('>') ;
-            String name = idx.getMapping().substring(i+1) ;
+            String name = idx.getMappingStr().substring(i+1) ;
             if ( name.equals(srcIndex) )
                 return idx ;
         }

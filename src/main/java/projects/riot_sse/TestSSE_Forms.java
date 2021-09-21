@@ -17,8 +17,8 @@
 
 package projects.riot_sse;
 
-import org.apache.jena.atlas.junit.BaseTest ;
-import org.junit.Test ;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.apache.jena.datatypes.xsd.XSDDatatype ;
 import org.apache.jena.graph.Node ;
@@ -27,8 +27,9 @@ import org.apache.jena.shared.PrefixMapping ;
 import org.apache.jena.shared.impl.PrefixMappingImpl ;
 import org.apache.jena.sparql.sse.Item ;
 import org.apache.jena.vocabulary.XSD ;
+import org.junit.Test ;
 
-public class TestSSE_Forms extends BaseTest
+public class TestSSE_Forms
 {
     static PrefixMapping pmap = new PrefixMappingImpl() ;
     static { 

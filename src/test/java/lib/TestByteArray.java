@@ -17,10 +17,11 @@
 
 package lib ;
 
-import org.junit.Test ;
-import org.apache.jena.atlas.junit.BaseTest ;
+import static org.junit.Assert.assertEquals;
 
-public class TestByteArray extends BaseTest
+import org.junit.Test ;
+
+public class TestByteArray
 {
     @Test public void bytearray_01()
     {

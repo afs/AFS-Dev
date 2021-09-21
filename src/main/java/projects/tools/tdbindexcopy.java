@@ -19,13 +19,11 @@ package projects.tools;
 
 import java.util.List ;
 
-import jena.cmd.CmdException ;
-
+import org.apache.jena.cmd.CmdException;
 import org.apache.jena.tdb.TDB ;
 import org.apache.jena.tdb.base.file.Location ;
 import org.apache.jena.tdb.store.tupletable.TupleIndex ;
 import org.apache.jena.tdb.sys.Names ;
-
 import tdb.cmdline.CmdTDB ;
 
 /** Create a TDB index.

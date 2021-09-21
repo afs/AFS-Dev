@@ -18,8 +18,7 @@
 package projects.riot_sse;
 
 
-import org.apache.jena.atlas.junit.BaseTest ;
-import org.junit.Test ;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.algebra.op.OpLabel ;
@@ -28,8 +27,9 @@ import org.apache.jena.sparql.algebra.op.OpTable ;
 import org.apache.jena.sparql.sse.Item ;
 import org.apache.jena.sparql.sse.SSE ;
 import org.apache.jena.sparql.sse.builders.BuilderNode ;
+import org.junit.Test ;
 
-public class TestSSE_Builder extends BaseTest
+public class TestSSE_Builder
 {
     @Test public void test_01() { SSE.parseTriple("[triple ?s ?p ?o]") ; }
     @Test public void test_02() { SSE.parseTriple("[?s ?p ?o]") ; }

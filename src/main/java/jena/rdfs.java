@@ -19,9 +19,8 @@ package jena;
 
 import java.util.Iterator ;
 
-import jena.cmd.CmdMain ;
-
 import org.apache.jena.atlas.lib.Lib ;
+import org.apache.jena.cmd.CmdMain;
 import org.apache.jena.rdf.model.* ;
 import org.apache.jena.reasoner.Reasoner ;
 import org.apache.jena.reasoner.ReasonerRegistry ;
@@ -43,6 +42,7 @@ public class rdfs extends CmdMain
         super.add("schema", true) ;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void exec()
     {

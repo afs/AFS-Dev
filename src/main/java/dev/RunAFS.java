@@ -21,7 +21,7 @@ import org.apache.jena.atlas.logging.LogCtl ;
 
 public class RunAFS
 {
-    static { LogCtl.setCmdLogging(); }
+    static { LogCtl.setLogging(); }
 
     public static void main(String ...argv) {
     }

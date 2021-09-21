@@ -21,7 +21,6 @@ import java.io.StringReader ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
 import org.apache.jena.atlas.logging.LogCtl ;
-
 import org.apache.jena.query.* ;
 import org.apache.jena.rdf.model.Model ;
 import org.apache.jena.rdf.model.ModelFactory ;
@@ -73,7 +72,7 @@ public class OpExecutorExample // extends QueryEngineMain
     }
 
     public static void main(String... argv) {
-        LogCtl.setLog4j() ;
+        LogCtl.setLog4j2() ;
         init() ;
         Model m = data() ;
 
